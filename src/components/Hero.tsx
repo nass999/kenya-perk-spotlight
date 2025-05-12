@@ -1,14 +1,21 @@
 
 import { Button } from "@/components/ui/button";
+import { useRotatingText } from "@/hooks/useRotatingText";
 
 const Hero = () => {
+  const rotatingTexts = ["Businesses", "Organizations", "Chamas", "Clubs", "Neighborhoods"];
+  const { currentText, isAnimating } = useRotatingText(rotatingTexts, 3000);
+
   return (
     <section className="pt-28 pb-16 md:py-32 lg:py-40 bg-gradient-to-br from-[#eeece2] to-[#f0eee5] overflow-hidden">
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
           <div className="flex-1 text-center lg:text-left animate-fade-in">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-[#3d3929]">
-              Exclusive Employee <span className="text-gradient">Benefits</span> for <span className="text-gradient">African</span> Businesses
+              Exclusive Employee <span className="text-gradient">Benefits</span> for <span className="text-gradient">African</span>{" "}
+              <span className={`inline-block min-w-[180px] md:min-w-[240px] text-gradient ${isAnimating ? 'opacity-0 transform -translate-y-2' : 'opacity-100 transform translate-y-0'}`} style={{ transition: "all 0.5s ease-in-out" }}>
+                {currentText}
+              </span>
             </h1>
             <p className="text-lg md:text-xl text-[#3d3929] mb-8 max-w-2xl mx-auto lg:mx-0">
               Boost employee satisfaction and retention with Africa's leading discount platform. Offer your team exclusive perks and savings across 1000+ local and national brands.
