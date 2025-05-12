@@ -3,26 +3,26 @@ import { Button } from "@/components/ui/button";
 
 const Hero = () => {
   return (
-    <section className="pt-28 pb-16 md:py-32 lg:py-40 bg-gradient-to-br from-white to-kpurple-50 overflow-hidden">
+    <section className="pt-28 pb-16 md:py-32 lg:py-40 bg-gradient-to-br from-white to-kneutral-50 overflow-hidden">
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
           <div className="flex-1 text-center lg:text-left animate-fade-in">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-              Exclusive Employee <span className="text-gradient">Benefits</span> for <span className="text-gradient">Kenyan</span> Businesses
+              Exclusive Employee <span className="text-gradient">Benefits</span> for <span className="text-gradient">African</span> Businesses
             </h1>
             <p className="text-lg md:text-xl text-kneutral-600 mb-8 max-w-2xl mx-auto lg:mx-0">
-              Boost employee satisfaction and retention with Kenya's leading discount platform. Offer your team exclusive perks and savings across 1000+ local and national brands.
+              Boost employee satisfaction and retention with Africa's leading discount platform. Offer your team exclusive perks and savings across 1000+ local and national brands.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button className="bg-kpurple-500 hover:bg-kpurple-600 text-white px-8 py-6 text-lg">
+              <Button className="bg-kneutral-500 hover:bg-kneutral-600 text-white px-8 py-6 text-lg">
                 Request a Demo
               </Button>
-              <Button variant="outline" className="border-kpurple-400 text-kpurple-500 hover:bg-kpurple-50 px-8 py-6 text-lg">
-                View Pricing
+              <Button variant="outline" className="border-kneutral-400 text-kneutral-500 hover:bg-kneutral-50 px-8 py-6 text-lg">
+                Contact Sales
               </Button>
             </div>
             <div className="mt-8 text-kneutral-500">
-              <p>Trusted by Kenya's leading employers</p>
+              <p>Trusted by Africa's leading employers</p>
               <div className="flex flex-wrap justify-center lg:justify-start gap-8 mt-4 opacity-80">
                 <div className="w-24 h-12 bg-kneutral-300 rounded flex items-center justify-center">Safaricom</div>
                 <div className="w-24 h-12 bg-kneutral-300 rounded flex items-center justify-center">KCB</div>
@@ -34,10 +34,10 @@ const Hero = () => {
 
           <div className="flex-1 animate-slide-left delay-300">
             <div className="relative">
-              <div className="w-full h-full bg-kpurple-400 rounded-xl absolute -rotate-3 blur-md opacity-30"></div>
+              <div className="w-full h-full bg-kneutral-400 rounded-xl absolute -rotate-3 blur-md opacity-30"></div>
               <div className="bg-white shadow-xl rounded-xl p-6 border border-gray-100 relative">
-                <div className="bg-kpurple-400 h-32 rounded-lg mb-6 flex items-center justify-center text-white font-bold text-xl">
-                  PerkSpot Kenya App Interface
+                <div className="bg-kneutral-400 h-32 rounded-lg mb-6 flex items-center justify-center text-white font-bold text-xl">
+                  Africarewardsnetwork App Interface
                 </div>
                 <div className="space-y-4">
                   <div className="h-12 bg-gray-100 rounded-lg"></div>
@@ -45,7 +45,7 @@ const Hero = () => {
                     <div className="h-24 bg-gray-100 rounded-lg flex-1"></div>
                     <div className="h-24 bg-gray-100 rounded-lg flex-1"></div>
                   </div>
-                  <div className="h-12 bg-kpurple-100 rounded-lg"></div>
+                  <div className="h-12 bg-kneutral-100 rounded-lg"></div>
                 </div>
               </div>
             </div>

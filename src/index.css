@@ -101,6 +101,6 @@
 
 @layer utilities {
   .text-gradient {
-    @apply bg-gradient-to-r from-kpurple-400 to-kpurple-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-kneutral-400 to-kneutral-600 bg-clip-text text-transparent;
   }
 }

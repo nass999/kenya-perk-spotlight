@@ -10,24 +10,21 @@ import { Star } from "lucide-react";
 
 const testimonials = [
   {
-    name: "Joyce Mwangi",
-    role: "HR Director, Safaricom",
-    company: "Safaricom",
-    content: "PerkSpot Kenya has transformed how we deliver benefits to our employees. The platform is intuitive, and the discounts are genuinely valuable. Our staff retention has improved by 24% since implementation.",
+    name: "Joyce",
+    role: "HR Director",
+    content: "Africarewardsnetwork has transformed how we deliver benefits to our employees. The platform is intuitive, and the discounts are genuinely valuable. Our staff retention has improved by 24% since implementation.",
     stars: 5
   },
   {
-    name: "Daniel Omondi",
-    role: "CEO, TechHub Kenya",
-    company: "TechHub Kenya",
-    content: "As a growing tech company, attracting talent is critical. PerkSpot Kenya gives us a competitive edge with perks that rival much larger companies, all at a price point that makes sense for our business.",
+    name: "Daniel",
+    role: "CEO",
+    content: "As a growing tech company, attracting talent is critical. Africarewardsnetwork gives us a competitive edge with perks that rival much larger companies, all at a price point that makes sense for our business.",
     stars: 5
   },
   {
-    name: "Amina Abdi",
+    name: "Amina",
     role: "People Operations Lead",
-    company: "KCB Bank",
-    content: "The local focus of PerkSpot Kenya makes all the difference. Our employees appreciate discounts at places they actually shop at regularly. The customer service team is responsive and always helpful.",
+    content: "The local focus of Africarewardsnetwork makes all the difference. Our employees appreciate discounts at places they actually shop at regularly. The customer service team is responsive and always helpful.",
     stars: 5
   }
 ];
@@ -41,7 +38,7 @@ const Testimonials = () => {
             Trusted by <span className="text-gradient">Leading</span> Kenyan Employers
           </h2>
           <p className="text-kneutral-600 text-lg max-w-2xl mx-auto">
-            See why top companies across Kenya trust PerkSpot for their employee benefits programs.
+            See why top companies across Kenya trust Africarewardsnetwork for their employee benefits programs.
           </p>
         </div>
 
@@ -55,7 +52,7 @@ const Testimonials = () => {
                   ))}
                 </div>
                 <CardTitle>{testimonial.name}</CardTitle>
-                <CardDescription>{testimonial.role}, {testimonial.company}</CardDescription>
+                <CardDescription>{testimonial.role}</CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-kneutral-600">"{testimonial.content}"</p>
