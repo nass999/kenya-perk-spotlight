@@ -11,22 +11,22 @@ const Navbar = () => {
       <div className="container mx-auto flex items-center justify-between p-4">
         <div className="flex items-center">
           <a href="/" className="flex items-center gap-2">
-            <span className="font-bold text-2xl text-gradient">Africarewards<span className="text-kneutral-500">network</span></span>
+            <span className="font-bold text-2xl text-gradient">Africarewards<span className="text-blue-600">network</span></span>
           </a>
         </div>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
-          <a href="#features" className="text-kneutral-700 hover:text-kneutral-500 font-medium transition-colors">Features</a>
-          <a href="#partners" className="text-kneutral-700 hover:text-kneutral-500 font-medium transition-colors">Partners</a>
-          <a href="#testimonials" className="text-kneutral-700 hover:text-kneutral-500 font-medium transition-colors">Testimonials</a>
+          <a href="#features" className="text-gray-700 hover:text-blue-600 font-medium transition-colors">Features</a>
+          <a href="#partners" className="text-gray-700 hover:text-blue-600 font-medium transition-colors">Partners</a>
+          <a href="#testimonials" className="text-gray-700 hover:text-blue-600 font-medium transition-colors">Testimonials</a>
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
-          <Button variant="outline" className="border-kneutral-500 text-kneutral-500 hover:bg-kneutral-50">
+          <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
             Log In
           </Button>
-          <Button className="bg-kneutral-500 hover:bg-kneutral-600">
+          <Button className="bg-blue-600 hover:bg-blue-700">
             Contact Sales
           </Button>
         </div>
@@ -46,30 +46,30 @@ const Navbar = () => {
           <nav className="flex flex-col p-4 gap-4">
             <a 
               href="#features" 
-              className="text-kneutral-700 hover:text-kneutral-500 font-medium py-2 transition-colors"
+              className="text-gray-700 hover:text-blue-600 font-medium py-2 transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               Features
             </a>
             <a 
               href="#partners" 
-              className="text-kneutral-700 hover:text-kneutral-500 font-medium py-2 transition-colors"
+              className="text-gray-700 hover:text-blue-600 font-medium py-2 transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               Partners
             </a>
             <a 
               href="#testimonials" 
-              className="text-kneutral-700 hover:text-kneutral-500 font-medium py-2 transition-colors"
+              className="text-gray-700 hover:text-blue-600 font-medium py-2 transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               Testimonials
             </a>
             <div className="flex flex-col gap-2 pt-2">
-              <Button variant="outline" className="border-kneutral-500 text-kneutral-500 w-full">
+              <Button variant="outline" className="border-blue-600 text-blue-600 w-full">
                 Log In
               </Button>
-              <Button className="bg-kneutral-500 hover:bg-kneutral-600 w-full">
+              <Button className="bg-blue-600 hover:bg-blue-700 w-full">
                 Contact Sales
               </Button>
             </div>

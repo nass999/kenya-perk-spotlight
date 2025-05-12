@@ -14,16 +14,17 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 263.4 70% 58%; /* Purple similar to Lovable */
+    /* Anthropic-inspired colors */
+    --primary: 230 48% 47%; /* Blue similar to Anthropic */
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 270 50% 80%; /* Lighter purple */
+    --secondary: 220 25% 95%; /* Light blue/gray */
     --secondary-foreground: 222.2 47.4% 11.2%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 273 100% 93%; /* Very light purple */
+    --accent: 220 25% 93%; /* Very light blue */
     --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
@@ -31,7 +32,7 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 263.4 70% 50%; /* Purple ring */
+    --ring: 230 48% 47%; /* Blue ring */
 
     --radius: 0.5rem;
 
@@ -55,7 +56,7 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 263.4 70% 60%; /* Adjusted for dark mode */
+    --primary: 230 48% 55%; /* Adjusted for dark mode */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -72,7 +73,7 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 263.4 70% 60%;
+    --ring: 230 48% 55%;
     
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
@@ -101,6 +102,6 @@
 
 @layer utilities {
   .text-gradient {
-    @apply bg-gradient-to-r from-kneutral-400 to-kneutral-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent;
   }
 }
