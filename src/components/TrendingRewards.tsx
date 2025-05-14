@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +27,20 @@ const rewards: Reward[] = [
 ];
 
 const TrendingRewards = () => {
+  const [api, setApi] = useState<any>(null);
+
+  useEffect(() => {
+    if (api) {
+      // Auto-rotate the carousel every 3 seconds
+      const intervalId = setInterval(() => {
+        api.scrollNext();
+      }, 3000);
+
+      // Clear the interval on component unmount
+      return () => clearInterval(intervalId);
+    }
+  }, [api]);
+
   return (
     <section className="py-16 bg-gradient-to-br from-[#f8ece7] to-[#f0eee5]">
       <div className="container mx-auto px-4">
@@ -44,6 +58,7 @@ const TrendingRewards = () => {
             align: "start",
             loop: true,
           }}
+          setApi={setApi}
           className="w-full"
         >
           <CarouselContent className="-ml-2 md:-ml-4">
@@ -52,9 +67,6 @@ const TrendingRewards = () => {
                 <Card className="border border-[#e6e4d2] hover:border-[#da7756] transition-all duration-300 h-full">
                   <CardContent className="p-6 flex flex-col h-full">
                     <div className="flex justify-between items-start mb-4">
-                      <div className="h-12 w-12 bg-[#f8ece7] rounded-full flex items-center justify-center text-[#da7756] font-bold">
-                        {reward.name.charAt(0)}
-                      </div>
                       <Badge variant="outline" className="bg-[#f8ece7] text-[#bd5d3a] border-[#e6e4d2]">
                         {reward.category}
                       </Badge>

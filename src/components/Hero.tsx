@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useRotatingText } from "@/hooks/useRotatingText";
+import { Percent, ShoppingBag, CreditCard } from "lucide-react";
 
 const Hero = () => {
   const rotatingTexts = ["Businesses", "Organizations", "Chamas", "Clubs", "Neighborhoods"];
@@ -43,16 +44,35 @@ const Hero = () => {
             <div className="relative">
               <div className="w-full h-full bg-[#e6e4f1] rounded-xl absolute -rotate-3 blur-md opacity-30"></div>
               <div className="bg-white shadow-xl rounded-xl p-6 border border-[#e6e4d2] relative">
-                <div className="bg-[#da7756] h-32 rounded-lg mb-6 flex items-center justify-center text-white font-bold text-xl">
-                  Africarewardsnetwork App Interface
+                <div className="bg-[#da7756] h-32 rounded-lg mb-6 flex items-center justify-center text-white">
+                  <div className="text-center">
+                    <div className="flex justify-center items-center mb-2">
+                      <Percent className="h-10 w-10 mr-2" />
+                      <span className="text-4xl font-bold">30%</span>
+                    </div>
+                    <p className="text-xl">SAVED ON PURCHASES</p>
+                  </div>
                 </div>
                 <div className="space-y-4">
-                  <div className="h-12 bg-[#f8ece7] rounded-lg"></div>
-                  <div className="flex gap-4">
-                    <div className="h-24 bg-[#f8ece7] rounded-lg flex-1"></div>
-                    <div className="h-24 bg-[#f8ece7] rounded-lg flex-1"></div>
+                  <div className="h-12 bg-[#f8ece7] rounded-lg flex items-center px-4">
+                    <ShoppingBag className="h-5 w-5 text-[#bd5d3a] mr-3" />
+                    <span className="text-[#3d3929]">House of Leather - 30% off</span>
                   </div>
-                  <div className="h-12 bg-[#f8ece7] rounded-lg"></div>
+                  <div className="flex gap-4">
+                    <div className="h-24 bg-[#f8ece7] rounded-lg flex-1 p-4 flex flex-col justify-center">
+                      <CreditCard className="h-5 w-5 text-[#bd5d3a] mb-2" />
+                      <span className="text-[#3d3929] font-medium">Your Savings</span>
+                      <span className="text-[#da7756] font-bold">KES 2,450</span>
+                    </div>
+                    <div className="h-24 bg-[#f8ece7] rounded-lg flex-1 p-4 flex flex-col justify-center">
+                      <ShoppingBag className="h-5 w-5 text-[#bd5d3a] mb-2" />
+                      <span className="text-[#3d3929] font-medium">Total Rewards</span>
+                      <span className="text-[#da7756] font-bold">45</span>
+                    </div>
+                  </div>
+                  <div className="h-12 bg-[#f8ece7] rounded-lg flex items-center justify-center">
+                    <span className="text-[#bd5d3a] font-medium">View All Rewards</span>
+                  </div>
                 </div>
               </div>
             </div>
