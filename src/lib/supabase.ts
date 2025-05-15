@@ -139,8 +139,8 @@ export type Database = {
   };
 };
 
-// Export the supabase client from the integrations folder
-export const supabase = supabaseClient;
+// Export the supabase client with typings
+export const supabase = supabaseClient as ReturnType<typeof createClient<Database>>;
 
 // Auth types
 export type UserRole = 'master_admin' | 'company_admin' | 'employee';
