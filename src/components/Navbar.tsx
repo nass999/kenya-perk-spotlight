@@ -2,10 +2,17 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { authState } = useAuth();
+  const navigate = useNavigate();
+  
+  const handleDashboardClick = () => {
+    navigate('/dashboard');
+  };
   
   return (
     <header className="fixed w-full bg-[#eeece2]/90 backdrop-blur-md z-50 border-b border-[#e6e4d2]">
@@ -25,12 +32,24 @@ const Navbar = () => {
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
-          <Button variant="outline" className="border-[#da7756] text-[#da7756] hover:bg-[#f8ece7]">
-            Log In
-          </Button>
-          <Button className="bg-[#da7756] hover:bg-[#bd5d3a]">
-            Contact Sales
-          </Button>
+          {authState.user ? (
+            <Button className="bg-[#da7756] hover:bg-[#bd5d3a]" onClick={handleDashboardClick}>
+              Dashboard
+            </Button>
+          ) : (
+            <>
+              <Link to="/login">
+                <Button variant="outline" className="border-[#da7756] text-[#da7756] hover:bg-[#f8ece7]">
+                  Log In
+                </Button>
+              </Link>
+              <Link to="/register">
+                <Button className="bg-[#da7756] hover:bg-[#bd5d3a]">
+                  Sign Up
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -75,12 +94,30 @@ const Navbar = () => {
               Testimonials
             </a>
             <div className="flex flex-col gap-2 pt-2">
-              <Button variant="outline" className="border-[#da7756] text-[#da7756] w-full">
-                Log In
-              </Button>
-              <Button className="bg-[#da7756] hover:bg-[#bd5d3a] w-full">
-                Contact Sales
-              </Button>
+              {authState.user ? (
+                <Button 
+                  className="bg-[#da7756] hover:bg-[#bd5d3a] w-full"
+                  onClick={() => {
+                    navigate('/dashboard');
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  Dashboard
+                </Button>
+              ) : (
+                <>
+                  <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                    <Button variant="outline" className="border-[#da7756] text-[#da7756] w-full">
+                      Log In
+                    </Button>
+                  </Link>
+                  <Link to="/register" onClick={() => setIsMenuOpen(false)}>
+                    <Button className="bg-[#da7756] hover:bg-[#bd5d3a] w-full">
+                      Sign Up
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </nav>
         </div>

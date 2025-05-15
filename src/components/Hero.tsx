@@ -2,10 +2,27 @@
 import { Button } from "@/components/ui/button";
 import { useRotatingText } from "@/hooks/useRotatingText";
 import { Percent, ShoppingBag, CreditCard } from "lucide-react";
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Hero = () => {
   const rotatingTexts = ["Businesses", "Organizations", "Chamas", "Clubs", "Neighborhoods"];
   const { currentText, isAnimating } = useRotatingText(rotatingTexts, 3000);
+  const { authState } = useAuth();
+  const navigate = useNavigate();
+
+  const handleGetStarted = () => {
+    if (authState.user) {
+      navigate('/dashboard');
+    } else {
+      navigate('/register');
+    }
+  };
+  
+  const handleContactSales = () => {
+    // In a real app, this could open a contact form or start a chat
+    navigate('/pricing');
+  };
 
   return (
     <section className="pt-28 pb-16 md:py-32 lg:py-40 bg-gradient-to-br from-[#eeece2] to-[#f0eee5] overflow-hidden">
@@ -22,10 +39,17 @@ const Hero = () => {
               Boost employee satisfaction and retention with Africa's leading discount platform. Offer your team exclusive perks and savings across 1000+ local and national brands.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button className="bg-[#da7756] hover:bg-[#bd5d3a] text-white px-8 py-6 text-lg">
-                Request a Demo
+              <Button 
+                className="bg-[#da7756] hover:bg-[#bd5d3a] text-white px-8 py-6 text-lg"
+                onClick={handleGetStarted}
+              >
+                {authState.user ? 'Go to Dashboard' : 'Get Started'}
               </Button>
-              <Button variant="outline" className="border-[#da7756] text-[#da7756] hover:bg-[#f8ece7] px-8 py-6 text-lg">
+              <Button 
+                variant="outline" 
+                className="border-[#da7756] text-[#da7756] hover:bg-[#f8ece7] px-8 py-6 text-lg"
+                onClick={handleContactSales}
+              >
                 Contact Sales
               </Button>
             </div>

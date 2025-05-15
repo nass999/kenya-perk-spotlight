@@ -15,6 +15,9 @@ import Dashboard from "./pages/Dashboard";
 import DashboardLayout from "./components/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Unauthorized from "./pages/Unauthorized";
+import BrowsePerks from "./pages/dashboard/BrowsePerks";
+import MyRedemptions from "./pages/dashboard/MyRedemptions";
+import ManagePerks from "./pages/dashboard/ManagePerks";
 
 const queryClient = new QueryClient();
 
@@ -38,21 +41,22 @@ const App = () => (
             <Route element={<ProtectedRoute />}>
               <Route element={<DashboardLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
-                {/* Add more common dashboard routes here */}
+                <Route path="/dashboard/browse-perks" element={<BrowsePerks />} />
+                <Route path="/dashboard/my-redemptions" element={<MyRedemptions />} />
+              </Route>
+            </Route>
+            
+            {/* Protected routes for master_admin and company_admin */}
+            <Route element={<ProtectedRoute allowedRoles={['company_admin', 'master_admin']} />}>
+              <Route element={<DashboardLayout />}>
+                <Route path="/dashboard/perks" element={<ManagePerks />} />
               </Route>
             </Route>
             
             {/* Protected routes for master_admin only */}
             <Route element={<ProtectedRoute allowedRoles={['master_admin']} />}>
               <Route element={<DashboardLayout />}>
-                {/* Add master admin specific routes here */}
-              </Route>
-            </Route>
-            
-            {/* Protected routes for company admins */}
-            <Route element={<ProtectedRoute allowedRoles={['company_admin', 'master_admin']} />}>
-              <Route element={<DashboardLayout />}>
-                {/* Add company admin specific routes here */}
+                {/* Add more master admin specific routes here */}
               </Route>
             </Route>
             
