@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -167,7 +166,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, full_name: string, role: UserRole = 'employee') => {
     try {
       setLoading(true);
-      console.log("Attempting sign up for:", email);
+      console.log("Attempting sign up for:", email, "with role:", role);
       
       // 1. Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({ 
@@ -177,6 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
             full_name, // Include in user metadata to use in triggers/hooks
+            role, // Include role in metadata
           }
         }
       });
@@ -193,7 +193,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id: authData.user.id,
         email,
         full_name,
-        role,
+        role, // Store the role in the users table
       });
       
       if (profileError) {
@@ -201,7 +201,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw profileError;
       }
       
-      console.log("Profile created successfully");
+      console.log("Profile created successfully with role:", role);
       
       toast({
         title: "Account created!",

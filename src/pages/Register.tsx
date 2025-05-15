@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -13,16 +14,25 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import { UserRole } from '@/lib/supabase';
 
 const registerSchema = z.object({
   fullName: z.string().min(2, { message: 'Full name must be at least 2 characters' }),
   email: z.string().email({ message: 'Please enter a valid email address' }),
   password: z.string().min(8, { message: 'Password must be at least 8 characters' }),
   confirmPassword: z.string(),
+  role: z.enum(['employee', 'company_admin', 'master_admin'] as const),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -51,19 +61,20 @@ const Register = () => {
       email: '',
       password: '',
       confirmPassword: '',
+      role: 'employee',
     },
   });
   
   const onSubmit = async (values: RegisterFormValues) => {
     try {
       setIsSubmitting(true);
-      console.log("Form submitted, signing up...");
+      console.log("Form submitted, signing up...", values);
       
       const result = await signUp(
         values.email,
         values.password,
         values.fullName,
-        'employee' // Default role for self-registration
+        values.role // Now passing the selected role
       );
       
       if (result?.error) {
@@ -195,6 +206,29 @@ const Register = () => {
                     <FormControl>
                       <Input type="password" placeholder="••••••••" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Account Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select your role" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="employee">End User</SelectItem>
+                        <SelectItem value="company_admin">Organization Admin</SelectItem>
+                        <SelectItem value="master_admin">Master Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

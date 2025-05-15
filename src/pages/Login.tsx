@@ -59,6 +59,7 @@ const Login = () => {
         });
       } else {
         console.log("Login successful, redirect will happen via auth state change");
+        // The redirect happens automatically through the auth state change handler in AuthContext
       }
     } catch (error: any) {
       console.error('Login error:', error);
