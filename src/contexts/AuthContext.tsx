@@ -95,7 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('users')
         .select('*')
         .eq('id', userId)
-        .maybeSingle();  // Changed from .single() to .maybeSingle() to handle no rows gracefully
+        .maybeSingle();  // Use maybeSingle() to handle no rows gracefully
         
       if (error) {
         console.error('Error fetching user data:', error);
@@ -246,20 +246,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       console.log("Auth signup successful, creating profile:", authData.user.id);
       
-      // 2. Create profile in users table
-      const { error: profileError } = await supabase.from('users').insert({
-        id: authData.user.id,
-        email,
-        full_name,
-        role,
-      });
-      
-      if (profileError) {
-        console.error('Profile creation error:', profileError);
-        throw profileError;
-      }
-      
-      console.log("Profile created successfully with role:", role);
+      // The user record will be created by the fetchUserData function when the auth state changes
+      // We don't need to manually create it here anymore
       
       toast({
         title: "Account created!",
