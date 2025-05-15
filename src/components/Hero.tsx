@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useRotatingText } from "@/hooks/useRotatingText";
 import { Percent, ShoppingBag, CreditCard } from "lucide-react";
@@ -71,8 +70,7 @@ const Hero = () => {
                 <div className="bg-[#da7756] h-32 rounded-lg mb-6 flex items-center justify-center text-white">
                   <div className="text-center">
                     <div className="flex justify-center items-center mb-2">
-                      <Percent className="h-10 w-10 mr-2" />
-                      <span className="text-4xl font-bold">30</span>
+                      <span className="text-4xl font-bold">20</span>
                     </div>
                     <p className="text-xl">SAVED ON PURCHASES</p>
                   </div>
