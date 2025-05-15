@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -63,16 +63,6 @@ const App = () => (
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-          
-          {/* Quick access dashboard link */}
-          <div className="fixed bottom-4 right-4 z-50">
-            <Link 
-              to="/dashboard" 
-              className="bg-[#da7756] text-white px-4 py-2 rounded-full shadow-lg hover:bg-[#c56a4b] transition-colors"
-            >
-              Go to Dashboard
-            </Link>
-          </div>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
