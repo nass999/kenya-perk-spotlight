@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/form';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from '@/components/ui/use-toast';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -31,6 +32,7 @@ const Login = () => {
   React.useEffect(() => {
     // If user is already authenticated, redirect to dashboard
     if (authState.user && !authState.loading) {
+      console.log("User authenticated, redirecting to dashboard", authState.user);
       navigate('/dashboard');
     }
   }, [authState.user, authState.loading, navigate]);
@@ -45,10 +47,23 @@ const Login = () => {
   
   const onSubmit = async (values: LoginFormValues) => {
     try {
-      await signIn(values.email, values.password);
-      // Redirect will happen automatically via the useEffect above when authState updates
-    } catch (error) {
+      const result = await signIn(values.email, values.password);
+      console.log("Sign in result:", result);
+      // The redirect will happen via the useEffect when authState updates
+      if (result?.error) {
+        toast({
+          variant: "destructive",
+          title: "Login failed",
+          description: result.error.message || "Please check your credentials and try again."
+        });
+      }
+    } catch (error: any) {
       console.error('Login error:', error);
+      toast({
+        variant: "destructive",
+        title: "Login failed",
+        description: error.message || "An unexpected error occurred. Please try again."
+      });
     }
   };
   

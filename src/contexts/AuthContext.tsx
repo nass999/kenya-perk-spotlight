@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -7,7 +6,7 @@ import { toast } from '@/components/ui/use-toast';
 
 interface AuthContextProps {
   authState: AuthState;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<{error?: Error} | undefined>;
   signUp: (email: string, password: string, full_name: string, role?: UserRole) => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
@@ -15,7 +14,7 @@ interface AuthContextProps {
 
 const AuthContext = createContext<AuthContextProps>({
   authState: { user: null, session: null, loading: true },
-  signIn: async () => {},
+  signIn: async () => undefined,
   signUp: async () => {},
   signOut: async () => {},
   loading: true,
@@ -59,6 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("Auth state change:", event, session?.user?.id);
         if (session && (event === 'SIGNED_IN' || event === 'USER_UPDATED')) {
           await fetchUserData(session.user.id);
         } else if (event === 'SIGNED_OUT') {
@@ -75,6 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const fetchUserData = async (userId: string) => {
     try {
+      console.log("Fetching user data for:", userId);
       const { data, error } = await supabase
         .from('users')
         .select('*')
@@ -87,6 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
       
+      console.log("User data fetched:", data);
       const userData: UserData = {
         id: data.id,
         email: data.email,
@@ -112,16 +114,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Sign in error:', error);
+        return { error };
+      }
       
       toast({
         title: "Welcome back!",
         description: "You've successfully signed in.",
       });
       
-      navigate('/dashboard');
+      // Fetching user data will be done by the auth state change listener
+      return data;
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -129,6 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: error.message || "Please check your credentials and try again.",
       });
       console.error('Sign in error:', error);
+      return { error };
     } finally {
       setLoading(false);
     }
