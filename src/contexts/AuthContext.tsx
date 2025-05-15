@@ -6,7 +6,7 @@ import { toast } from '@/components/ui/use-toast';
 
 interface AuthContextProps {
   authState: AuthState;
-  signIn: (email: string, password: string) => Promise<{error?: Error} | undefined>;
+  signIn: (email: string, password: string) => Promise<{data?: any, error?: any}>;
   signUp: (email: string, password: string, full_name: string, role?: UserRole) => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
@@ -14,7 +14,7 @@ interface AuthContextProps {
 
 const AuthContext = createContext<AuthContextProps>({
   authState: { user: null, session: null, loading: true },
-  signIn: async () => undefined,
+  signIn: async () => ({ data: null }),
   signUp: async () => {},
   signOut: async () => {},
   loading: true,
@@ -127,7 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       // Fetching user data will be done by the auth state change listener
-      return data;
+      return { data };
     } catch (error: any) {
       toast({
         variant: "destructive",
