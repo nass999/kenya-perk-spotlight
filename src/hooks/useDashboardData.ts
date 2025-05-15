@@ -12,6 +12,7 @@ export const useDashboardData = () => {
     redeemedPerks: 0,
     companies: 0,
     users: 0,
+    totalSavings: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,8 +39,9 @@ export const useDashboardData = () => {
             redeemedPerks: 0, // Would need another query
             companies: companiesResult.count || 0,
             users: usersResult.count || 0,
+            totalSavings: 0,
           });
-        } else if (authState.user.role === 'company_admin') {
+        } else if (authState.user?.role === 'company_admin') {
           // Company admin sees company stats
           const [companyPerksResult, companyUsersResult, redeemedPerksResult] = await Promise.all([
             supabase
@@ -62,6 +64,7 @@ export const useDashboardData = () => {
             redeemedPerks: redeemedPerksResult.count || 0,
             companies: 1,
             users: companyUsersResult.count || 0,
+            totalSavings: 0,
           });
         } else {
           // Employee sees personal stats
@@ -76,12 +79,17 @@ export const useDashboardData = () => {
             .select('*', { count: 'exact' })
             .or(`company_id.eq.${authState.user.company_id},company_id.is.null`);
           
+          // Calculate estimated savings (placeholder calculation - in a real app you'd use actual redemption values)
+          // For now we'll just use 100 as a base value per redemption
+          const estimatedSavings = (userRedemptionsResult.count || 0) * 100;
+          
           setStats({
             totalPerks: availablePerksResult.count || 0,
             availablePerks: availablePerksResult.count || 0,
             redeemedPerks: userRedemptionsResult.count || 0,
             companies: 0,
             users: 0,
+            totalSavings: estimatedSavings,
           });
         }
       } catch (err) {

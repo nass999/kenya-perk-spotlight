@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      perks: {
+        Row: {
+          category: string | null
+          company_id: string | null
+          created_at: string
+          description: string
+          discount_amount: number
+          discount_type: string
+          expiry_date: string | null
+          id: string
+          image_url: string | null
+          name: string
+          redemption_code: string | null
+          terms_conditions: string | null
+        }
+        Insert: {
+          category?: string | null
+          company_id?: string | null
+          created_at?: string
+          description: string
+          discount_amount: number
+          discount_type: string
+          expiry_date?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          redemption_code?: string | null
+          terms_conditions?: string | null
+        }
+        Update: {
+          category?: string | null
+          company_id?: string | null
+          created_at?: string
+          description?: string
+          discount_amount?: number
+          discount_type?: string
+          expiry_date?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          redemption_code?: string | null
+          terms_conditions?: string | null
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           company_id: string | null

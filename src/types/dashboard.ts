@@ -5,4 +5,5 @@ export interface DashboardStats {
   redeemedPerks: number;
   companies: number;
   users: number;
+  totalSavings: number;
 }
