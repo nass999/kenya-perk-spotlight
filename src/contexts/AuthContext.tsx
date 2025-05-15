@@ -1,7 +1,8 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase, AuthState, UserData, UserRole } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
+import { AuthState, UserData, UserRole } from '@/lib/supabase';
 import { toast } from '@/components/ui/use-toast';
 
 interface AuthContextProps {
@@ -111,16 +112,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       
-      if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
-        toast({
-          variant: "destructive",
-          title: "Configuration Error",
-          description: "Supabase configuration is missing. Please connect to Supabase first.",
-        });
-        console.error("Missing Supabase configuration. Please connect your project to Supabase.");
-        return;
-      }
-      
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) throw error;
@@ -146,16 +137,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, full_name: string, role: UserRole = 'employee') => {
     try {
       setLoading(true);
-      
-      if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
-        toast({
-          variant: "destructive",
-          title: "Configuration Error",
-          description: "Supabase configuration is missing. Please connect to Supabase first.",
-        });
-        console.error("Missing Supabase configuration. Please connect your project to Supabase.");
-        return;
-      }
       
       // 1. Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({ 

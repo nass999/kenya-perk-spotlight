@@ -1,5 +1,6 @@
 
 import { createClient } from '@supabase/supabase-js';
+import { supabase as supabaseClient } from '@/integrations/supabase/client';
 
 // Types for our database
 export type Database = {
@@ -138,19 +139,8 @@ export type Database = {
   };
 };
 
-// This creates a placeholder Supabase client with dummy values when env vars aren't available
-// When connected to real Supabase, these values will be replaced with actual ones
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder-url.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key';
-
-// Check if environment variables are available and log a message if they're not
-if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
-  console.warn(
-    'Supabase environment variables are missing. Please connect your project to Supabase using the Supabase button in the top right corner.'
-  );
-}
-
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+// Export the supabase client from the integrations folder
+export const supabase = supabaseClient;
 
 // Auth types
 export type UserRole = 'master_admin' | 'company_admin' | 'employee';

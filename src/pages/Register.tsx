@@ -16,8 +16,7 @@ import {
 } from '@/components/ui/form';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { CheckCircle, AlertCircle } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 
 const registerSchema = z.object({
   fullName: z.string().min(2, { message: 'Full name must be at least 2 characters' }),
@@ -55,11 +54,6 @@ const Register = () => {
     setIsSuccess(true);
   };
   
-  const isSupabaseConfigured = Boolean(
-    import.meta.env.VITE_SUPABASE_URL && 
-    import.meta.env.VITE_SUPABASE_ANON_KEY
-  );
-  
   if (isSuccess) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -96,16 +90,6 @@ const Register = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {!isSupabaseConfigured && (
-            <Alert variant="destructive" className="mb-6">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Supabase Configuration Missing</AlertTitle>
-              <AlertDescription>
-                Please connect this project to Supabase using the green button in the top right corner.
-              </AlertDescription>
-            </Alert>
-          )}
-          
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -167,7 +151,7 @@ const Register = () => {
               <Button 
                 type="submit" 
                 className="w-full bg-[#da7756]" 
-                disabled={loading || !isSupabaseConfigured}
+                disabled={loading}
               >
                 {loading ? 'Creating account...' : 'Create Account'}
               </Button>
