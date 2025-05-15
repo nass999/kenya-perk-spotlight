@@ -1,5 +1,6 @@
 
 import { Facebook, Twitter, Linkedin, Instagram, Mail, Phone, MapPin } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -9,7 +10,7 @@ const Footer = () => {
           <div>
             <div className="mb-4">
               <a href="/" className="font-bold text-2xl">
-                Africarewards<span className="text-kneutral-400">network</span>
+                Africa<span className="text-black">rewards</span><span className="text-kneutral-400">network</span>
               </a>
             </div>
             <p className="text-kneutral-300 mb-6">
@@ -39,6 +40,7 @@ const Footer = () => {
               <li><a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">SME Solutions</a></li>
               <li><a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">Enterprise Solutions</a></li>
               <li><a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">Case Studies</a></li>
+              <li><a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">API <span className="bg-kneutral-700 text-kneutral-300 text-xs px-2 py-1 rounded ml-2">Coming Soon</span></a></li>
             </ul>
           </div>
 
@@ -47,6 +49,7 @@ const Footer = () => {
             <ul className="space-y-3">
               <li><a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">About Us</a></li>
               <li><a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">Careers</a></li>
+              <li><Link to="/pricing" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">Pricing</Link></li>
               <li><a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">Blog</a></li>
               <li><a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">Press</a></li>
               <li><a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">Partners</a></li>

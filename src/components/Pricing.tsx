@@ -4,37 +4,23 @@ import { Check } from "lucide-react";
 
 const pricingPlans = [
   {
-    name: "Essential",
-    price: "KSh 15,000",
-    description: "Perfect for small businesses with up to 50 employees",
+    name: "Free",
+    price: "KSh 0",
+    description: "Perfect for small teams of 10 users or less",
     features: [
-      "Access to 500+ partners",
+      "Access to 50+ partners",
       "Basic analytics dashboard",
       "Email support",
       "Employee onboarding",
       "Monthly usage reports"
     ],
-    highlighted: false
-  },
-  {
-    name: "Business",
-    price: "KSh 30,000",
-    description: "For growing companies with up to 200 employees",
-    features: [
-      "Access to 1000+ partners",
-      "Advanced analytics dashboard",
-      "Priority support",
-      "Custom onboarding",
-      "Weekly usage reports",
-      "HR admin dashboard",
-      "Custom branding"
-    ],
-    highlighted: true
+    highlighted: false,
+    userLimit: "Up to 10 users"
   },
   {
     name: "Enterprise",
     price: "Contact us",
-    description: "Tailored solutions for large organizations",
+    description: "Tailored solutions for larger teams and organizations",
     features: [
       "Access to all partners",
       "Enterprise analytics",
@@ -45,7 +31,8 @@ const pricingPlans = [
       "API access",
       "Custom perks"
     ],
-    highlighted: false
+    highlighted: true,
+    userLimit: "Unlimited users"
   }
 ];
 
@@ -58,11 +45,11 @@ const Pricing = () => {
             Simple, <span className="text-gradient">Transparent</span> Pricing
           </h2>
           <p className="text-kneutral-600 text-lg max-w-2xl mx-auto">
-            Choose the plan that works for your business, with pricing that scales as you grow.
+            Choose the plan that works for your business, no hidden fees.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {pricingPlans.map((plan, index) => (
             <div 
               key={index}
@@ -82,6 +69,7 @@ const Pricing = () => {
                   {plan.price !== "Contact us" && <span className="text-kneutral-500"> /month</span>}
                 </div>
                 <p className="text-kneutral-600 text-sm">{plan.description}</p>
+                <p className="text-kneutral-500 text-sm mt-2 font-medium">{plan.userLimit}</p>
               </div>
               
               <div className="flex-grow">

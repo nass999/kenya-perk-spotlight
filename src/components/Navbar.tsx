@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -11,7 +12,7 @@ const Navbar = () => {
       <div className="container mx-auto flex items-center justify-between p-4">
         <div className="flex items-center">
           <a href="/" className="flex items-center gap-2">
-            <span className="font-bold text-2xl text-gradient">Africarewards<span className="text-[#da7756]">network</span></span>
+            <span className="font-bold text-2xl text-gradient">Africa<span className="text-black">rewards</span><span className="text-[#da7756]">network</span></span>
           </a>
         </div>
 
@@ -19,6 +20,7 @@ const Navbar = () => {
         <nav className="hidden md:flex items-center gap-6">
           <a href="#features" className="text-[#3d3929] hover:text-[#da7756] font-medium transition-colors">Features</a>
           <a href="#partners" className="text-[#3d3929] hover:text-[#da7756] font-medium transition-colors">Partners</a>
+          <Link to="/pricing" className="text-[#3d3929] hover:text-[#da7756] font-medium transition-colors">Pricing</Link>
           <a href="#testimonials" className="text-[#3d3929] hover:text-[#da7756] font-medium transition-colors">Testimonials</a>
         </nav>
 
@@ -58,6 +60,13 @@ const Navbar = () => {
             >
               Partners
             </a>
+            <Link
+              to="/pricing"
+              className="text-[#3d3929] hover:text-[#da7756] font-medium py-2 transition-colors"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Pricing
+            </Link>
             <a 
               href="#testimonials" 
               className="text-[#3d3929] hover:text-[#da7756] font-medium py-2 transition-colors"

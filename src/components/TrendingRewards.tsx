@@ -76,7 +76,6 @@ const TrendingRewards = () => {
                     
                     <div className="mt-auto pt-4">
                       <div className="flex items-center gap-2">
-                        <Percent className="h-4 w-4 text-[#da7756]" />
                         <span className="text-[#bd5d3a] font-medium">{reward.discount} purchases</span>
                       </div>
                       <p className="text-sm text-[#3d3929] mt-1">Valid until end of {reward.validUntil}</p>
