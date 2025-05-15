@@ -4,9 +4,17 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import PricingPage from "./pages/PricingPage";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import AuthCallback from "./pages/AuthCallback";
+import Dashboard from "./pages/Dashboard";
+import DashboardLayout from "./components/DashboardLayout";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Unauthorized from "./pages/Unauthorized";
 
 const queryClient = new QueryClient();
 
@@ -16,12 +24,42 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/pricing" element={<PricingPage />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/unauthorized" element={<Unauthorized />} />
+            
+            {/* Protected routes for all authenticated users */}
+            <Route element={<ProtectedRoute />}>
+              <Route element={<DashboardLayout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                {/* Add more common dashboard routes here */}
+              </Route>
+            </Route>
+            
+            {/* Protected routes for master_admin only */}
+            <Route element={<ProtectedRoute allowedRoles={['master_admin']} />}>
+              <Route element={<DashboardLayout />}>
+                {/* Add master admin specific routes here */}
+              </Route>
+            </Route>
+            
+            {/* Protected routes for company admins */}
+            <Route element={<ProtectedRoute allowedRoles={['company_admin', 'master_admin']} />}>
+              <Route element={<DashboardLayout />}>
+                {/* Add company admin specific routes here */}
+              </Route>
+            </Route>
+            
+            {/* Catch-all route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
