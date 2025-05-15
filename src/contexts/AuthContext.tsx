@@ -34,16 +34,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Check for active session on load
     const checkSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error('Error fetching session:', error);
-        return;
-      }
-      
-      if (session) {
-        await fetchUserData(session.user.id);
-      } else {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error fetching session:', error);
+          return;
+        }
+        
+        if (session) {
+          await fetchUserData(session.user.id);
+        } else {
+          setAuthState(prev => ({ ...prev, loading: false }));
+        }
+      } catch (error) {
+        console.error('Session check error:', error);
         setAuthState(prev => ({ ...prev, loading: false }));
       }
     };
@@ -68,38 +73,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [navigate]);
   
   const fetchUserData = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+        
+      if (error || !data) {
+        console.error('Error fetching user data:', error);
+        setAuthState(prev => ({ ...prev, loading: false }));
+        return;
+      }
       
-    if (error || !data) {
-      console.error('Error fetching user data:', error);
+      const userData: UserData = {
+        id: data.id,
+        email: data.email,
+        role: data.role,
+        full_name: data.full_name,
+        company_id: data.company_id
+      };
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      setAuthState({
+        user: userData,
+        session,
+        loading: false
+      });
+    } catch (error) {
+      console.error('Fetch user data error:', error);
       setAuthState(prev => ({ ...prev, loading: false }));
-      return;
     }
-    
-    const userData: UserData = {
-      id: data.id,
-      email: data.email,
-      role: data.role,
-      full_name: data.full_name,
-      company_id: data.company_id
-    };
-    
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    setAuthState({
-      user: userData,
-      session,
-      loading: false
-    });
   };
   
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
+      
+      if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+        toast({
+          variant: "destructive",
+          title: "Configuration Error",
+          description: "Supabase configuration is missing. Please connect to Supabase first.",
+        });
+        console.error("Missing Supabase configuration. Please connect your project to Supabase.");
+        return;
+      }
+      
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) throw error;
@@ -125,6 +146,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, full_name: string, role: UserRole = 'employee') => {
     try {
       setLoading(true);
+      
+      if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+        toast({
+          variant: "destructive",
+          title: "Configuration Error",
+          description: "Supabase configuration is missing. Please connect to Supabase first.",
+        });
+        console.error("Missing Supabase configuration. Please connect your project to Supabase.");
+        return;
+      }
       
       // 1. Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({ 

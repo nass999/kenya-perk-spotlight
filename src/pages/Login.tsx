@@ -16,6 +16,8 @@ import {
 } from '@/components/ui/form';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -39,6 +41,11 @@ const Login = () => {
     await signIn(values.email, values.password);
   };
   
+  const isSupabaseConfigured = Boolean(
+    import.meta.env.VITE_SUPABASE_URL && 
+    import.meta.env.VITE_SUPABASE_ANON_KEY
+  );
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md">
@@ -49,6 +56,16 @@ const Login = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {!isSupabaseConfigured && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Supabase Configuration Missing</AlertTitle>
+              <AlertDescription>
+                Please connect this project to Supabase using the green button in the top right corner.
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -79,7 +96,11 @@ const Login = () => {
                 )}
               />
               
-              <Button type="submit" className="w-full bg-[#da7756]" disabled={loading}>
+              <Button 
+                type="submit" 
+                className="w-full bg-[#da7756]" 
+                disabled={loading || !isSupabaseConfigured}
+              >
                 {loading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
