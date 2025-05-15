@@ -58,7 +58,8 @@ const MyRedemptions = () => {
           
         if (error) throw error;
         
-        setRedemptions(data as Redemption[] || []);
+        // Fix the type issue by explicitly casting to the correct type
+        setRedemptions((data || []) as unknown as Redemption[]);
       } catch (error) {
         console.error('Error fetching redemptions:', error);
         toast({
@@ -202,6 +203,45 @@ const MyRedemptions = () => {
       )}
     </div>
   );
+};
+
+// Add these missing functions
+const copyRedemptionCode = (code: string) => {
+  navigator.clipboard.writeText(code);
+  toast({
+    title: "Code copied",
+    description: "Redemption code copied to clipboard",
+  });
+};
+
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case 'redeemed':
+      return <CheckCircle className="h-5 w-5 text-green-500" />;
+    case 'expired':
+      return <AlertCircle className="h-5 w-5 text-red-500" />;
+    default:
+      return <Clock className="h-5 w-5 text-yellow-500" />;
+  }
+};
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'redeemed':
+      return 'bg-green-100 text-green-800 border-green-200';
+    case 'expired':
+      return 'bg-red-100 text-red-800 border-red-200';
+    default:
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+  }
+};
+
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
 };
 
 export default MyRedemptions;

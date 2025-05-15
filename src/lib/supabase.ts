@@ -138,9 +138,17 @@ export type Database = {
   };
 };
 
-// Create Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+// This creates a placeholder Supabase client with dummy values when env vars aren't available
+// When connected to real Supabase, these values will be replaced with actual ones
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder-url.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key';
+
+// Check if environment variables are available and log a message if they're not
+if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+  console.warn(
+    'Supabase environment variables are missing. Please connect your project to Supabase using the Supabase button in the top right corner.'
+  );
+}
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
