@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -25,7 +25,15 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
-  const { signIn, loading } = useAuth();
+  const { signIn, loading, authState } = useAuth();
+  const navigate = useNavigate();
+  
+  React.useEffect(() => {
+    // If user is already authenticated, redirect to dashboard
+    if (authState.user && !authState.loading) {
+      navigate('/dashboard');
+    }
+  }, [authState.user, authState.loading, navigate]);
   
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -36,7 +44,12 @@ const Login = () => {
   });
   
   const onSubmit = async (values: LoginFormValues) => {
-    await signIn(values.email, values.password);
+    try {
+      await signIn(values.email, values.password);
+      // Redirect will happen automatically via the useEffect above when authState updates
+    } catch (error) {
+      console.error('Login error:', error);
+    }
   };
   
   return (
