@@ -3,27 +3,98 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Badge } from "@/components/ui/badge";
-import { Percent, TrendingUp } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 
 interface Reward {
   id: number;
   name: string;
+  logo: string;
   discount: string;
   validUntil: string;
   category: string;
 }
 
 const rewards: Reward[] = [
-  { id: 1, name: "Naivas", discount: "10% off", validUntil: "May", category: "Grocery" },
-  { id: 2, name: "Quickmart", discount: "15% off", validUntil: "June", category: "Grocery" },
-  { id: 3, name: "Chandarana", discount: "5% off", validUntil: "May", category: "Grocery" },
-  { id: 4, name: "Carrefour", discount: "20% off", validUntil: "July", category: "Retail" },
-  { id: 5, name: "Tuskys", discount: "8% off", validUntil: "August", category: "Grocery" },
-  { id: 6, name: "Eastmatt", discount: "12% off", validUntil: "May", category: "Retail" },
-  { id: 7, name: "Text Book Centre", discount: "25% off", validUntil: "June", category: "Books" },
-  { id: 8, name: "Safaricom Shops", discount: "7% off", validUntil: "July", category: "Telecom" },
-  { id: 9, name: "House of Leather", discount: "30% off", validUntil: "May", category: "Fashion" },
-  { id: 10, name: "Jumia", discount: "18% off", validUntil: "August", category: "E-commerce" },
+  { 
+    id: 1, 
+    name: "Naivas", 
+    logo: "https://pbs.twimg.com/profile_images/1488850989034569728/LiCr8xoe_400x400.jpg", 
+    discount: "10% off", 
+    validUntil: "May", 
+    category: "Grocery" 
+  },
+  { 
+    id: 2, 
+    name: "Quickmart", 
+    logo: "https://quickmart.co.ke/wp-content/uploads/2021/09/quickmart-logo.jpg", 
+    discount: "15% off", 
+    validUntil: "June", 
+    category: "Grocery" 
+  },
+  { 
+    id: 3, 
+    name: "Chandarana", 
+    logo: "https://pbs.twimg.com/profile_images/937606597337890816/MQRrADh8_400x400.jpg", 
+    discount: "5% off", 
+    validUntil: "May", 
+    category: "Grocery" 
+  },
+  { 
+    id: 4, 
+    name: "Carrefour", 
+    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Carrefour_logo.svg/640px-Carrefour_logo.svg.png", 
+    discount: "20% off", 
+    validUntil: "July", 
+    category: "Retail" 
+  },
+  { 
+    id: 5, 
+    name: "Java House", 
+    logo: "https://pbs.twimg.com/profile_images/1503643575754248194/STisl_CZ_400x400.jpg", 
+    discount: "8% off", 
+    validUntil: "August", 
+    category: "Restaurant" 
+  },
+  { 
+    id: 6, 
+    name: "Artcaffe", 
+    logo: "https://pbs.twimg.com/profile_images/1376425172899639298/2MQyPHEl_400x400.jpg", 
+    discount: "12% off", 
+    validUntil: "May", 
+    category: "Restaurant" 
+  },
+  { 
+    id: 7, 
+    name: "Text Book Centre", 
+    logo: "https://pbs.twimg.com/profile_images/1110497364249788416/PIC6n7M3_400x400.png", 
+    discount: "25% off", 
+    validUntil: "June", 
+    category: "Books" 
+  },
+  { 
+    id: 8, 
+    name: "Safaricom", 
+    logo: "https://pbs.twimg.com/profile_images/1584525132976283650/HKfPb-qa_400x400.jpg", 
+    discount: "7% off", 
+    validUntil: "July", 
+    category: "Telecom" 
+  },
+  { 
+    id: 9, 
+    name: "House of Leather", 
+    logo: "https://houseofleather.co.ke/wp-content/uploads/2020/09/house-of-leather-logo1.png", 
+    discount: "30% off", 
+    validUntil: "May", 
+    category: "Fashion" 
+  },
+  { 
+    id: 10, 
+    name: "Jumia", 
+    logo: "https://pbs.twimg.com/profile_images/1592143565116108801/IJq6yWZK_400x400.jpg", 
+    discount: "18% off", 
+    validUntil: "August", 
+    category: "E-commerce" 
+  },
 ];
 
 const TrendingRewards = () => {
@@ -72,7 +143,21 @@ const TrendingRewards = () => {
                       </Badge>
                     </div>
                     
-                    <h3 className="text-xl font-bold text-[#3d3929] mb-2">{reward.name}</h3>
+                    <div className="flex items-center mb-4">
+                      <div className="w-12 h-12 overflow-hidden mr-3 flex-shrink-0">
+                        <img 
+                          src={reward.logo} 
+                          alt={`${reward.name} logo`} 
+                          className="w-full h-full object-contain"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.onerror = null;
+                            target.src = "https://via.placeholder.com/100?text=" + reward.name;
+                          }}
+                        />
+                      </div>
+                      <h3 className="text-xl font-bold text-[#3d3929]">{reward.name}</h3>
+                    </div>
                     
                     <div className="mt-auto pt-4">
                       <div className="flex items-center gap-2">

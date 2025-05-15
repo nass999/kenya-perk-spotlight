@@ -1,6 +1,7 @@
+
 import { Button } from "@/components/ui/button";
 import { useRotatingText } from "@/hooks/useRotatingText";
-import { Percent, ShoppingBag, CreditCard } from "lucide-react";
+import { ShoppingBag, CreditCard } from "lucide-react";
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -69,8 +70,11 @@ const Hero = () => {
               <div className="bg-white shadow-xl rounded-xl p-6 border border-[#e6e4d2] relative">
                 <div className="bg-[#da7756] h-32 rounded-lg mb-6 flex items-center justify-center text-white">
                   <div className="text-center">
-                    <div className="flex justify-center items-center mb-2">
-                      <span className="text-4xl font-bold">20</span>
+                    <div className="text-center mb-2">
+                      <p className="text-lg font-medium mb-1">Hi Murungi, here is your summary</p>
+                      <div className="flex justify-center items-center">
+                        <span className="text-4xl font-bold">20%</span>
+                      </div>
                     </div>
                     <p className="text-xl">SAVED ON PURCHASES</p>
                   </div>
