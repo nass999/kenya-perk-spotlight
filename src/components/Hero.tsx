@@ -30,13 +30,13 @@ const Hero = () => {
         <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
           <div className="flex-1 text-center lg:text-left animate-fade-in">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-[#3d3929]">
-              Exclusive Employee <span className="text-gradient">Benefits</span> for <span className="text-gradient">African</span>{" "}
+              Exclusive Benefits</span> for <span className="text-gradient">African</span>{" "}
               <span className={`inline-block min-w-[180px] md:min-w-[240px] text-gradient ${isAnimating ? 'opacity-0 transform -translate-y-2' : 'opacity-100 transform translate-y-0'}`} style={{ transition: "all 0.5s ease-in-out" }}>
                 {currentText}
               </span>
             </h1>
             <p className="text-lg md:text-xl text-[#3d3929] mb-8 max-w-2xl mx-auto lg:mx-0">
-              Boost employee satisfaction and retention with Africa's leading discount platform. Offer your team exclusive perks and savings across 1000+ local and national brands.
+              Boost satisfaction and retention with Africa's leading discount platform. Offer your team exclusive perks and savings across 1000+ local and national brands.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Button 
@@ -72,7 +72,7 @@ const Hero = () => {
                   <div className="text-center">
                     <div className="flex justify-center items-center mb-2">
                       <Percent className="h-10 w-10 mr-2" />
-                      <span className="text-4xl font-bold">30%</span>
+                      <span className="text-4xl font-bold">30</span>
                     </div>
                     <p className="text-xl">SAVED ON PURCHASES</p>
                   </div>
@@ -82,16 +82,24 @@ const Hero = () => {
                     <ShoppingBag className="h-5 w-5 text-[#bd5d3a] mr-3" />
                     <span className="text-[#3d3929]">House of Leather - 30% off</span>
                   </div>
+                  <div className="h-12 bg-[#f8ece7] rounded-lg flex items-center px-4">
+                    <ShoppingBag className="h-5 w-5 text-[#bd5d3a] mr-3" />
+                    <span className="text-[#3d3929]">Java House - 15% off</span>
+                  </div>
+                  <div className="h-12 bg-[#f8ece7] rounded-lg flex items-center px-4">
+                    <ShoppingBag className="h-5 w-5 text-[#bd5d3a] mr-3" />
+                    <span className="text-[#3d3929]">Naivas Supermarket - 10% off</span>
+                  </div>
                   <div className="flex gap-4">
                     <div className="h-24 bg-[#f8ece7] rounded-lg flex-1 p-4 flex flex-col justify-center">
                       <CreditCard className="h-5 w-5 text-[#bd5d3a] mb-2" />
                       <span className="text-[#3d3929] font-medium">Your Savings</span>
-                      <span className="text-[#da7756] font-bold">KES 2,450</span>
+                      <span className="text-[#da7756] font-bold">KES 4,850</span>
                     </div>
                     <div className="h-24 bg-[#f8ece7] rounded-lg flex-1 p-4 flex flex-col justify-center">
                       <ShoppingBag className="h-5 w-5 text-[#bd5d3a] mb-2" />
                       <span className="text-[#3d3929] font-medium">Total Rewards</span>
-                      <span className="text-[#da7756] font-bold">45</span>
+                      <span className="text-[#da7756] font-bold">68</span>
                     </div>
                   </div>
                   <div className="h-12 bg-[#f8ece7] rounded-lg flex items-center justify-center">

@@ -1,6 +1,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { supabase as supabaseClient } from '@/integrations/supabase/client';
+import { Database as ImportedDatabase } from '@/integrations/supabase/types';
 
 // Types for our database
 export type Database = {
@@ -139,8 +140,8 @@ export type Database = {
   };
 };
 
-// Export the supabase client with typings
-export const supabase = supabaseClient as ReturnType<typeof createClient<Database>>;
+// Convert the imported database type to our format and export the supabase client
+export const supabase = supabaseClient as unknown as ReturnType<typeof createClient<Database>>;
 
 // Auth types
 export type UserRole = 'master_admin' | 'company_admin' | 'employee';
