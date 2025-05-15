@@ -59,16 +59,23 @@ export const useSupabaseUpload = ({
       const folderPrefix = folder ? `${folder}/` : '';
       const filePath = `${folderPrefix}${fileName}`;
       
-      // Upload file
+      // Define an upload progress handler for logging
+      const handleProgress = (event: ProgressEvent) => {
+        const percent = Math.round((event.loaded / event.total) * 100);
+        setProgress(percent);
+      };
+      
+      // Attach progress handler manually if needed
+      const progressListener = (xhr: XMLHttpRequest) => {
+        xhr.upload.addEventListener('progress', handleProgress);
+      };
+      
+      // Upload file - remove the onUploadProgress option as it's not supported
       const { error: uploadError, data } = await supabase.storage
         .from(bucket)
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: false,
-          onUploadProgress: (progress) => {
-            const percent = Math.round((progress.loaded / progress.total) * 100);
-            setProgress(percent);
-          }
+          upsert: false
         });
       
       if (uploadError) {
