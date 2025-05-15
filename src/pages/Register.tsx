@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -37,8 +36,8 @@ const Register = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const navigate = useNavigate();
   
+  // If user is already authenticated, redirect to dashboard
   useEffect(() => {
-    // If user is already authenticated, redirect to dashboard
     if (authState.user && !authState.loading) {
       console.log("User already authenticated, redirecting to dashboard");
       navigate('/dashboard');
@@ -74,20 +73,23 @@ const Register = () => {
           title: "Registration failed",
           description: result.error.message || "There was an error creating your account."
         });
+        setIsSubmitting(false);
         return;
       }
       
-      console.log("Registration successful, user should be redirected soon");
+      console.log("Registration successful, redirecting to dashboard");
       setIsSuccess(true);
       
-      // The auth state change listener in AuthContext will handle the redirect
-      // But as a fallback, we'll redirect after a short delay
+      // Immediate redirect attempt
+      navigate('/dashboard');
+      
+      // As a fallback, try again after a short delay
       setTimeout(() => {
-        if (document.location.pathname === '/register') {
-          console.log("Manual redirect to dashboard");
-          navigate('/dashboard');
+        if (window.location.pathname !== '/dashboard') {
+          console.log("Fallback redirect to dashboard");
+          navigate('/dashboard', { replace: true });
         }
-      }, 2000);
+      }, 1000);
       
     } catch (error: any) {
       console.error('Registration error:', error);
@@ -96,11 +98,11 @@ const Register = () => {
         title: "Registration failed",
         description: error.message || "An unexpected error occurred. Please try again."
       });
-    } finally {
       setIsSubmitting(false);
     }
   };
   
+  // Success UI is only shown briefly before redirection happens
   if (isSuccess) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -115,7 +117,7 @@ const Register = () => {
           <CardContent>
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600 mb-4">
-                You are being redirected to your dashboard...
+                Redirecting to your dashboard...
               </p>
               <Button 
                 className="bg-[#da7756]"
