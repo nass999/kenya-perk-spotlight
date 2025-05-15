@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -35,16 +36,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check for active session on load
     const checkSession = async () => {
       try {
+        console.log("Checking initial session...");
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('Error fetching session:', error);
+          setAuthState(prev => ({ ...prev, loading: false }));
           return;
         }
         
         if (session) {
+          console.log("Initial session found, fetching user data...");
           await fetchUserData(session.user.id);
         } else {
+          console.log("No initial session found");
           setAuthState(prev => ({ ...prev, loading: false }));
         }
       } catch (error) {
@@ -59,9 +64,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log("Auth state change:", event, session?.user?.id);
+        
         if (session && (event === 'SIGNED_IN' || event === 'USER_UPDATED')) {
+          console.log("User signed in or updated, fetching user data...");
           await fetchUserData(session.user.id);
+          
+          // Navigate to dashboard on sign in
+          if (event === 'SIGNED_IN') {
+            console.log("Navigating to dashboard after sign in");
+            navigate('/dashboard');
+          }
         } else if (event === 'SIGNED_OUT') {
+          console.log("User signed out, clearing auth state");
           setAuthState({ user: null, session: null, loading: false });
           navigate('/login');
         }
@@ -104,6 +118,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         session,
         loading: false
       });
+      
+      console.log("Auth state updated with user data:", userData);
     } catch (error) {
       console.error('Fetch user data error:', error);
       setAuthState(prev => ({ ...prev, loading: false }));
@@ -113,28 +129,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
+      console.log("Attempting sign in for:", email);
       
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
         console.error('Sign in error:', error);
+        toast({
+          variant: "destructive",
+          title: "Sign in failed",
+          description: error.message || "Please check your credentials and try again.",
+        });
         return { error };
       }
       
+      console.log("Sign in successful:", data.user.id);
       toast({
         title: "Welcome back!",
         description: "You've successfully signed in.",
       });
       
-      // Fetching user data will be done by the auth state change listener
+      // Don't need to wait for fetchUserData, the onAuthStateChange listener will handle this
       return { data };
     } catch (error: any) {
+      console.error('Sign in error:', error);
       toast({
         variant: "destructive",
         title: "Sign in failed",
         description: error.message || "Please check your credentials and try again.",
       });
-      console.error('Sign in error:', error);
       return { error };
     } finally {
       setLoading(false);

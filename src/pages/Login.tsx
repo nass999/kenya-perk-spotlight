@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -31,7 +32,7 @@ const Login = () => {
   React.useEffect(() => {
     // If user is already authenticated, redirect to dashboard
     if (authState.user && !authState.loading) {
-      console.log("User authenticated, redirecting to dashboard", authState.user);
+      console.log("User already authenticated, redirecting to dashboard", authState.user);
       navigate('/dashboard');
     }
   }, [authState.user, authState.loading, navigate]);
@@ -46,15 +47,18 @@ const Login = () => {
   
   const onSubmit = async (values: LoginFormValues) => {
     try {
+      console.log("Form submitted, signing in...");
       const result = await signIn(values.email, values.password);
-      console.log("Sign in result:", result);
-      // The redirect will happen via the useEffect when authState updates
+      
       if (result?.error) {
+        console.error("Login error:", result.error);
         toast({
           variant: "destructive",
           title: "Login failed",
           description: result.error.message || "Please check your credentials and try again."
         });
+      } else {
+        console.log("Login successful, redirect will happen via auth state change");
       }
     } catch (error: any) {
       console.error('Login error:', error);
