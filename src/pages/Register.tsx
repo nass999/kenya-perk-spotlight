@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -17,6 +17,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 const registerSchema = z.object({
   fullName: z.string().min(2, { message: 'Full name must be at least 2 characters' }),
@@ -31,8 +32,18 @@ const registerSchema = z.object({
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 const Register = () => {
-  const { signUp, loading } = useAuth();
+  const { signUp, loading, authState } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    // If user is already authenticated, redirect to dashboard
+    if (authState.user && !authState.loading) {
+      console.log("User already authenticated, redirecting to dashboard");
+      navigate('/dashboard');
+    }
+  }, [authState.user, authState.loading, navigate]);
   
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -45,13 +56,49 @@ const Register = () => {
   });
   
   const onSubmit = async (values: RegisterFormValues) => {
-    await signUp(
-      values.email,
-      values.password,
-      values.fullName,
-      'employee' // Default role for self-registration
-    );
-    setIsSuccess(true);
+    try {
+      setIsSubmitting(true);
+      console.log("Form submitted, signing up...");
+      
+      const result = await signUp(
+        values.email,
+        values.password,
+        values.fullName,
+        'employee' // Default role for self-registration
+      );
+      
+      if (result?.error) {
+        console.error("Registration error:", result.error);
+        toast({
+          variant: "destructive",
+          title: "Registration failed",
+          description: result.error.message || "There was an error creating your account."
+        });
+        return;
+      }
+      
+      console.log("Registration successful, user should be redirected soon");
+      setIsSuccess(true);
+      
+      // The auth state change listener in AuthContext will handle the redirect
+      // But as a fallback, we'll redirect after a short delay
+      setTimeout(() => {
+        if (document.location.pathname === '/register') {
+          console.log("Manual redirect to dashboard");
+          navigate('/dashboard');
+        }
+      }, 2000);
+      
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      toast({
+        variant: "destructive",
+        title: "Registration failed",
+        description: error.message || "An unexpected error occurred. Please try again."
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   if (isSuccess) {
@@ -62,17 +109,20 @@ const Register = () => {
             <CheckCircle className="mx-auto h-12 w-12 text-green-500 mb-4" />
             <CardTitle className="text-2xl font-bold">Registration Successful!</CardTitle>
             <CardDescription>
-              Please check your email to verify your account
+              Your account has been created
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600 mb-4">
-                Once verified, you can log in to access your rewards
+                You are being redirected to your dashboard...
               </p>
-              <Link to="/login">
-                <Button className="bg-[#da7756]">Go to Login</Button>
-              </Link>
+              <Button 
+                className="bg-[#da7756]"
+                onClick={() => navigate('/dashboard')}
+              >
+                Go to Dashboard
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -151,9 +201,9 @@ const Register = () => {
               <Button 
                 type="submit" 
                 className="w-full bg-[#da7756]" 
-                disabled={loading}
+                disabled={loading || isSubmitting}
               >
-                {loading ? 'Creating account...' : 'Create Account'}
+                {isSubmitting ? 'Creating account...' : 'Create Account'}
               </Button>
             </form>
           </Form>

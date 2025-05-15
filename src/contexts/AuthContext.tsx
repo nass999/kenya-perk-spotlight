@@ -8,7 +8,7 @@ import { toast } from '@/components/ui/use-toast';
 interface AuthContextProps {
   authState: AuthState;
   signIn: (email: string, password: string) => Promise<{data?: any, error?: any}>;
-  signUp: (email: string, password: string, full_name: string, role?: UserRole) => Promise<void>;
+  signUp: (email: string, password: string, full_name: string, role?: UserRole) => Promise<{data?: any, error?: any}>;
   signOut: () => Promise<void>;
   loading: boolean;
 }
@@ -16,7 +16,7 @@ interface AuthContextProps {
 const AuthContext = createContext<AuthContextProps>({
   authState: { user: null, session: null, loading: true },
   signIn: async () => ({ data: null }),
-  signUp: async () => {},
+  signUp: async () => ({ data: null }),
   signOut: async () => {},
   loading: true,
 });
@@ -167,17 +167,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, full_name: string, role: UserRole = 'employee') => {
     try {
       setLoading(true);
+      console.log("Attempting sign up for:", email);
       
       // 1. Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({ 
         email, 
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            full_name, // Include in user metadata to use in triggers/hooks
+          }
         }
       });
       
-      if (authError || !authData.user) throw authError;
+      if (authError || !authData.user) {
+        console.error('Auth signup error:', authError);
+        throw authError;
+      }
+      
+      console.log("Auth signup successful, creating profile:", authData.user.id);
       
       // 2. Create profile in users table
       const { error: profileError } = await supabase.from('users').insert({
@@ -187,20 +196,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role,
       });
       
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+        throw profileError;
+      }
+      
+      console.log("Profile created successfully");
       
       toast({
         title: "Account created!",
-        description: "Please check your email to verify your account.",
+        description: "You've been signed in automatically.",
       });
       
+      // The onAuthStateChange listener will handle session update and navigation
+      return { data: authData };
+      
     } catch (error: any) {
+      console.error('Sign up error:', error);
       toast({
         variant: "destructive",
         title: "Sign up failed",
         description: error.message || "There was an error creating your account.",
       });
-      console.error('Sign up error:', error);
+      return { error };
     } finally {
       setLoading(false);
     }
