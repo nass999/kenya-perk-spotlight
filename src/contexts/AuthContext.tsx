@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -89,36 +90,94 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchUserData = async (userId: string) => {
     try {
       console.log("Fetching user data for:", userId);
+      // First, check if the user exists in the users table
       const { data, error } = await supabase
         .from('users')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();  // Changed from .single() to .maybeSingle() to handle no rows gracefully
         
-      if (error || !data) {
+      if (error) {
         console.error('Error fetching user data:', error);
         setAuthState(prev => ({ ...prev, loading: false }));
         return;
       }
       
-      console.log("User data fetched:", data);
-      const userData: UserData = {
-        id: data.id,
-        email: data.email,
-        role: data.role,
-        full_name: data.full_name,
-        company_id: data.company_id
-      };
+      // If no user data found, we need to create the user record in our users table
+      if (!data) {
+        console.log("User not found in users table, creating new user record");
+        
+        // Fetch user details from auth.users (this requires service role, we'll use the auth user info instead)
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        
+        if (!authUser) {
+          console.error('Could not get authenticated user');
+          setAuthState(prev => ({ ...prev, loading: false }));
+          return;
+        }
+        
+        // Extract metadata from the auth user
+        const metadata = authUser.user_metadata as any;
+        const fullName = metadata?.full_name || 'User';
+        const role = (metadata?.role || 'employee') as UserRole;
+        
+        // Create the user profile
+        const { error: insertError, data: insertedUser } = await supabase
+          .from('users')
+          .insert({
+            id: userId,
+            email: authUser.email || '',
+            full_name: fullName,
+            role: role,
+          })
+          .select('*')
+          .single();
+        
+        if (insertError) {
+          console.error('Error creating user record:', insertError);
+          setAuthState(prev => ({ ...prev, loading: false }));
+          return;
+        }
+        
+        console.log("Created new user record:", insertedUser);
+        
+        // Use the inserted user data
+        const userData: UserData = {
+          id: insertedUser.id,
+          email: insertedUser.email,
+          role: insertedUser.role as UserRole,
+          full_name: insertedUser.full_name || '',
+          company_id: insertedUser.company_id
+        };
+        
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        setAuthState({
+          user: userData,
+          session,
+          loading: false
+        });
+      } else {
+        // User exists in the database, use that data
+        console.log("User data fetched:", data);
+        const userData: UserData = {
+          id: data.id,
+          email: data.email,
+          role: data.role as UserRole,
+          full_name: data.full_name || '',
+          company_id: data.company_id
+        };
+        
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        setAuthState({
+          user: userData,
+          session,
+          loading: false
+        });
+      }
       
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      setAuthState({
-        user: userData,
-        session,
-        loading: false
-      });
-      
-      console.log("Auth state updated with user data:", userData);
+      console.log("Auth state updated with user data");
     } catch (error) {
       console.error('Fetch user data error:', error);
       setAuthState(prev => ({ ...prev, loading: false }));
@@ -148,7 +207,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: "You've successfully signed in.",
       });
       
-      // Don't need to wait for fetchUserData, the onAuthStateChange listener will handle this
       return { data };
     } catch (error: any) {
       console.error('Sign in error:', error);
@@ -168,15 +226,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       console.log("Attempting sign up for:", email, "with role:", role);
       
-      // 1. Create auth user
+      // 1. Create auth user with metadata
       const { data: authData, error: authError } = await supabase.auth.signUp({ 
         email, 
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
-            full_name, // Include in user metadata to use in triggers/hooks
-            role, // Include role in metadata
+            full_name,
+            role,
           }
         }
       });
@@ -193,7 +251,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id: authData.user.id,
         email,
         full_name,
-        role, // Store the role in the users table
+        role,
       });
       
       if (profileError) {
@@ -208,9 +266,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: "You've been signed in automatically.",
       });
       
-      // The onAuthStateChange listener will handle session update and navigation
       return { data: authData };
-      
     } catch (error: any) {
       console.error('Sign up error:', error);
       toast({
