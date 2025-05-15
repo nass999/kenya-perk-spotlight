@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,6 +17,8 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { CheckCircle } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -27,9 +29,12 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
   const { signIn, loading, authState } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
   const navigate = useNavigate();
   
-  React.useEffect(() => {
+  useEffect(() => {
     // If user is already authenticated, redirect to dashboard
     if (authState.user && !authState.loading) {
       console.log("User already authenticated, redirecting to dashboard", authState.user);
@@ -47,29 +52,77 @@ const Login = () => {
   
   const onSubmit = async (values: LoginFormValues) => {
     try {
+      setIsSubmitting(true);
+      setLoginError(null);
       console.log("Form submitted, signing in...");
       const result = await signIn(values.email, values.password);
       
       if (result?.error) {
         console.error("Login error:", result.error);
+        setLoginError(result.error.message || "Please check your credentials and try again.");
         toast({
           variant: "destructive",
           title: "Login failed",
           description: result.error.message || "Please check your credentials and try again."
         });
-      } else {
-        console.log("Login successful, redirect will happen via auth state change");
-        // The redirect happens automatically through the auth state change handler in AuthContext
+        setIsSubmitting(false);
+        return;
       }
+      
+      console.log("Login successful, showing success state before redirect");
+      setIsSuccess(true);
+      toast({
+        title: "Login successful!",
+        description: "Welcome back to Africa Rewards Network!"
+      });
+      
+      // Short delay to show success state, then redirect will happen via auth state change
+      setTimeout(() => {
+        if (window.location.pathname !== '/dashboard') {
+          navigate('/dashboard');
+        }
+      }, 1500);
     } catch (error: any) {
       console.error('Login error:', error);
+      setLoginError(error.message || "An unexpected error occurred. Please try again.");
       toast({
         variant: "destructive",
         title: "Login failed",
         description: error.message || "An unexpected error occurred. Please try again."
       });
+      setIsSubmitting(false);
     }
   };
+  
+  // Success UI shown briefly before redirection
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CheckCircle className="mx-auto h-16 w-16 text-green-500 mb-4" />
+            <CardTitle className="text-2xl font-bold">Login Successful!</CardTitle>
+            <CardDescription className="text-lg">
+              Welcome back to Africa Rewards Network
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-600 mb-4">
+                Redirecting to your dashboard...
+              </p>
+              <Button 
+                className="bg-[#da7756] w-full"
+                onClick={() => navigate('/dashboard')}
+              >
+                Go to Dashboard Now
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -81,6 +134,13 @@ const Login = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {loginError && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertTitle>Login Error</AlertTitle>
+              <AlertDescription>{loginError}</AlertDescription>
+            </Alert>
+          )}
+          
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -114,9 +174,9 @@ const Login = () => {
               <Button 
                 type="submit" 
                 className="w-full bg-[#da7756]" 
-                disabled={loading}
+                disabled={loading || isSubmitting}
               >
-                {loading ? 'Signing in...' : 'Sign In'}
+                {isSubmitting ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
           </Form>

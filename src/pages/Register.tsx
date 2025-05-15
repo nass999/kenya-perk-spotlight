@@ -26,6 +26,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { CheckCircle } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { UserRole } from '@/lib/supabase';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const registerSchema = z.object({
   fullName: z.string().min(2, { message: 'Full name must be at least 2 characters' }),
@@ -44,6 +45,7 @@ const Register = () => {
   const { signUp, loading, authState } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [registrationError, setRegistrationError] = useState<string | null>(null);
   const navigate = useNavigate();
   
   // If user is already authenticated, redirect to dashboard
@@ -68,17 +70,19 @@ const Register = () => {
   const onSubmit = async (values: RegisterFormValues) => {
     try {
       setIsSubmitting(true);
+      setRegistrationError(null);
       console.log("Form submitted, signing up...", values);
       
       const result = await signUp(
         values.email,
         values.password,
         values.fullName,
-        values.role // Now passing the selected role
+        values.role // Passing the selected role
       );
       
       if (result?.error) {
         console.error("Registration error:", result.error);
+        setRegistrationError(result.error.message || "There was an error creating your account.");
         toast({
           variant: "destructive",
           title: "Registration failed",
@@ -88,22 +92,21 @@ const Register = () => {
         return;
       }
       
-      console.log("Registration successful, redirecting to dashboard");
+      console.log("Registration successful, showing success state before redirecting");
+      toast({
+        title: "Account created successfully!",
+        description: `Welcome to Africa Rewards Network, ${values.fullName}! You'll be redirected to your dashboard shortly.`,
+      });
       setIsSuccess(true);
       
-      // Immediate redirect attempt
-      navigate('/dashboard');
-      
-      // As a fallback, try again after a short delay
+      // Short delay before redirect to show the success message
       setTimeout(() => {
-        if (window.location.pathname !== '/dashboard') {
-          console.log("Fallback redirect to dashboard");
-          navigate('/dashboard', { replace: true });
-        }
-      }, 1000);
+        navigate('/dashboard');
+      }, 2000);
       
     } catch (error: any) {
       console.error('Registration error:', error);
+      setRegistrationError(error.message || "An unexpected error occurred. Please try again.");
       toast({
         variant: "destructive",
         title: "Registration failed",
@@ -113,28 +116,31 @@ const Register = () => {
     }
   };
   
-  // Success UI is only shown briefly before redirection happens
+  // Success UI shown before redirection happens
   if (isSuccess) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <CheckCircle className="mx-auto h-12 w-12 text-green-500 mb-4" />
+            <CheckCircle className="mx-auto h-16 w-16 text-green-500 mb-4" />
             <CardTitle className="text-2xl font-bold">Registration Successful!</CardTitle>
-            <CardDescription>
+            <CardDescription className="text-lg">
               Your account has been created
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="mt-6 text-center">
+            <div className="mt-6 text-center space-y-4">
+              <p className="text-md text-gray-700 mb-4">
+                Welcome to Africa Rewards Network!
+              </p>
               <p className="text-sm text-gray-600 mb-4">
                 Redirecting to your dashboard...
               </p>
               <Button 
-                className="bg-[#da7756]"
+                className="bg-[#da7756] w-full"
                 onClick={() => navigate('/dashboard')}
               >
-                Go to Dashboard
+                Go to Dashboard Now
               </Button>
             </div>
           </CardContent>
@@ -153,6 +159,13 @@ const Register = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {registrationError && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertTitle>Registration Error</AlertTitle>
+              <AlertDescription>{registrationError}</AlertDescription>
+            </Alert>
+          )}
+          
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
