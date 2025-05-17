@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { DashboardStats } from '@/types/dashboard';
+import { DashboardStats, VendorWithPerks } from '@/types/dashboard';
 
 export const useDashboardData = () => {
   const { authState } = useAuth();
@@ -14,6 +14,7 @@ export const useDashboardData = () => {
     users: 0,
     totalSavings: 0,
   });
+  const [activeVendors, setActiveVendors] = useState<VendorWithPerks[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,6 +33,30 @@ export const useDashboardData = () => {
             supabase.from('users').select('company_id', { count: 'exact' }).not('company_id', 'is', null).limit(1),
             supabase.from('users').select('*', { count: 'exact' }),
           ]);
+          
+          // Fetch vendors with active perks (for Master Admin)
+          const activeVendorsResult = await supabase
+            .from('perks')
+            .select('name')
+            .order('created_at', { ascending: false });
+          
+          // Process vendor data
+          const vendorsMap = new Map<string, number>();
+          if (activeVendorsResult.data) {
+            activeVendorsResult.data.forEach(perk => {
+              if (perk.name) {
+                const vendorName = perk.name.split(' ')[0]; // Simple extraction of vendor name
+                vendorsMap.set(vendorName, (vendorsMap.get(vendorName) || 0) + 1);
+              }
+            });
+          }
+          
+          const vendorsList: VendorWithPerks[] = Array.from(vendorsMap.entries())
+            .map(([name, perkCount]) => ({ name, perkCount }))
+            .sort((a, b) => b.perkCount - a.perkCount)
+            .slice(0, 10); // Top 10 vendors
+          
+          setActiveVendors(vendorsList);
           
           setStats({
             totalPerks: totalPerksResult.count || 0,
@@ -103,5 +128,5 @@ export const useDashboardData = () => {
     fetchDashboardData();
   }, [authState.user]);
 
-  return { stats, loading, error };
+  return { stats, activeVendors, loading, error };
 };

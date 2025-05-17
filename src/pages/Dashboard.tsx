@@ -10,7 +10,7 @@ import EmployeeDashboard from '@/components/dashboards/EmployeeDashboard';
 
 const Dashboard = () => {
   const { authState } = useAuth();
-  const { stats, loading, error } = useDashboardData();
+  const { stats, activeVendors, loading, error } = useDashboardData();
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -46,7 +46,7 @@ const Dashboard = () => {
   // Render different dashboards based on user role
   if (authState.user?.role === 'master_admin') {
     console.log("Rendering Master Admin Dashboard for user:", authState.user.email);
-    return <MasterAdminDashboard stats={stats} welcomeMessage={welcomeMessage} />;
+    return <MasterAdminDashboard stats={stats} welcomeMessage={welcomeMessage} activeVendors={activeVendors} />;
   } else if (authState.user?.role === 'company_admin') {
     console.log("Rendering Company Admin Dashboard for user:", authState.user.email);
     return <CompanyAdminDashboard stats={stats} welcomeMessage={welcomeMessage} />;

@@ -7,3 +7,9 @@ export interface DashboardStats {
   users: number;
   totalSavings: number;
 }
+
+export interface VendorWithPerks {
+  name: string;
+  perkCount: number;
+  category?: string;
+}

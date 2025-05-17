@@ -10,17 +10,27 @@ import {
   Zap, 
   TrendingUp,
   Award,
-  CheckCircle
+  CheckCircle,
+  Store
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { DashboardStats } from '@/types/dashboard';
+import { DashboardStats, VendorWithPerks } from '@/types/dashboard';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface MasterAdminDashboardProps {
   stats: DashboardStats;
   welcomeMessage: string;
+  activeVendors?: VendorWithPerks[];
 }
 
-const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welcomeMessage }) => {
+const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welcomeMessage, activeVendors = [] }) => {
   return (
     <div className="space-y-8">
       <div>
@@ -88,6 +98,45 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
             <p className="mt-2 text-xs text-gray-500">
               Total perk redemptions
             </p>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Active Vendors Table */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Vendors with Active Perks</h2>
+          <Button variant="outline" size="sm">
+            <Store className="mr-2 h-4 w-4" />
+            View All Vendors
+          </Button>
+        </div>
+        
+        <Card>
+          <CardContent className="pt-6">
+            {activeVendors.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Vendor Name</TableHead>
+                    <TableHead className="text-right">Active Perks</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {activeVendors.map((vendor, index) => (
+                    <TableRow key={index}>
+                      <TableCell className="font-medium">{vendor.name}</TableCell>
+                      <TableCell className="text-right">{vendor.perkCount}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <Store className="mx-auto h-8 w-8 opacity-30 mb-2" />
+                <p>No active vendors found</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
