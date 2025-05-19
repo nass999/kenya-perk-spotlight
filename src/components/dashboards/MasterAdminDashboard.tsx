@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -60,13 +59,13 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
               <Users className="h-4 w-4 text-indigo-500" />
-              Users
+              Teams
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{stats.users}</div>
             <p className="mt-2 text-xs text-gray-500">
-              Total registered users
+              Total registered teams
             </p>
           </CardContent>
         </Card>

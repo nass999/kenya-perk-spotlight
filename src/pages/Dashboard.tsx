@@ -51,7 +51,7 @@ const Dashboard = () => {
     console.log("Rendering Company Admin Dashboard for user:", authState.user.email);
     return <CompanyAdminDashboard stats={stats} welcomeMessage={welcomeMessage} />;
   } else {
-    console.log("Rendering Employee Dashboard for user:", authState.user.email);
+    console.log("Rendering Team Dashboard for user:", authState.user.email);
     return <EmployeeDashboard stats={stats} welcomeMessage={welcomeMessage} />;
   }
 };

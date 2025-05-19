@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -31,13 +30,13 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
               <Users className="h-4 w-4 text-blue-500" />
-              Total Employees
+              Total Teams
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{stats.users}</div>
             <p className="mt-2 text-xs text-gray-500">
-              Employees in your organization
+              Teams in your organization
             </p>
           </CardContent>
         </Card>
@@ -52,7 +51,7 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
           <CardContent>
             <div className="text-3xl font-bold">{stats.availablePerks}</div>
             <p className="mt-2 text-xs text-gray-500">
-              Perks available to your employees
+              Perks available to your teams
             </p>
           </CardContent>
         </Card>
@@ -67,7 +66,7 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
           <CardContent>
             <div className="text-3xl font-bold">{stats.redeemedPerks}</div>
             <p className="mt-2 text-xs text-gray-500">
-              Perks redeemed by employees
+              Perks redeemed by teams
             </p>
           </CardContent>
         </Card>
@@ -92,7 +91,7 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
               </Button>
               <Button className="w-full justify-start" variant="outline">
                 <Users className="mr-2 h-4 w-4" />
-                Manage Employees
+                Manage Teams
               </Button>
               <Button className="w-full justify-start" variant="outline">
                 <BarChart className="mr-2 h-4 w-4" />
