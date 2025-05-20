@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -13,6 +14,7 @@ import {
   Store
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 import { DashboardStats, VendorWithPerks } from '@/types/dashboard';
 import {
   Table,
@@ -105,10 +107,12 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Vendors with Active Perks</h2>
-          <Button variant="outline" size="sm">
-            <Store className="mr-2 h-4 w-4" />
-            View All Vendors
-          </Button>
+          <Link to="/dashboard/manage-vendors">
+            <Button variant="outline" size="sm">
+              <Store className="mr-2 h-4 w-4" />
+              Manage All Vendors
+            </Button>
+          </Link>
         </div>
         
         <Card>
@@ -147,22 +151,30 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-4">
-              <Button className="w-full justify-start" variant="outline">
-                <Users className="mr-2 h-4 w-4" />
-                Manage Organizations
-              </Button>
-              <Button className="w-full justify-start" variant="outline">
-                <ShoppingBag className="mr-2 h-4 w-4" />
-                Manage Platform Perks
-              </Button>
-              <Button className="w-full justify-start" variant="outline">
-                <BarChart className="mr-2 h-4 w-4" />
-                View Analytics
-              </Button>
-              <Button className="w-full justify-start" variant="outline">
-                <Zap className="mr-2 h-4 w-4" />
-                System Settings
-              </Button>
+              <Link to="/dashboard/manage-users">
+                <Button className="w-full justify-start" variant="outline">
+                  <Users className="mr-2 h-4 w-4" />
+                  Manage Organizations
+                </Button>
+              </Link>
+              <Link to="/dashboard/manage-perks">
+                <Button className="w-full justify-start" variant="outline">
+                  <ShoppingBag className="mr-2 h-4 w-4" />
+                  Manage Platform Perks
+                </Button>
+              </Link>
+              <Link to="/dashboard/manage-vendors">
+                <Button className="w-full justify-start" variant="outline">
+                  <Store className="mr-2 h-4 w-4" />
+                  Manage Vendors
+                </Button>
+              </Link>
+              <Link to="/dashboard">
+                <Button className="w-full justify-start" variant="outline">
+                  <BarChart className="mr-2 h-4 w-4" />
+                  View Analytics
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>

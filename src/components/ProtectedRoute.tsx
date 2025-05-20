@@ -37,9 +37,13 @@ const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
   }
   
   // Check role-based access if roles are specified
-  if (allowedRoles && !allowedRoles.includes(authState.user.role)) {
-    console.log("User not authorized for this route, redirecting to unauthorized");
-    return <Navigate to="/unauthorized" replace />;
+  if (allowedRoles && allowedRoles.length > 0) {
+    console.log(`Checking role access: user role = ${authState.user.role}, allowed roles =`, allowedRoles);
+    
+    if (!allowedRoles.includes(authState.user.role)) {
+      console.log("User not authorized for this route, redirecting to unauthorized");
+      return <Navigate to="/unauthorized" replace />;
+    }
   }
   
   // User is authenticated and authorized

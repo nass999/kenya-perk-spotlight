@@ -12,7 +12,7 @@ import {
   Home,
   Store,
 } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,7 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({ to, active, children, onClick
 
 export function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { authState, signOut } = useAuth();
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(!isMobile);
@@ -46,6 +47,7 @@ export function Sidebar() {
   };
   
   const userRole = authState.user?.role || 'employee';
+  console.log("Current user role in sidebar:", userRole);
   
   const isAdmin = userRole === 'master_admin' || userRole === 'company_admin';
   const isMasterAdmin = userRole === 'master_admin';
@@ -54,6 +56,11 @@ export function Sidebar() {
     if (isMobile) {
       setIsOpen(false);
     }
+  };
+  
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/login');
   };
   
   return (
@@ -76,7 +83,7 @@ export function Sidebar() {
         </div>
         
         {/* Navigation Links */}
-        <nav className="space-y-1 mt-6">
+        <nav className="space-y-1 mt-6 overflow-y-auto">
           {/* Home Link - Always visible */}
           <SidebarLink to="/" active={location.pathname === '/'} onClick={closeOnMobile}>
             <Home className="h-5 w-5 mr-3" />
@@ -122,19 +129,17 @@ export function Sidebar() {
                 Manage Perks
               </SidebarLink>
               
-              {/* Only show user management and vendor management to master admins */}
+              <SidebarLink to="/dashboard/manage-users" active={location.pathname === '/dashboard/manage-users'} onClick={closeOnMobile}>
+                <Users className="h-5 w-5 mr-3" />
+                Manage Users
+              </SidebarLink>
+              
+              {/* Only show vendor management to master admins */}
               {isMasterAdmin && (
-                <>
-                  <SidebarLink to="/dashboard/manage-users" active={location.pathname === '/dashboard/manage-users'} onClick={closeOnMobile}>
-                    <Users className="h-5 w-5 mr-3" />
-                    Manage Users
-                  </SidebarLink>
-                  
-                  <SidebarLink to="/dashboard/manage-vendors" active={location.pathname === '/dashboard/manage-vendors'} onClick={closeOnMobile}>
-                    <Store className="h-5 w-5 mr-3" />
-                    Manage Vendors
-                  </SidebarLink>
-                </>
+                <SidebarLink to="/dashboard/manage-vendors" active={location.pathname === '/dashboard/manage-vendors'} onClick={closeOnMobile}>
+                  <Store className="h-5 w-5 mr-3" />
+                  Manage Vendors
+                </SidebarLink>
               )}
             </>
           )}
@@ -152,7 +157,7 @@ export function Sidebar() {
               <p className="text-xs text-gray-500">{authState.user?.email}</p>
             </div>
           </div>
-          <Button variant="outline" className="w-full mt-4" onClick={signOut}>
+          <Button variant="outline" className="w-full mt-4" onClick={handleSignOut}>
             Sign Out
           </Button>
         </div>
