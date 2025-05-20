@@ -50,23 +50,23 @@ const DashboardLayout = () => {
     employee: 'Employee'
   }[authState.user?.role || 'employee'];
   
-  // Navigation based on user role
+  // Navigation based on user role - fixed paths to match App.tsx routes
   const navigation = [];
   
   if (authState.user?.role === 'master_admin') {
     navigation.push(
       { name: 'Dashboard', href: '/dashboard', icon: Home },
-      { name: 'Companies', href: '/dashboard/companies', icon: Users },
-      { name: 'All Perks', href: '/dashboard/all-perks', icon: ShoppingBag },
-      { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart },
+      { name: 'Manage Perks', href: '/dashboard/manage-perks', icon: ShoppingBag },
+      { name: 'Manage Users', href: '/dashboard/manage-users', icon: Users },
+      { name: 'Manage Vendors', href: '/dashboard/manage-vendors', icon: BarChart },
       { name: 'Settings', href: '/dashboard/settings', icon: Settings }
     );
   } else if (authState.user?.role === 'company_admin') {
     navigation.push(
       { name: 'Dashboard', href: '/dashboard', icon: Home },
-      { name: 'Manage Perks', href: '/dashboard/perks', icon: ShoppingBag },
-      { name: 'Employees', href: '/dashboard/employees', icon: Users },
-      { name: 'Company Analytics', href: '/dashboard/company-analytics', icon: BarChart },
+      { name: 'Manage Perks', href: '/dashboard/manage-perks', icon: ShoppingBag },
+      { name: 'Manage Users', href: '/dashboard/manage-users', icon: Users },
+      { name: 'Browse Perks', href: '/dashboard/browse-perks', icon: CreditCard },
       { name: 'Settings', href: '/dashboard/settings', icon: Settings }
     );
   } else {
@@ -75,7 +75,7 @@ const DashboardLayout = () => {
       { name: 'Dashboard', href: '/dashboard', icon: Home },
       { name: 'Browse Perks', href: '/dashboard/browse-perks', icon: ShoppingBag },
       { name: 'My Redemptions', href: '/dashboard/my-redemptions', icon: CreditCard },
-      { name: 'Profile', href: '/dashboard/profile', icon: User }
+      { name: 'Vendor Recommendations', href: '/dashboard/vendor-recommendations', icon: User }
     );
   }
   
