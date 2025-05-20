@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
@@ -39,7 +38,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { PlusCircle, Pencil, Trash2, Tag, Percent, DollarSign, Calendar, Toggle } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, Tag, Percent, DollarSign, Calendar, ToggleRight, ToggleLeft } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Switch } from '@/components/ui/switch';
@@ -664,7 +663,7 @@ const ManagePerks = () => {
                           className={perk.is_enabled ? "text-gray-500 hover:text-gray-700" : "bg-green-500 hover:bg-green-600"}
                           onClick={() => handleToggleStatus(perk)}
                         >
-                          <Toggle className="h-4 w-4" />
+                          {perk.is_enabled ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
                         </Button>
                       )}
                       <Button
