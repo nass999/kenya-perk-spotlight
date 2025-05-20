@@ -99,9 +99,23 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
                   Manage Company Perks
                 </Link>
               </Button>
-              <Button className="w-full justify-start" variant="outline">
-                <Users className="mr-2 h-4 w-4" />
-                Manage Teams
+              <Button 
+                className="w-full justify-start" 
+                variant="outline"
+                asChild
+              >
+                <Link to="/dashboard/manage-users">
+                  <Users className="mr-2 h-4 w-4" />
+                  Manage Teams
+                </Link>
+              </Button>
+              <Button 
+                className="w-full justify-start" 
+                variant="outline"
+                onClick={() => setInviteDialogOpen(true)}
+              >
+                <UserPlus className="mr-2 h-4 w-4" />
+                Invite Team Members
               </Button>
               <Button className="w-full justify-start" variant="outline">
                 <BarChart className="mr-2 h-4 w-4" />

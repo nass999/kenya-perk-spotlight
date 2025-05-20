@@ -33,14 +33,14 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending invitation to ${email} from ${inviterName}`);
 
     const emailResponse = await resend.emails.send({
-      from: "Team Perks <onboarding@resend.dev>", // Update with your from address
+      from: "Team Perks <onboarding@resend.dev>", // You can update this with your verified domain once set up in Resend
       to: [email],
-      subject: `${inviterName} invited you to join their team`,
+      subject: `${inviterName} invited you to join their team on Team Perks`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
           <h1 style="color: #4F46E5; font-size: 24px; margin-bottom: 20px;">You've been invited!</h1>
           <p>Hello,</p>
-          <p>${inviterName} has invited you to join their team on the Team Perks platform.</p>
+          <p><strong>${inviterName}</strong> has invited you to join their team on the Team Perks platform.</p>
           <p>Click the button below to create your account and get started:</p>
           <div style="margin: 30px 0;">
             <a href="${registrationLink}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">
@@ -51,6 +51,9 @@ const handler = async (req: Request): Promise<Response> => {
           <p style="color: #6B7280; word-break: break-all;">${registrationLink}</p>
           <p style="margin-top: 40px; color: #6B7280; font-size: 14px;">
             If you didn't expect this invitation, you can ignore this email.
+          </p>
+          <p style="color: #6B7280; font-size: 12px; margin-top: 30px; border-top: 1px solid #E5E7EB; padding-top: 20px;">
+            This email was sent from Team Perks, a platform for managing employee benefits and perks.
           </p>
         </div>
       `,

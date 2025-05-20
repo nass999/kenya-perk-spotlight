@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from '@/components/ui/use-toast';
-import { Copy, Mail, Plus, UserPlus, SendHorizontal } from 'lucide-react';
+import { Copy, Mail, Plus, UserPlus, SendHorizontal, Loader2, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 
@@ -26,6 +26,7 @@ export const UserInviteDialog = ({ isOpen, onOpenChange }: UserInviteDialogProps
   const [emails, setEmails] = useState<string[]>(['']);
   const [loading, setLoading] = useState(false);
   const [inviteLink, setInviteLink] = useState<string>('');
+  const [sendingStatus, setSendingStatus] = useState<Record<string, 'idle' | 'sending' | 'success' | 'error'>>({});
   
   const baseUrl = window.location.origin;
   const registrationLink = `${baseUrl}/register?company_id=${authState.user?.company_id}`;
@@ -60,6 +61,7 @@ export const UserInviteDialog = ({ isOpen, onOpenChange }: UserInviteDialogProps
           description: "Please enter at least one valid email address.",
           variant: "destructive"
         });
+        setLoading(false);
         return;
       }
       
@@ -67,7 +69,18 @@ export const UserInviteDialog = ({ isOpen, onOpenChange }: UserInviteDialogProps
       setInviteLink(registrationLink);
       
       // Send email invitations
-      for (const email of validEmails) {
+      let successCount = 0;
+      let failCount = 0;
+      
+      // Create a new status object
+      const newStatus: Record<string, 'idle' | 'sending' | 'success' | 'error'> = {};
+      validEmails.forEach(email => {
+        newStatus[email] = 'sending';
+      });
+      setSendingStatus(newStatus);
+      
+      // Send invitations in parallel
+      await Promise.all(validEmails.map(async (email) => {
         try {
           // Use Supabase function to send email
           const { error } = await supabase.functions.invoke('send-invitation', {
@@ -79,16 +92,36 @@ export const UserInviteDialog = ({ isOpen, onOpenChange }: UserInviteDialogProps
             }
           });
           
-          if (error) throw error;
+          if (error) {
+            console.error('Error sending invitation to', email, error);
+            setSendingStatus(prev => ({...prev, [email]: 'error'}));
+            failCount++;
+            return;
+          }
+          
+          setSendingStatus(prev => ({...prev, [email]: 'success'}));
+          successCount++;
         } catch (emailError) {
           console.error('Error sending invitation to', email, emailError);
+          setSendingStatus(prev => ({...prev, [email]: 'error'}));
+          failCount++;
         }
+      }));
+      
+      if (successCount > 0) {
+        toast({
+          title: "Invitations sent",
+          description: `Successfully sent ${successCount} invitation${successCount !== 1 ? 's' : ''}.`,
+        });
       }
       
-      toast({
-        title: "Invitations sent",
-        description: `Successfully sent invitations to ${validEmails.length} email(s).`,
-      });
+      if (failCount > 0) {
+        toast({
+          title: "Some invitations failed",
+          description: `Failed to send ${failCount} invitation${failCount !== 1 ? 's' : ''}. Please try again.`,
+          variant: "destructive"
+        });
+      }
       
     } catch (error) {
       console.error('Error sending invites:', error);
@@ -108,6 +141,22 @@ export const UserInviteDialog = ({ isOpen, onOpenChange }: UserInviteDialogProps
       title: "Copied to clipboard",
       description: "Registration link has been copied to clipboard.",
     });
+  };
+
+  const getStatusIcon = (email: string) => {
+    const status = sendingStatus[email];
+    if (!status || status === 'idle') return null;
+    
+    switch (status) {
+      case 'sending':
+        return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
+      case 'success':
+        return <div className="text-xs text-green-600 font-medium">Sent ✓</div>;
+      case 'error':
+        return <div className="text-xs text-red-600 font-medium">Failed ✗</div>;
+      default:
+        return null;
+    }
   };
   
   return (
@@ -148,22 +197,28 @@ export const UserInviteDialog = ({ isOpen, onOpenChange }: UserInviteDialogProps
             <Label>Send Email Invitations</Label>
             {emails.map((email, index) => (
               <div key={index} className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-gray-500" />
+                <Mail className="h-4 w-4 text-gray-500 flex-shrink-0" />
                 <Input
                   type="email"
                   placeholder="email@company.com"
                   value={email}
                   onChange={(e) => handleEmailChange(index, e.target.value)}
                   className="flex-1"
+                  disabled={loading || (sendingStatus[email] === 'sending')}
                 />
+                <div className="w-16 text-right flex-shrink-0">
+                  {getStatusIcon(email)}
+                </div>
                 {emails.length > 1 && (
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
                     onClick={() => handleRemoveEmail(index)}
+                    disabled={loading}
+                    className="flex-shrink-0 p-0 h-8 w-8"
                   >
-                    Remove
+                    <X className="h-4 w-4" />
                   </Button>
                 )}
               </div>
@@ -175,6 +230,7 @@ export const UserInviteDialog = ({ isOpen, onOpenChange }: UserInviteDialogProps
               size="sm"
               onClick={handleAddEmail}
               className="flex items-center gap-2"
+              disabled={loading}
             >
               <Plus className="h-4 w-4" /> Add Another Email
             </Button>
@@ -186,9 +242,14 @@ export const UserInviteDialog = ({ isOpen, onOpenChange }: UserInviteDialogProps
             Cancel
           </Button>
           <Button onClick={handleSendInvites} disabled={loading} className="flex items-center gap-2">
-            {loading ? "Sending..." : (
+            {loading ? (
               <>
-                <SendHorizontal className="h-4 w-4" />
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Sending...
+              </>
+            ) : (
+              <>
+                <SendHorizontal className="h-4 w-4 mr-2" />
                 Send Invites
               </>
             )}
