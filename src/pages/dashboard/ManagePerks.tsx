@@ -1,5 +1,5 @@
 
-import { usePerksManagement } from '@/hooks/usePerksManagement';
+import { usePerksManagement } from '@/hooks/perks';
 import { PerkList } from '@/components/perks/PerkList';
 import { PerkTabs } from '@/components/perks/PerkTabs';
 import { PerkManagementHeader } from '@/components/perks/PerkManagementHeader';
