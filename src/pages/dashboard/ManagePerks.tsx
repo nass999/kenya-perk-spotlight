@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -331,6 +330,11 @@ const ManagePerks = () => {
     }
   };
 
+  // This is the fix - create a dummy async function that returns a Promise
+  const noopAsyncFunction = async (perk: Perk): Promise<void> => {
+    return Promise.resolve();
+  };
+
   const isMasterAdmin = authState.user?.role === 'master_admin';
   const isCompanyAdmin = authState.user?.role === 'company_admin';
 
@@ -394,7 +398,7 @@ const ManagePerks = () => {
               loading={loadingDeleted}
               error={deletedError}
               onEdit={() => {}} // No editing for deleted perks
-              onToggleStatus={() => {}} // No status toggle for deleted perks
+              onToggleStatus={noopAsyncFunction} // Fix: Use the async function that returns a Promise
               onDelete={handlePermanentDelete}
               onRestore={handleRestore}
               onRetry={fetchDeletedPerks}
