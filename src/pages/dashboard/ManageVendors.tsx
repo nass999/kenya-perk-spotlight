@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -16,6 +15,7 @@ import VendorForm from '@/components/vendors/VendorForm';
 import VendorTable from '@/components/vendors/VendorTable';
 import BulkVendorImport from '@/components/vendors/BulkVendorImport';
 import { Store, RefreshCcw } from 'lucide-react';
+import { Vendor } from '@/types/vendor';
 
 // Update the interface to make status accept any string, but use type assertion when needed
 interface Vendor {
