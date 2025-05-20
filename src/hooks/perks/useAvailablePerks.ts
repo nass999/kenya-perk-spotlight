@@ -25,7 +25,7 @@ export const useAvailablePerks = () => {
         .select('*')
         .is('company_id', null) // Only global perks with no company
         .eq('is_enabled', true) // Only enabled perks
-        .eq('is_deleted', false) // Not deleted
+        .eq('is_deleted', false) // Not deleted - now using the column
         .or(`valid_through_date.gt.${today},valid_through_date.is.null`) // Not expired
         .order('name');
       

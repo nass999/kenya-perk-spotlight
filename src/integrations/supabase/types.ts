@@ -20,6 +20,7 @@ export type Database = {
           expiry_date: string | null
           id: string
           image_url: string | null
+          is_deleted: boolean | null
           is_enabled: boolean | null
           name: string
           redemption_code: string | null
@@ -37,6 +38,7 @@ export type Database = {
           expiry_date?: string | null
           id?: string
           image_url?: string | null
+          is_deleted?: boolean | null
           is_enabled?: boolean | null
           name: string
           redemption_code?: string | null
@@ -54,6 +56,7 @@ export type Database = {
           expiry_date?: string | null
           id?: string
           image_url?: string | null
+          is_deleted?: boolean | null
           is_enabled?: boolean | null
           name?: string
           redemption_code?: string | null
