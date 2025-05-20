@@ -79,18 +79,15 @@ const ManagePerks = () => {
       if (editingPerk) {
         // Update existing perk
         console.log("Updating perk with ID:", editingPerk.id);
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('perks')
           .update(perkData)
-          .eq('id', editingPerk.id)
-          .select();
+          .eq('id', editingPerk.id);
           
         if (error) {
           console.error("Error updating perk:", error);
           throw error;
         }
-        
-        console.log("Perk update response:", data);
         
         toast({
           title: "Perk updated",
@@ -121,13 +118,15 @@ const ManagePerks = () => {
         
         // Add the new perk to the local state if data is returned
         if (data && data.length > 0) {
-          setPerks([...perks, data[0] as Perk]);
+          // Fix: Directly update perks state with new perk
+          setPerks(currentPerks => [...currentPerks, data[0] as Perk]);
         } else {
           // If no data is returned, refresh perks from the database
-          fetchPerks();
+          await fetchPerks();
         }
       }
       
+      // Close dialog after successful submission
       setIsDialogOpen(false);
     } catch (error: any) {
       console.error('Error saving perk:', error);
@@ -149,18 +148,15 @@ const ManagePerks = () => {
       // Toggle the perk's enabled status
       console.log(`Toggling status for perk ID ${perk.id} from ${perk.is_enabled} to ${!perk.is_enabled}`);
       
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('perks')
         .update({ is_enabled: !perk.is_enabled })
-        .eq('id', perk.id)
-        .select();
+        .eq('id', perk.id);
         
       if (error) {
         console.error("Error toggling perk status:", error);
         throw error;
       }
-      
-      console.log("Toggle status response:", data);
       
       toast({
         title: perk.is_enabled ? "Perk disabled" : "Perk enabled",
@@ -193,8 +189,6 @@ const ManagePerks = () => {
         console.error("Error deleting perk:", error);
         throw error;
       }
-      
-      console.log("Perk successfully deleted");
       
       toast({
         title: "Perk deleted",
