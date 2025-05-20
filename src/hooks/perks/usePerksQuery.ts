@@ -101,6 +101,9 @@ export const usePerksQuery = () => {
     // Listen for refresh events from the PerkSelectList component
     const handleRefreshPerks = () => {
       fetchPerks();
+      if (isMasterAdmin) {
+        fetchDeletedPerks();
+      }
     };
     window.addEventListener('refreshPerks', handleRefreshPerks);
     

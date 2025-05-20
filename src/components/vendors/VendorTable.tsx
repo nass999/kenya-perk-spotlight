@@ -78,9 +78,13 @@ const VendorTable: React.FC<VendorTableProps> = ({ vendors, onVendorUpdated }) =
 
   const handleDelete = async (id: string) => {
     try {
+      // Use soft deletion instead of hard deletion by setting the status to 'deleted'
       const { error } = await supabase
         .from('vendors')
-        .delete()
+        .update({ 
+          status: 'deleted',
+          updated_at: new Date().toISOString()
+        })
         .eq('id', id);
       
       if (error) throw error;
