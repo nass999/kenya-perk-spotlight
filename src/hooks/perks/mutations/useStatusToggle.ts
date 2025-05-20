@@ -15,9 +15,11 @@ export const useStatusToggle = ({ perks, setPerks }: UseStatusToggleProps) => {
       // Toggle the perk's enabled status
       console.log(`Toggling status for perk ID ${perk.id} from ${perk.is_enabled} to ${!perk.is_enabled}`);
       
+      const newEnabledStatus = !perk.is_enabled;
+      
       const { error, data } = await supabase
         .from('perks')
-        .update({ is_enabled: !perk.is_enabled })
+        .update({ is_enabled: newEnabledStatus })
         .eq('id', perk.id)
         .select();
         
@@ -34,7 +36,7 @@ export const useStatusToggle = ({ perks, setPerks }: UseStatusToggleProps) => {
       });
       
       // Update the perk in the local state
-      setPerks(perks.map(p => p.id === perk.id ? { ...p, is_enabled: !p.is_enabled } : p));
+      setPerks(perks.map(p => p.id === perk.id ? { ...p, is_enabled: newEnabledStatus } : p));
     } catch (error: any) {
       console.error('Error toggling perk status:', error);
       toast({
