@@ -3,6 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ShieldAlert } from 'lucide-react';
+import BackToHomeButton from '@/components/BackToHomeButton';
 
 const Unauthorized = () => {
   return (
@@ -25,6 +26,7 @@ const Unauthorized = () => {
           </div>
         </div>
       </div>
+      <BackToHomeButton />
     </div>
   );
 };

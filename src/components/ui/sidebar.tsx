@@ -9,6 +9,7 @@ import {
   Users,
   Menu,
   X,
+  Home,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -75,6 +76,12 @@ export function Sidebar() {
         
         {/* Navigation Links */}
         <nav className="space-y-1 mt-6">
+          {/* Home Link - Always visible */}
+          <SidebarLink to="/" active={location.pathname === '/'} onClick={closeOnMobile}>
+            <Home className="h-5 w-5 mr-3" />
+            Main Page
+          </SidebarLink>
+          
           <SidebarLink to="/dashboard" active={location.pathname === '/dashboard'} onClick={closeOnMobile}>
             <LayoutDashboard className="h-5 w-5 mr-3" />
             Dashboard

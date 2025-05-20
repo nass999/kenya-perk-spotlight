@@ -1,5 +1,7 @@
+
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import BackToHomeButton from "@/components/BackToHomeButton";
 
 const NotFound = () => {
   const location = useLocation();
@@ -20,6 +22,7 @@ const NotFound = () => {
           Return to Home
         </a>
       </div>
+      <BackToHomeButton />
     </div>
   );
 };

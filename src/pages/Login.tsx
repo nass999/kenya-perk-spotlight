@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -19,6 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from '@/components/ui/use-toast';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle } from 'lucide-react';
+import BackToHomeButton from '@/components/BackToHomeButton';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -120,6 +120,7 @@ const Login = () => {
             </div>
           </CardContent>
         </Card>
+        <BackToHomeButton />
       </div>
     );
   }
@@ -191,6 +192,7 @@ const Login = () => {
           </div>
         </CardContent>
       </Card>
+      <BackToHomeButton />
     </div>
   );
 };
