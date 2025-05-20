@@ -1,4 +1,3 @@
-
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/components/ui/use-toast';
 import { Perk, PerkFormValues } from '@/components/perks/PerkTypes';
@@ -198,7 +197,8 @@ export const usePerkMutations = ({
       // Move perk from deleted list to active list
       const restoredPerk = deletedPerks.find(p => p.id === perkId);
       if (restoredPerk) {
-        setPerks(currentPerks => [...currentPerks, restoredPerk]);
+        const restoredPerkWithFlag = { ...restoredPerk, is_deleted: false };
+        setPerks(currentPerks => [...currentPerks, restoredPerkWithFlag]);
         setDeletedPerks(deletedPerks.filter(p => p.id !== perkId));
       }
     } catch (error: any) {

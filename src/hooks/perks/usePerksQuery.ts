@@ -26,11 +26,11 @@ export const usePerksQuery = () => {
       let query = supabase.from('perks').select('*').eq('is_deleted', false);
       
       // Filter by company if company admin
-      if (isCompanyAdmin) {
+      if (isCompanyAdmin && authState.user?.company_id) {
         // Company admins can only see active (enabled and not expired) perks
         const today = new Date().toISOString().split('T')[0];
         query = query
-          .eq('company_id', authState.user?.company_id)
+          .eq('company_id', authState.user.company_id)
           .or(`valid_through_date.gt.${today},valid_through_date.is.null`)
           .eq('is_enabled', true);
       }
@@ -91,9 +91,11 @@ export const usePerksQuery = () => {
   };
 
   useEffect(() => {
-    fetchPerks();
-    if (isMasterAdmin) {
-      fetchDeletedPerks();
+    if (authState.user) {
+      fetchPerks();
+      if (isMasterAdmin) {
+        fetchDeletedPerks();
+      }
     }
     
     // Listen for refresh events from the PerkSelectList component
@@ -105,7 +107,7 @@ export const usePerksQuery = () => {
     return () => {
       window.removeEventListener('refreshPerks', handleRefreshPerks);
     };
-  }, [isMasterAdmin]);
+  }, [isMasterAdmin, authState.user]);
 
   return {
     perks,

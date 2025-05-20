@@ -13,6 +13,12 @@ export const useAvailablePerks = () => {
   
   const fetchAvailablePerks = async () => {
     try {
+      if (!authState.user || !authState.user.company_id) {
+        console.log("No user or company_id available", authState.user);
+        setLoading(false);
+        return;
+      }
+      
       setLoading(true);
       setError(null);
       
@@ -35,7 +41,7 @@ export const useAvailablePerks = () => {
       const { data: companyPerks, error: companyPerksError } = await supabase
         .from('perks')
         .select('id')
-        .eq('company_id', authState.user?.company_id);
+        .eq('company_id', authState.user.company_id);
       
       if (companyPerksError) throw companyPerksError;
       
@@ -57,8 +63,10 @@ export const useAvailablePerks = () => {
   };
 
   useEffect(() => {
-    fetchAvailablePerks();
-  }, []);
+    if (authState.user && authState.user.company_id) {
+      fetchAvailablePerks();
+    }
+  }, [authState.user]);
 
   return {
     perks,
