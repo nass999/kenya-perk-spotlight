@@ -1,7 +1,5 @@
 
-import { useState, useEffect } from 'react';
 import { usePerksManagement } from '@/hooks/usePerksManagement';
-import { Perk } from '@/components/perks/PerkTypes';
 import { PerkList } from '@/components/perks/PerkList';
 import { PerkTabs } from '@/components/perks/PerkTabs';
 import { PerkManagementHeader } from '@/components/perks/PerkManagementHeader';
@@ -17,6 +15,7 @@ const ManagePerks = () => {
     deletingPerk,
     isMasterAdmin,
     isCompanyAdmin,
+    editingPerk,
     handleSubmit,
     handleToggleStatus,
     handleDelete,
@@ -24,28 +23,9 @@ const ManagePerks = () => {
     handlePermanentDelete,
     fetchPerks,
     fetchDeletedPerks,
-    noopAsyncFunction
+    noopAsyncFunction,
+    handleEdit
   } = usePerksManagement();
-  
-  const [editingPerk, setEditingPerk] = useState<Perk | null>(null);
-  
-  useEffect(() => {
-    // Reset editing perk when dialog closes (handled in the header component)
-    const cleanup = () => {
-      setEditingPerk(null);
-    };
-    
-    return cleanup;
-  }, []);
-  
-  const handleEdit = (perk: Perk) => {
-    // Only allow master admins to edit perks
-    if (!isMasterAdmin) {
-      return;
-    }
-    
-    setEditingPerk(perk);
-  };
 
   return (
     <div>

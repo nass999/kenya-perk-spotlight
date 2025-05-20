@@ -70,7 +70,7 @@ export const isExpired = (dateString: string | null) => {
 export interface PerkFormProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (values: PerkFormValues) => Promise<void>;
+  onSubmit: (values: PerkFormValues) => Promise<boolean>;
   editingPerk: Perk | null;
   isCompanyAdmin: boolean;
 }

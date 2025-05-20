@@ -14,6 +14,7 @@ export const usePerksManagement = () => {
   const [deletingPerk, setDeletingPerk] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [deletedError, setDeletedError] = useState<string | null>(null);
+  const [editingPerk, setEditingPerk] = useState<Perk | null>(null);
 
   const isMasterAdmin = authState.user?.role === 'master_admin';
   const isCompanyAdmin = authState.user?.role === 'company_admin';
@@ -108,7 +109,7 @@ export const usePerksManagement = () => {
     }
   };
   
-  const handleSubmit = async (values: PerkFormValues) => {
+  const handleSubmit = async (values: PerkFormValues): Promise<boolean> => {
     // Only allow master admins to create or edit perks
     if (!isMasterAdmin) {
       toast({
@@ -116,7 +117,7 @@ export const usePerksManagement = () => {
         title: "Permission denied",
         description: "Only master admins can create or edit perks.",
       });
-      return;
+      return false;
     }
     
     try {
@@ -146,6 +147,7 @@ export const usePerksManagement = () => {
         
         // Update the perk in the local state
         setPerks(perks.map(p => p.id === editingPerk.id ? { ...p, ...perkData, id: editingPerk.id } as Perk : p));
+        setEditingPerk(null);
       } else {
         // Create new perk
         console.log("Creating new perk");
@@ -336,6 +338,10 @@ export const usePerksManagement = () => {
     return Promise.resolve();
   };
 
+  const handleEdit = (perk: Perk) => {
+    setEditingPerk(perk);
+  };
+
   return {
     perks,
     deletedPerks,
@@ -344,6 +350,8 @@ export const usePerksManagement = () => {
     error,
     deletedError,
     deletingPerk,
+    editingPerk,
+    setEditingPerk,
     isMasterAdmin,
     isCompanyAdmin,
     handleSubmit,
@@ -353,6 +361,7 @@ export const usePerksManagement = () => {
     handlePermanentDelete,
     fetchPerks,
     fetchDeletedPerks,
-    noopAsyncFunction
+    noopAsyncFunction,
+    handleEdit
   };
 };

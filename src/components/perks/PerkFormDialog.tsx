@@ -70,6 +70,13 @@ export const PerkFormDialog = ({
     }
   }, [editingPerk, form]);
 
+  const handleSubmit = async (values: PerkFormValues) => {
+    const success = await onSubmit(values);
+    if (success) {
+      onOpenChange(false);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
@@ -85,7 +92,7 @@ export const PerkFormDialog = ({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <BasicInfoFields form={form} />
             <DiscountFields form={form} />
             <CategoryDateFields form={form} />
