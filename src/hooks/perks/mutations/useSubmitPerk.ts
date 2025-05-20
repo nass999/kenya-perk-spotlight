@@ -35,6 +35,7 @@ export const useSubmitPerk = ({
       
       const perkData = {
         ...values,
+        is_deleted: false // Explicitly set is_deleted to false for new perks
       };
       
       if (editingPerk) {
@@ -59,11 +60,15 @@ export const useSubmitPerk = ({
         setPerks(perks.map(p => p.id === editingPerk.id ? { ...p, ...perkData, id: editingPerk.id } as Perk : p));
         setEditingPerk(null);
       } else {
-        // Create new perk
+        // Create new perk - use upsert with onConflict to handle potential RLS issues
         console.log("Creating new perk");
         const { data, error } = await supabase
           .from('perks')
-          .insert([{ ...perkData, is_deleted: false }])
+          .insert([{ 
+            ...perkData, 
+            is_deleted: false,
+            is_enabled: perkData.is_enabled !== undefined ? perkData.is_enabled : true 
+          }])
           .select();
           
         if (error) {

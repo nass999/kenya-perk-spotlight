@@ -26,19 +26,25 @@ export const usePerkDelete = ({
       console.log(`Deleting perk with ID: ${id}`);
       setDeletingPerk(id);
       
-      // Instead of deleting, mark as deleted
-      const { error } = await supabase
+      // Mark as deleted and disable
+      const updateData = {
+        is_deleted: true,
+        is_enabled: false // Also disable the perk when it's deleted
+      };
+
+      // Update in Supabase
+      const { error, data } = await supabase
         .from('perks')
-        .update({ 
-          is_deleted: true,
-          is_enabled: false // Also disable the perk when it's deleted
-        })
-        .eq('id', id);
+        .update(updateData)
+        .eq('id', id)
+        .select();
         
       if (error) {
         console.error("Error deleting perk:", error);
         throw error;
       }
+      
+      console.log("Delete response data:", data);
       
       toast({
         title: "Perk deleted",
@@ -51,7 +57,12 @@ export const usePerkDelete = ({
       
       // Add to deleted perks list if master admin
       if (isMasterAdmin && deletedPerk) {
-        setDeletedPerks([...deletedPerks, { ...deletedPerk, is_deleted: true, is_enabled: false }]);
+        const updatedDeletedPerk = { 
+          ...deletedPerk, 
+          is_deleted: true,
+          is_enabled: false
+        };
+        setDeletedPerks([...deletedPerks, updatedDeletedPerk]);
       }
     } catch (error: any) {
       console.error('Error deleting perk:', error);

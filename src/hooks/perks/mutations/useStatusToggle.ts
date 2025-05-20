@@ -17,6 +17,7 @@ export const useStatusToggle = ({ perks, setPerks }: UseStatusToggleProps) => {
       
       const newEnabledStatus = !perk.is_enabled;
       
+      // Update in Supabase first
       const { error, data } = await supabase
         .from('perks')
         .update({ is_enabled: newEnabledStatus })
@@ -28,15 +29,27 @@ export const useStatusToggle = ({ perks, setPerks }: UseStatusToggleProps) => {
         throw error;
       }
       
-      console.log("Status toggle successful, updated data:", data);
+      // Log the response data for debugging
+      console.log("Status toggle response data:", data);
       
-      toast({
-        title: perk.is_enabled ? "Perk disabled" : "Perk enabled",
-        description: `${perk.name} has been ${perk.is_enabled ? "disabled" : "enabled"}.`,
-      });
-      
-      // Update the perk in the local state
-      setPerks(perks.map(p => p.id === perk.id ? { ...p, is_enabled: newEnabledStatus } : p));
+      // Update the UI only after successful database update
+      if (data && data.length > 0) {
+        // Use the status returned from the server to be absolutely sure
+        const updatedStatus = data[0].is_enabled;
+        console.log(`Server confirmed new status for perk ${perk.id}: ${updatedStatus}`);
+        
+        toast({
+          title: updatedStatus ? "Perk enabled" : "Perk disabled",
+          description: `${perk.name} has been ${updatedStatus ? "enabled" : "disabled"}.`,
+        });
+        
+        // Update the local state using the server-confirmed status
+        setPerks(perks.map(p => 
+          p.id === perk.id ? { ...p, is_enabled: updatedStatus } : p
+        ));
+      } else {
+        console.warn("No data returned from update operation");
+      }
     } catch (error: any) {
       console.error('Error toggling perk status:', error);
       toast({

@@ -22,11 +22,18 @@ export const usePerksQuery = () => {
       setLoading(true);
       setError(null);
       
-      console.log("Fetching active perks...");
-      let query = supabase.from('perks').select('*').eq('is_deleted', false);
+      console.log("Fetching active perks with user role:", authState.user?.role);
+      
+      // Start with a query to select all non-deleted perks
+      // Use explicit comparison for boolean values
+      let query = supabase
+        .from('perks')
+        .select('*')
+        .eq('is_deleted', false);
       
       // Filter by company if company admin
       if (isCompanyAdmin && authState.user?.company_id) {
+        console.log("Filtering perks for company:", authState.user.company_id);
         // Company admins can only see active (enabled and not expired) perks
         const today = new Date().toISOString().split('T')[0];
         query = query
@@ -64,6 +71,7 @@ export const usePerksQuery = () => {
       setDeletedError(null);
       
       console.log("Fetching deleted perks...");
+      // Use explicit boolean comparison
       const { data, error } = await supabase
         .from('perks')
         .select('*')
@@ -91,7 +99,7 @@ export const usePerksQuery = () => {
 
   useEffect(() => {
     if (authState.user) {
-      console.log("User authenticated, fetching perks");
+      console.log("User authenticated, fetching perks with role:", authState.user.role);
       fetchPerks();
       if (isMasterAdmin) {
         fetchDeletedPerks();
