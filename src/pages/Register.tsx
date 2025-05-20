@@ -14,13 +14,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle } from 'lucide-react';
@@ -33,7 +26,6 @@ const registerSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
   password: z.string().min(8, { message: 'Password must be at least 8 characters' }),
   confirmPassword: z.string(),
-  role: z.enum(['employee', 'company_admin', 'master_admin'] as const),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -63,7 +55,6 @@ const Register = () => {
       email: '',
       password: '',
       confirmPassword: '',
-      role: 'employee',
     },
   });
   
@@ -73,11 +64,12 @@ const Register = () => {
       setRegistrationError(null);
       console.log("Form submitted, signing up...", values);
       
+      // Always assign the 'employee' role for end users registering through the UI
       const result = await signUp(
         values.email,
         values.password,
         values.fullName,
-        values.role // Passing the selected role
+        'employee' // Default role for all users signing up through UI
       );
       
       if (result?.error) {
@@ -219,29 +211,6 @@ const Register = () => {
                     <FormControl>
                       <Input type="password" placeholder="••••••••" {...field} />
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Account Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select your role" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="employee">End User</SelectItem>
-                        <SelectItem value="company_admin">Organization Admin</SelectItem>
-                        <SelectItem value="master_admin">Master Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
