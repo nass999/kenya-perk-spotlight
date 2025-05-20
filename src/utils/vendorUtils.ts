@@ -18,6 +18,8 @@ export const updateVendorStatus = async (id: string, currentStatus: string) => {
 
 // Function to soft delete vendor
 export const deleteVendor = async (id: string) => {
+  console.log("Permanently deleting vendor with ID:", id);
+  
   const { error } = await supabase
     .from('vendors')
     .update({ 
@@ -26,5 +28,10 @@ export const deleteVendor = async (id: string) => {
     })
     .eq('id', id);
   
-  if (error) throw error;
+  if (error) {
+    console.error("Error deleting vendor:", error);
+    throw error;
+  }
+  
+  console.log("Vendor successfully deleted");
 };

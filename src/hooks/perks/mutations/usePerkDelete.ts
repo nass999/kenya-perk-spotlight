@@ -29,7 +29,10 @@ export const usePerkDelete = ({
       // Instead of deleting, mark as deleted
       const { error } = await supabase
         .from('perks')
-        .update({ is_deleted: true })
+        .update({ 
+          is_deleted: true,
+          is_enabled: false // Also disable the perk when it's deleted
+        })
         .eq('id', id);
         
       if (error) {
@@ -48,7 +51,7 @@ export const usePerkDelete = ({
       
       // Add to deleted perks list if master admin
       if (isMasterAdmin && deletedPerk) {
-        setDeletedPerks([...deletedPerks, { ...deletedPerk, is_deleted: true }]);
+        setDeletedPerks([...deletedPerks, { ...deletedPerk, is_deleted: true, is_enabled: false }]);
       }
     } catch (error: any) {
       console.error('Error deleting perk:', error);

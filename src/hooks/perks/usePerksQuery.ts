@@ -31,8 +31,7 @@ export const usePerksQuery = () => {
         const today = new Date().toISOString().split('T')[0];
         query = query
           .eq('company_id', authState.user.company_id)
-          .or(`valid_through_date.gt.${today},valid_through_date.is.null`)
-          .eq('is_enabled', true);
+          .or(`valid_through_date.gt.${today},valid_through_date.is.null`);
       }
       
       const { data, error } = await query;
@@ -92,6 +91,7 @@ export const usePerksQuery = () => {
 
   useEffect(() => {
     if (authState.user) {
+      console.log("User authenticated, fetching perks");
       fetchPerks();
       if (isMasterAdmin) {
         fetchDeletedPerks();

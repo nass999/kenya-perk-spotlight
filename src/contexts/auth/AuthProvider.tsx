@@ -84,6 +84,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.log("User signed out, clearing auth state");
           setAuthState({ user: null, session: null, loading: false });
           navigate('/login');
+        } else if (event === 'TOKEN_REFRESHED') {
+          console.log("Token refreshed, updating session");
+          if (session) {
+            setAuthState(prevState => ({
+              ...prevState,
+              session,
+              loading: false
+            }));
+          }
         }
       }
     );

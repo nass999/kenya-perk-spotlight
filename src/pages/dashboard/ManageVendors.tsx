@@ -43,7 +43,8 @@ const ManageVendors = () => {
       const { data, error } = await supabase
         .from('vendors')
         .select('*')
-        .neq('status', 'deleted') // Filter out deleted vendors
+        .eq('status', 'active')
+        .or('status.eq.on_hold')
         .order('name');
       
       if (error) throw error;
