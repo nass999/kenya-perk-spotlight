@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
@@ -13,7 +12,7 @@ import {
   Store,
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from '@/hooks/use-mobile';

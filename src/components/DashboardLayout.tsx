@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getNavigationByRole } from '@/utils/navigationItems';

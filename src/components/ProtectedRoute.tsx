@@ -1,6 +1,6 @@
 
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import { UserRole } from '@/lib/supabase';
 import React from 'react';
 
