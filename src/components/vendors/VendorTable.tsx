@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Table, 
   TableBody, 
@@ -45,6 +45,11 @@ const VendorTable: React.FC<VendorTableProps> = ({ vendors, onVendorUpdated }) =
   const { toast } = useToast();
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
   const [deletingVendorId, setDeletingVendorId] = useState<string | null>(null);
+
+  // Debug logging for vendors prop
+  useEffect(() => {
+    console.log("VendorTable received vendors:", vendors);
+  }, [vendors]);
 
   const handleStatusChange = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'active' ? 'on_hold' : 'active';

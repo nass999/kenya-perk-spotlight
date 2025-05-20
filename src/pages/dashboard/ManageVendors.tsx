@@ -38,6 +38,7 @@ const ManageVendors = () => {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('list');
+  const [error, setError] = useState<string | null>(null);
   
   // Redirect if not master admin
   useEffect(() => {
@@ -49,6 +50,9 @@ const ManageVendors = () => {
   const fetchVendors = async () => {
     try {
       setLoading(true);
+      setError(null);
+      
+      console.log("Fetching vendors from Supabase...");
       const { data, error } = await supabase
         .from('vendors')
         .select('*')
@@ -56,10 +60,13 @@ const ManageVendors = () => {
       
       if (error) throw error;
       
+      console.log(`Fetched ${data?.length || 0} vendors:`, data);
+      
       // The data is now compatible with our Vendor interface
       setVendors(data || []);
     } catch (error: any) {
       console.error('Error fetching vendors:', error);
+      setError(error.message || 'Failed to load vendors.');
       toast({
         title: 'Error',
         description: error.message || 'Failed to load vendors.',
@@ -123,8 +130,18 @@ const ManageVendors = () => {
                 <p className="text-gray-500">Loading vendors...</p>
               </CardContent>
             </Card>
+          ) : error ? (
+            <Card>
+              <CardContent className="py-10 text-center">
+                <p className="text-red-500">{error}</p>
+                <Button onClick={fetchVendors} className="mt-4">Try Again</Button>
+              </CardContent>
+            </Card>
           ) : (
             <div className="mb-6">
+              <p className="mb-4 text-sm text-gray-500">
+                Showing {vendors.length} vendor{vendors.length !== 1 ? 's' : ''}
+              </p>
               <VendorTable 
                 vendors={vendors} 
                 onVendorUpdated={handleVendorUpdated} 

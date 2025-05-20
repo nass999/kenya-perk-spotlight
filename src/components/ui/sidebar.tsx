@@ -136,7 +136,7 @@ export function Sidebar() {
               
               {/* Only show vendor management to master admins */}
               {isMasterAdmin && (
-                <SidebarLink to="/dashboard/manage-vendors" active={location.pathname === '/dashboard/manage-vendors'} onClick={closeOnMobile}>
+                <SidebarLink to="/dashboard/manage-vendors" active={location.pathname.includes('/dashboard/manage-vendors')} onClick={closeOnMobile}>
                   <Store className="h-5 w-5 mr-3" />
                   Manage Vendors
                 </SidebarLink>
