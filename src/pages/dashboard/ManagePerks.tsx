@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
@@ -96,6 +97,7 @@ const ManagePerks = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPerk, setEditingPerk] = useState<Perk | null>(null);
   const [deletingPerk, setDeletingPerk] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   
   const form = useForm<PerkFormValues>({
     resolver: zodResolver(perkSchema),
@@ -146,7 +148,9 @@ const ManagePerks = () => {
   const fetchPerks = async () => {
     try {
       setLoading(true);
+      setError(null);
       
+      console.log("Fetching perks...");
       let query = supabase.from('perks').select('*');
       
       // Filter by company if company admin
@@ -161,10 +165,15 @@ const ManagePerks = () => {
       
       const { data, error } = await query;
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching perks:", error);
+        setError(error.message);
+        throw error;
+      }
       
+      console.log("Fetched perks:", data);
       setPerks(data as Perk[] || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching perks:', error);
       toast({
         variant: "destructive",
@@ -178,6 +187,8 @@ const ManagePerks = () => {
   
   const onSubmit = async (values: PerkFormValues) => {
     try {
+      console.log("Submitting perk form with values:", values);
+      
       const perkData = {
         ...values,
         company_id: authState.user?.role === 'company_admin' ? authState.user.company_id : null,
@@ -185,39 +196,63 @@ const ManagePerks = () => {
       
       if (editingPerk) {
         // Update existing perk
-        const { error } = await supabase
+        console.log("Updating perk with ID:", editingPerk.id);
+        const { data, error } = await supabase
           .from('perks')
           .update(perkData)
-          .eq('id', editingPerk.id);
+          .eq('id', editingPerk.id)
+          .select();
           
-        if (error) throw error;
+        if (error) {
+          console.error("Error updating perk:", error);
+          throw error;
+        }
+        
+        console.log("Perk update response:", data);
         
         toast({
           title: "Perk updated",
           description: `${values.name} has been successfully updated.`,
         });
+        
+        // Update the perk in the local state
+        setPerks(perks.map(p => p.id === editingPerk.id ? { ...p, ...perkData, id: editingPerk.id } as Perk : p));
       } else {
         // Create new perk
-        const { error } = await supabase
+        console.log("Creating new perk");
+        const { data, error } = await supabase
           .from('perks')
-          .insert([perkData]);
+          .insert([perkData])
+          .select();
           
-        if (error) throw error;
+        if (error) {
+          console.error("Error creating perk:", error);
+          throw error;
+        }
+        
+        console.log("Perk creation response:", data);
         
         toast({
           title: "Perk created",
           description: `${values.name} has been successfully added.`,
         });
+        
+        // Add the new perk to the local state if data is returned
+        if (data && data.length > 0) {
+          setPerks([...perks, data[0] as Perk]);
+        } else {
+          // If no data is returned, refresh perks from the database
+          fetchPerks();
+        }
       }
       
       setIsDialogOpen(false);
-      fetchPerks();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving perk:', error);
       toast({
         variant: "destructive",
         title: "Error saving perk",
-        description: "There was a problem saving the perk. Please try again.",
+        description: error.message || "There was a problem saving the perk. Please try again.",
       });
     }
   };
@@ -230,31 +265,41 @@ const ManagePerks = () => {
   const handleToggleStatus = async (perk: Perk) => {
     try {
       // Toggle the perk's enabled status
-      const { error } = await supabase
+      console.log(`Toggling status for perk ID ${perk.id} from ${perk.is_enabled} to ${!perk.is_enabled}`);
+      
+      const { data, error } = await supabase
         .from('perks')
         .update({ is_enabled: !perk.is_enabled })
-        .eq('id', perk.id);
+        .eq('id', perk.id)
+        .select();
         
-      if (error) throw error;
+      if (error) {
+        console.error("Error toggling perk status:", error);
+        throw error;
+      }
+      
+      console.log("Toggle status response:", data);
       
       toast({
         title: perk.is_enabled ? "Perk disabled" : "Perk enabled",
         description: `${perk.name} has been ${perk.is_enabled ? "disabled" : "enabled"}.`,
       });
       
-      fetchPerks();
-    } catch (error) {
+      // Update the perk in the local state
+      setPerks(perks.map(p => p.id === perk.id ? { ...p, is_enabled: !p.is_enabled } : p));
+    } catch (error: any) {
       console.error('Error toggling perk status:', error);
       toast({
         variant: "destructive",
         title: "Error updating perk",
-        description: "There was a problem updating the perk status. Please try again.",
+        description: error.message || "There was a problem updating the perk status. Please try again.",
       });
     }
   };
   
   const handleDelete = async (id: string) => {
     try {
+      console.log(`Deleting perk with ID: ${id}`);
       setDeletingPerk(id);
       
       const { error } = await supabase
@@ -262,20 +307,26 @@ const ManagePerks = () => {
         .delete()
         .eq('id', id);
         
-      if (error) throw error;
+      if (error) {
+        console.error("Error deleting perk:", error);
+        throw error;
+      }
+      
+      console.log("Perk successfully deleted");
       
       toast({
         title: "Perk deleted",
         description: "The perk has been successfully removed.",
       });
       
-      fetchPerks();
-    } catch (error) {
+      // Remove the perk from the local state
+      setPerks(perks.filter(perk => perk.id !== id));
+    } catch (error: any) {
       console.error('Error deleting perk:', error);
       toast({
         variant: "destructive",
         title: "Error deleting perk",
-        description: "There was a problem deleting the perk. Please try again.",
+        description: error.message || "There was a problem deleting the perk. Please try again.",
       });
     } finally {
       setDeletingPerk(null);
@@ -596,6 +647,17 @@ const ManagePerks = () => {
               <TableRow>
                 <TableCell colSpan={authState.user?.role === 'master_admin' ? 6 : 5} className="text-center py-8">
                   <div className="flex justify-center">Loading perks...</div>
+                </TableCell>
+              </TableRow>
+            ) : error ? (
+              <TableRow>
+                <TableCell colSpan={authState.user?.role === 'master_admin' ? 6 : 5} className="text-center py-8">
+                  <div className="flex justify-center text-red-500">
+                    {error}
+                    <Button variant="outline" onClick={fetchPerks} className="ml-2">
+                      Try Again
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : filteredPerks.length === 0 ? (
