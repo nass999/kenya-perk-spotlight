@@ -15,6 +15,7 @@ export interface Perk {
   created_at: string;
   is_enabled: boolean;
   valid_through_date: string | null;
+  is_deleted?: boolean;
 }
 
 export const categories = [
@@ -42,6 +43,7 @@ export const perkSchema = z.object({
   image_url: z.string().optional().nullable(),
   is_enabled: z.boolean().default(true),
   valid_through_date: z.string().optional().nullable(),
+  company_id: z.string().optional().nullable(),
 });
 
 export type PerkFormValues = z.infer<typeof perkSchema>;

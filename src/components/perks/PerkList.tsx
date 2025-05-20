@@ -21,9 +21,11 @@ interface PerkListProps {
   onEdit: (perk: Perk) => void;
   onToggleStatus: (perk: Perk) => Promise<void>;
   onDelete: (id: string) => void;
+  onRestore?: (id: string) => void;
   onRetry: () => void;
   deletingPerk: string | null;
   isMasterAdmin: boolean;
+  isDeletedList?: boolean;
 }
 
 export const PerkList = ({
@@ -33,9 +35,11 @@ export const PerkList = ({
   onEdit,
   onToggleStatus,
   onDelete,
+  onRestore,
   onRetry,
   deletingPerk,
   isMasterAdmin,
+  isDeletedList = false,
 }: PerkListProps) => {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -63,7 +67,7 @@ export const PerkList = ({
               <TableHead>Discount</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Valid Through</TableHead>
-              {isMasterAdmin && (
+              {isMasterAdmin && !isDeletedList && (
                 <TableHead>Status</TableHead>
               )}
               <TableHead className="text-right">Actions</TableHead>
@@ -72,13 +76,13 @@ export const PerkList = ({
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={isMasterAdmin ? 6 : 5} className="text-center py-8">
+                <TableCell colSpan={isMasterAdmin && !isDeletedList ? 6 : 5} className="text-center py-8">
                   <div className="flex justify-center">Loading perks...</div>
                 </TableCell>
               </TableRow>
             ) : error ? (
               <TableRow>
-                <TableCell colSpan={isMasterAdmin ? 6 : 5} className="text-center py-8">
+                <TableCell colSpan={isMasterAdmin && !isDeletedList ? 6 : 5} className="text-center py-8">
                   <div className="flex justify-center text-red-500">
                     {error}
                     <Button variant="outline" onClick={onRetry} className="ml-2">
@@ -89,10 +93,12 @@ export const PerkList = ({
               </TableRow>
             ) : filteredPerks.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={isMasterAdmin ? 6 : 5} className="text-center py-8">
+                <TableCell colSpan={isMasterAdmin && !isDeletedList ? 6 : 5} className="text-center py-8">
                   <div className="flex flex-col items-center">
                     <Tag className="h-8 w-8 text-gray-400 mb-2" />
-                    <p className="text-gray-500">No perks found</p>
+                    <p className="text-gray-500">
+                      {isDeletedList ? "No deleted perks found" : "No perks found"}
+                    </p>
                     {searchQuery && (
                       <p className="text-sm text-gray-400 mt-1">
                         Try adjusting your search
@@ -109,8 +115,10 @@ export const PerkList = ({
                   onEdit={onEdit}
                   onToggleStatus={onToggleStatus}
                   onDelete={onDelete}
+                  onRestore={onRestore}
                   deletingPerk={deletingPerk}
                   isMasterAdmin={isMasterAdmin}
+                  isDeletedList={isDeletedList}
                 />
               ))
             )}

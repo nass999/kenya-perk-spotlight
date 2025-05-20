@@ -2,15 +2,18 @@
 import { Perk, formatDate, isExpired } from './PerkTypes';
 import { Button } from '@/components/ui/button';
 import { TableCell, TableRow } from '@/components/ui/table';
-import { Pencil, Trash2, ToggleRight, ToggleLeft, Percent } from 'lucide-react';
+import { Pencil, Trash2, ToggleRight, ToggleLeft, Percent, RefreshCw } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface PerkItemProps {
   perk: Perk;
   onEdit: (perk: Perk) => void;
   onToggleStatus: (perk: Perk) => Promise<void>;
   onDelete: (id: string) => void;
+  onRestore?: (id: string) => void;
   deletingPerk: string | null;
   isMasterAdmin: boolean;
+  isDeletedList?: boolean;
 }
 
 export const PerkItem = ({
@@ -18,8 +21,10 @@ export const PerkItem = ({
   onEdit,
   onToggleStatus,
   onDelete,
+  onRestore,
   deletingPerk,
   isMasterAdmin,
+  isDeletedList = false,
 }: PerkItemProps) => {
   return (
     <TableRow className={isExpired(perk.valid_through_date) ? "bg-gray-50" : ""}>
@@ -28,6 +33,9 @@ export const PerkItem = ({
           <span>{perk.name}</span>
           {isExpired(perk.valid_through_date) && (
             <span className="text-xs text-red-500">Expired</span>
+          )}
+          {isDeletedList && (
+            <span className="text-xs text-red-500">Deleted</span>
           )}
         </div>
       </TableCell>
@@ -47,7 +55,7 @@ export const PerkItem = ({
           {formatDate(perk.valid_through_date)}
         </span>
       </TableCell>
-      {isMasterAdmin && (
+      {isMasterAdmin && !isDeletedList && (
         <TableCell>
           <div className="flex items-center">
             <span className={`h-2 w-2 rounded-full mr-2 ${perk.is_enabled ? 'bg-green-500' : 'bg-red-500'}`}></span>
@@ -57,32 +65,75 @@ export const PerkItem = ({
       )}
       <TableCell className="text-right">
         <div className="flex justify-end gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onEdit(perk)}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          {isMasterAdmin && (
+          {!isDeletedList && (
             <Button
-              variant={perk.is_enabled ? "outline" : "default"}
+              variant="outline"
               size="icon"
-              className={perk.is_enabled ? "text-gray-500 hover:text-gray-700" : "bg-green-500 hover:bg-green-600"}
-              onClick={() => onToggleStatus(perk)}
+              onClick={() => onEdit(perk)}
             >
-              {perk.is_enabled ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+              <Pencil className="h-4 w-4" />
             </Button>
           )}
-          <Button
-            variant="outline"
-            size="icon"
-            className="text-red-500 hover:text-red-700"
-            onClick={() => onDelete(perk.id)}
-            disabled={deletingPerk === perk.id}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          
+          {!isDeletedList && isMasterAdmin && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={perk.is_enabled ? "outline" : "default"}
+                    size="icon"
+                    className={perk.is_enabled ? "text-gray-500 hover:text-gray-700" : "bg-green-500 hover:bg-green-600"}
+                    onClick={() => onToggleStatus(perk)}
+                  >
+                    {perk.is_enabled ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {perk.is_enabled ? 'Disable perk' : 'Enable perk'}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          
+          {isDeletedList && onRestore && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="text-blue-500 hover:text-blue-700"
+                    onClick={() => onRestore(perk.id)}
+                    disabled={deletingPerk === perk.id}
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Restore perk
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="text-red-500 hover:text-red-700"
+                  onClick={() => onDelete(perk.id)}
+                  disabled={deletingPerk === perk.id}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {isDeletedList ? 'Permanently delete' : 'Delete perk'}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </TableCell>
     </TableRow>

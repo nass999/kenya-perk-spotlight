@@ -5,19 +5,29 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/components/ui/use-toast';
 import { PerkForm } from '@/components/perks/PerkForm';
 import { PerkList } from '@/components/perks/PerkList';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Perk, PerkFormValues } from '@/components/perks/PerkTypes';
+import { Button } from '@/components/ui/button';
+import { Share2 } from 'lucide-react';
+import { UserInviteDialog } from '@/components/users/UserInviteDialog';
 
 const ManagePerks = () => {
   const { authState } = useAuth();
   const [perks, setPerks] = useState<Perk[]>([]);
+  const [deletedPerks, setDeletedPerks] = useState<Perk[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingDeleted, setLoadingDeleted] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [editingPerk, setEditingPerk] = useState<Perk | null>(null);
   const [deletingPerk, setDeletingPerk] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [deletedError, setDeletedError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("active");
   
   useEffect(() => {
     fetchPerks();
+    fetchDeletedPerks();
   }, []);
   
   useEffect(() => {
@@ -32,8 +42,8 @@ const ManagePerks = () => {
       setLoading(true);
       setError(null);
       
-      console.log("Fetching perks...");
-      let query = supabase.from('perks').select('*');
+      console.log("Fetching active perks...");
+      let query = supabase.from('perks').select('*').eq('is_deleted', false);
       
       // Filter by company if company admin
       if (authState.user?.role === 'company_admin') {
@@ -53,7 +63,7 @@ const ManagePerks = () => {
         throw error;
       }
       
-      console.log("Fetched perks:", data);
+      console.log("Fetched active perks:", data);
       setPerks(data as Perk[] || []);
     } catch (error: any) {
       console.error('Error fetching perks:', error);
@@ -66,6 +76,40 @@ const ManagePerks = () => {
       setLoading(false);
     }
   };
+
+  const fetchDeletedPerks = async () => {
+    // Only fetch deleted perks for master admin
+    if (authState.user?.role !== 'master_admin') return;
+    
+    try {
+      setLoadingDeleted(true);
+      setDeletedError(null);
+      
+      console.log("Fetching deleted perks...");
+      const { data, error } = await supabase
+        .from('perks')
+        .select('*')
+        .eq('is_deleted', true);
+      
+      if (error) {
+        console.error("Error fetching deleted perks:", error);
+        setDeletedError(error.message);
+        throw error;
+      }
+      
+      console.log("Fetched deleted perks:", data);
+      setDeletedPerks(data as Perk[] || []);
+    } catch (error: any) {
+      console.error('Error fetching deleted perks:', error);
+      toast({
+        variant: "destructive",
+        title: "Error fetching deleted perks",
+        description: "Failed to load deleted perks. Please try again.",
+      });
+    } finally {
+      setLoadingDeleted(false);
+    }
+  };
   
   const handleSubmit = async (values: PerkFormValues) => {
     try {
@@ -73,7 +117,7 @@ const ManagePerks = () => {
       
       const perkData = {
         ...values,
-        company_id: authState.user?.role === 'company_admin' ? authState.user.company_id : null,
+        company_id: authState.user?.role === 'company_admin' ? authState.user.company_id : values.company_id,
       };
       
       if (editingPerk) {
@@ -101,7 +145,7 @@ const ManagePerks = () => {
         console.log("Creating new perk");
         const { data, error } = await supabase
           .from('perks')
-          .insert([perkData])
+          .insert([{ ...perkData, is_deleted: false }])
           .select();
           
         if (error) {
@@ -174,15 +218,53 @@ const ManagePerks = () => {
       });
     }
   };
+
+  const handleRestore = async (perkId: string) => {
+    try {
+      setDeletingPerk(perkId); // Reuse the state for restoration loading indicator
+      
+      const { error } = await supabase
+        .from('perks')
+        .update({ is_deleted: false })
+        .eq('id', perkId);
+        
+      if (error) {
+        console.error("Error restoring perk:", error);
+        throw error;
+      }
+      
+      toast({
+        title: "Perk restored",
+        description: "The perk has been successfully restored.",
+      });
+      
+      // Move perk from deleted list to active list
+      const restoredPerk = deletedPerks.find(p => p.id === perkId);
+      if (restoredPerk) {
+        setPerks(currentPerks => [...currentPerks, restoredPerk]);
+        setDeletedPerks(deletedPerks.filter(p => p.id !== perkId));
+      }
+    } catch (error: any) {
+      console.error('Error restoring perk:', error);
+      toast({
+        variant: "destructive",
+        title: "Error restoring perk",
+        description: error.message || "There was a problem restoring the perk. Please try again.",
+      });
+    } finally {
+      setDeletingPerk(null);
+    }
+  };
   
   const handleDelete = async (id: string) => {
     try {
       console.log(`Deleting perk with ID: ${id}`);
       setDeletingPerk(id);
       
+      // Instead of deleting, mark as deleted
       const { error } = await supabase
         .from('perks')
-        .delete()
+        .update({ is_deleted: true })
         .eq('id', id);
         
       if (error) {
@@ -195,8 +277,14 @@ const ManagePerks = () => {
         description: "The perk has been successfully removed.",
       });
       
-      // Remove the perk from the local state
+      // Remove the perk from the active list
+      const deletedPerk = perks.find(perk => perk.id === id);
       setPerks(perks.filter(perk => perk.id !== id));
+      
+      // Add to deleted perks list if master admin
+      if (authState.user?.role === 'master_admin' && deletedPerk) {
+        setDeletedPerks([...deletedPerks, { ...deletedPerk, is_deleted: true }]);
+      }
     } catch (error: any) {
       console.error('Error deleting perk:', error);
       toast({
@@ -209,32 +297,135 @@ const ManagePerks = () => {
     }
   };
 
+  const handlePermanentDelete = async (id: string) => {
+    try {
+      console.log(`Permanently deleting perk with ID: ${id}`);
+      setDeletingPerk(id);
+      
+      const { error } = await supabase
+        .from('perks')
+        .delete()
+        .eq('id', id);
+        
+      if (error) {
+        console.error("Error permanently deleting perk:", error);
+        throw error;
+      }
+      
+      toast({
+        title: "Perk permanently deleted",
+        description: "The perk has been permanently removed.",
+      });
+      
+      // Remove the perk from the deleted perks list
+      setDeletedPerks(deletedPerks.filter(perk => perk.id !== id));
+    } catch (error: any) {
+      console.error('Error permanently deleting perk:', error);
+      toast({
+        variant: "destructive",
+        title: "Error deleting perk",
+        description: error.message || "There was a problem deleting the perk. Please try again.",
+      });
+    } finally {
+      setDeletingPerk(null);
+    }
+  };
+
   const isMasterAdmin = authState.user?.role === 'master_admin';
+  const isCompanyAdmin = authState.user?.role === 'company_admin';
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Manage Perks</h1>
-        <PerkForm
-          isOpen={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-          onSubmit={handleSubmit}
-          editingPerk={editingPerk}
-          isCompanyAdmin={authState.user?.role === 'company_admin'}
-        />
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-bold">Manage Perks</h1>
+          <p className="text-gray-500 mt-1">Create, edit, and manage perks for your organization</p>
+        </div>
+        <div className="flex items-center gap-3">
+          {isCompanyAdmin && (
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2"
+              onClick={() => setIsInviteDialogOpen(true)}
+            >
+              <Share2 className="h-4 w-4" />
+              Invite Users
+            </Button>
+          )}
+          <PerkForm
+            isOpen={isDialogOpen}
+            onOpenChange={setIsDialogOpen}
+            onSubmit={handleSubmit}
+            editingPerk={editingPerk}
+            isCompanyAdmin={isCompanyAdmin}
+          />
+        </div>
       </div>
       
-      <PerkList
-        perks={perks}
-        loading={loading}
-        error={error}
-        onEdit={handleEdit}
-        onToggleStatus={handleToggleStatus}
-        onDelete={handleDelete}
-        onRetry={fetchPerks}
-        deletingPerk={deletingPerk}
-        isMasterAdmin={isMasterAdmin}
-      />
+      {isMasterAdmin && (
+        <Tabs 
+          defaultValue="active" 
+          value={activeTab} 
+          onValueChange={setActiveTab}
+          className="mb-6"
+        >
+          <TabsList>
+            <TabsTrigger value="active">Active Perks</TabsTrigger>
+            <TabsTrigger value="deleted">Deleted Perks</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="active">
+            <PerkList
+              perks={perks}
+              loading={loading}
+              error={error}
+              onEdit={handleEdit}
+              onToggleStatus={handleToggleStatus}
+              onDelete={handleDelete}
+              onRetry={fetchPerks}
+              deletingPerk={deletingPerk}
+              isMasterAdmin={isMasterAdmin}
+            />
+          </TabsContent>
+          
+          <TabsContent value="deleted">
+            <PerkList
+              perks={deletedPerks}
+              loading={loadingDeleted}
+              error={deletedError}
+              onEdit={() => {}} // No editing for deleted perks
+              onToggleStatus={() => {}} // No status toggle for deleted perks
+              onDelete={handlePermanentDelete}
+              onRestore={handleRestore}
+              onRetry={fetchDeletedPerks}
+              deletingPerk={deletingPerk}
+              isMasterAdmin={isMasterAdmin}
+              isDeletedList={true}
+            />
+          </TabsContent>
+        </Tabs>
+      )}
+      
+      {!isMasterAdmin && (
+        <PerkList
+          perks={perks}
+          loading={loading}
+          error={error}
+          onEdit={handleEdit}
+          onToggleStatus={handleToggleStatus}
+          onDelete={handleDelete}
+          onRetry={fetchPerks}
+          deletingPerk={deletingPerk}
+          isMasterAdmin={isMasterAdmin}
+        />
+      )}
+
+      {isCompanyAdmin && (
+        <UserInviteDialog
+          isOpen={isInviteDialogOpen}
+          onOpenChange={setIsInviteDialogOpen}
+        />
+      )}
     </div>
   );
 };
