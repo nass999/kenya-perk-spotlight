@@ -39,9 +39,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { PlusCircle, Pencil, Trash2, Tag, Percent, DollarSign } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, Tag, Percent, DollarSign, Calendar, Toggle } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { Switch } from '@/components/ui/switch';
 
 interface Perk {
   id: string;
@@ -55,6 +56,8 @@ interface Perk {
   terms_conditions: string | null;
   company_id: string | null;
   created_at: string;
+  is_enabled: boolean;
+  valid_through_date: string | null;
 }
 
 const categories = [
@@ -80,6 +83,8 @@ const perkSchema = z.object({
   expiry_date: z.string().optional().nullable(),
   terms_conditions: z.string().optional().nullable(),
   image_url: z.string().optional().nullable(),
+  is_enabled: z.boolean().default(true),
+  valid_through_date: z.string().optional().nullable(),
 });
 
 type PerkFormValues = z.infer<typeof perkSchema>;
@@ -104,6 +109,8 @@ const ManagePerks = () => {
       expiry_date: null,
       terms_conditions: null,
       image_url: null,
+      is_enabled: true,
+      valid_through_date: null,
     }
   });
   
@@ -131,6 +138,8 @@ const ManagePerks = () => {
         expiry_date: editingPerk.expiry_date ? new Date(editingPerk.expiry_date).toISOString().split('T')[0] : null,
         terms_conditions: editingPerk.terms_conditions,
         image_url: editingPerk.image_url,
+        is_enabled: editingPerk.is_enabled,
+        valid_through_date: editingPerk.valid_through_date ? new Date(editingPerk.valid_through_date).toISOString().split('T')[0] : null,
       });
     }
   }, [editingPerk, form]);
@@ -143,7 +152,12 @@ const ManagePerks = () => {
       
       // Filter by company if company admin
       if (authState.user?.role === 'company_admin') {
-        query = query.eq('company_id', authState.user.company_id);
+        // Company admins can only see active (enabled and not expired) perks
+        const today = new Date().toISOString().split('T')[0];
+        query = query
+          .eq('company_id', authState.user.company_id)
+          .or(`valid_through_date.gt.${today},valid_through_date.is.null`)
+          .eq('is_enabled', true);
       }
       
       const { data, error } = await query;
@@ -214,6 +228,32 @@ const ManagePerks = () => {
     setIsDialogOpen(true);
   };
   
+  const handleToggleStatus = async (perk: Perk) => {
+    try {
+      // Toggle the perk's enabled status
+      const { error } = await supabase
+        .from('perks')
+        .update({ is_enabled: !perk.is_enabled })
+        .eq('id', perk.id);
+        
+      if (error) throw error;
+      
+      toast({
+        title: perk.is_enabled ? "Perk disabled" : "Perk enabled",
+        description: `${perk.name} has been ${perk.is_enabled ? "disabled" : "enabled"}.`,
+      });
+      
+      fetchPerks();
+    } catch (error) {
+      console.error('Error toggling perk status:', error);
+      toast({
+        variant: "destructive",
+        title: "Error updating perk",
+        description: "There was a problem updating the perk status. Please try again.",
+      });
+    }
+  };
+  
   const handleDelete = async (id: string) => {
     try {
       setDeletingPerk(id);
@@ -248,8 +288,8 @@ const ManagePerks = () => {
     perk.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
-  const formatExpiryDate = (dateString: string | null) => {
-    if (!dateString) return 'No expiration';
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'No date set';
     
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -257,6 +297,14 @@ const ManagePerks = () => {
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  const isExpired = (dateString: string | null) => {
+    if (!dateString) return false;
+    
+    const today = new Date();
+    const validThrough = new Date(dateString);
+    return validThrough < today;
   };
 
   return (
@@ -403,7 +451,7 @@ const ManagePerks = () => {
                     name="expiry_date"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Expiry Date</FormLabel>
+                        <FormLabel>Redemption Expiry Date</FormLabel>
                         <FormControl>
                           <Input 
                             type="date" 
@@ -415,6 +463,52 @@ const ManagePerks = () => {
                       </FormItem>
                     )}
                   />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="valid_through_date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Valid Through Date</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="date" 
+                            {...field} 
+                            value={field.value || ''} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                        <p className="text-xs text-gray-500">
+                          After this date, the perk will be automatically hidden from users.
+                        </p>
+                      </FormItem>
+                    )}
+                  />
+
+                  {authState.user?.role === 'master_admin' && (
+                    <FormField
+                      control={form.control}
+                      name="is_enabled"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-end space-x-3 space-y-0 pt-8">
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1">
+                            <FormLabel>Enabled</FormLabel>
+                            <p className="text-xs text-gray-500">
+                              When disabled, this perk won't be visible to users.
+                            </p>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  )}
                 </div>
                 
                 <FormField
@@ -491,20 +585,23 @@ const ManagePerks = () => {
               <TableHead>Name</TableHead>
               <TableHead>Discount</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead>Expiry Date</TableHead>
+              <TableHead>Valid Through</TableHead>
+              {authState.user?.role === 'master_admin' && (
+                <TableHead>Status</TableHead>
+              )}
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">
+                <TableCell colSpan={authState.user?.role === 'master_admin' ? 6 : 5} className="text-center py-8">
                   <div className="flex justify-center">Loading perks...</div>
                 </TableCell>
               </TableRow>
             ) : filteredPerks.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">
+                <TableCell colSpan={authState.user?.role === 'master_admin' ? 6 : 5} className="text-center py-8">
                   <div className="flex flex-col items-center">
                     <Tag className="h-8 w-8 text-gray-400 mb-2" />
                     <p className="text-gray-500">No perks found</p>
@@ -518,8 +615,15 @@ const ManagePerks = () => {
               </TableRow>
             ) : (
               filteredPerks.map((perk) => (
-                <TableRow key={perk.id}>
-                  <TableCell className="font-medium">{perk.name}</TableCell>
+                <TableRow key={perk.id} className={isExpired(perk.valid_through_date) ? "bg-gray-50" : ""}>
+                  <TableCell className="font-medium">
+                    <div className="flex flex-col">
+                      <span>{perk.name}</span>
+                      {isExpired(perk.valid_through_date) && (
+                        <span className="text-xs text-red-500">Expired</span>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     {perk.discount_type === 'percentage' ? (
                       <span className="flex items-center">
@@ -531,7 +635,19 @@ const ManagePerks = () => {
                     )}
                   </TableCell>
                   <TableCell>{perk.category || 'Uncategorized'}</TableCell>
-                  <TableCell>{formatExpiryDate(perk.expiry_date)}</TableCell>
+                  <TableCell>
+                    <span className={isExpired(perk.valid_through_date) ? "text-red-500" : ""}>
+                      {formatDate(perk.valid_through_date)}
+                    </span>
+                  </TableCell>
+                  {authState.user?.role === 'master_admin' && (
+                    <TableCell>
+                      <div className="flex items-center">
+                        <span className={`h-2 w-2 rounded-full mr-2 ${perk.is_enabled ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                        <span>{perk.is_enabled ? 'Enabled' : 'Disabled'}</span>
+                      </div>
+                    </TableCell>
+                  )}
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button
@@ -541,6 +657,16 @@ const ManagePerks = () => {
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
+                      {authState.user?.role === 'master_admin' && (
+                        <Button
+                          variant={perk.is_enabled ? "outline" : "default"}
+                          size="icon"
+                          className={perk.is_enabled ? "text-gray-500 hover:text-gray-700" : "bg-green-500 hover:bg-green-600"}
+                          onClick={() => handleToggleStatus(perk)}
+                        >
+                          <Toggle className="h-4 w-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="outline"
                         size="icon"

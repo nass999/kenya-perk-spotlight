@@ -18,6 +18,7 @@ import Unauthorized from "./pages/Unauthorized";
 import BrowsePerks from "./pages/dashboard/BrowsePerks";
 import MyRedemptions from "./pages/dashboard/MyRedemptions";
 import ManagePerks from "./pages/dashboard/ManagePerks";
+import VendorRecommendations from "./pages/dashboard/VendorRecommendations";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/dashboard/browse-perks" element={<BrowsePerks />} />
                 <Route path="/dashboard/my-redemptions" element={<MyRedemptions />} />
+                <Route path="/dashboard/vendor-recommendations" element={<VendorRecommendations />} />
               </Route>
             </Route>
             

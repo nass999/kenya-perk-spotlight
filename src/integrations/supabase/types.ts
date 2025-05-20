@@ -20,9 +20,11 @@ export type Database = {
           expiry_date: string | null
           id: string
           image_url: string | null
+          is_enabled: boolean | null
           name: string
           redemption_code: string | null
           terms_conditions: string | null
+          valid_through_date: string | null
         }
         Insert: {
           category?: string | null
@@ -34,9 +36,11 @@ export type Database = {
           expiry_date?: string | null
           id?: string
           image_url?: string | null
+          is_enabled?: boolean | null
           name: string
           redemption_code?: string | null
           terms_conditions?: string | null
+          valid_through_date?: string | null
         }
         Update: {
           category?: string | null
@@ -48,9 +52,11 @@ export type Database = {
           expiry_date?: string | null
           id?: string
           image_url?: string | null
+          is_enabled?: boolean | null
           name?: string
           redemption_code?: string | null
           terms_conditions?: string | null
+          valid_through_date?: string | null
         }
         Relationships: []
       }
@@ -78,6 +84,45 @@ export type Database = {
           full_name?: string | null
           id?: string
           role?: string | null
+        }
+        Relationships: []
+      }
+      vendor_recommendations: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          user_id: string
+          vendor_name: string
+          website: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id: string
+          vendor_name: string
+          website?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id?: string
+          vendor_name?: string
+          website?: string | null
         }
         Relationships: []
       }

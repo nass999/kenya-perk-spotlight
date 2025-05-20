@@ -19,6 +19,8 @@ interface Perk {
   discount_type: 'percentage' | 'fixed';
   category: string | null;
   expiry_date: string | null;
+  is_enabled: boolean;
+  valid_through_date: string | null;
 }
 
 const categories = [
@@ -45,9 +47,14 @@ const BrowsePerks = () => {
       try {
         setLoading(true);
         
+        // Get today's date for filtering
+        const today = new Date().toISOString().split('T')[0];
+        
         let query = supabase
           .from('perks')
-          .select('*');
+          .select('*')
+          .eq('is_enabled', true)
+          .or(`valid_through_date.gt.${today},valid_through_date.is.null`);
           
         // If user is an employee, only show perks available to their company
         if (authState.user?.role === 'employee' && authState.user?.company_id) {
@@ -199,9 +206,14 @@ const BrowsePerks = () => {
               </div>
               <CardHeader>
                 <CardTitle>{perk.name}</CardTitle>
+                {perk.valid_through_date && (
+                  <p className="text-xs text-gray-500">
+                    Valid through: {formatExpiryDate(perk.valid_through_date)}
+                  </p>
+                )}
                 {perk.expiry_date && (
                   <p className="text-xs text-gray-500">
-                    Expires: {formatExpiryDate(perk.expiry_date)}
+                    Redemption expires: {formatExpiryDate(perk.expiry_date)}
                   </p>
                 )}
               </CardHeader>
