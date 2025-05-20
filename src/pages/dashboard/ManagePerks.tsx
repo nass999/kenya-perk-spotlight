@@ -27,6 +27,16 @@ const ManagePerks = () => {
   useEffect(() => {
     fetchPerks();
     fetchDeletedPerks();
+    
+    // Listen for refresh events from the PerkSelectList component
+    const handleRefreshPerks = () => {
+      fetchPerks();
+    };
+    window.addEventListener('refreshPerks', handleRefreshPerks);
+    
+    return () => {
+      window.removeEventListener('refreshPerks', handleRefreshPerks);
+    };
   }, []);
   
   useEffect(() => {
@@ -110,13 +120,23 @@ const ManagePerks = () => {
     }
   };
   
+  // For company admins, we don't need the handleSubmit function as they can't create/edit perks
   const handleSubmit = async (values: PerkFormValues) => {
+    // Only allow master admins to create or edit perks
+    if (authState.user?.role !== 'master_admin') {
+      toast({
+        variant: "destructive",
+        title: "Permission denied",
+        description: "Only master admins can create or edit perks.",
+      });
+      return;
+    }
+    
     try {
       console.log("Submitting perk form with values:", values);
       
       const perkData = {
         ...values,
-        company_id: authState.user?.role === 'company_admin' ? authState.user.company_id : values.company_id,
       };
       
       if (editingPerk) {
@@ -182,6 +202,16 @@ const ManagePerks = () => {
   };
   
   const handleEdit = (perk: Perk) => {
+    // Only allow master admins to edit perks
+    if (authState.user?.role !== 'master_admin') {
+      toast({
+        variant: "destructive",
+        title: "Permission denied",
+        description: "Only master admins can edit perks.",
+      });
+      return;
+    }
+    
     setEditingPerk(perk);
     setIsDialogOpen(true);
   };
@@ -343,7 +373,11 @@ const ManagePerks = () => {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold">Manage Perks</h1>
-          <p className="text-gray-500 mt-1">Create, edit, and manage perks for your organization</p>
+          <p className="text-gray-500 mt-1">
+            {isCompanyAdmin 
+              ? "Select and manage perks for your organization" 
+              : "Create, edit, and manage perks for your organization"}
+          </p>
         </div>
         <div className="flex items-center gap-3">
           {isCompanyAdmin && (
