@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
@@ -13,7 +14,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile'; // Fixed import name
 
 interface SidebarLinkProps {
   to: string;
@@ -30,8 +31,8 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({ to, active, children, onClick
 
 export function Sidebar() {
   const location = useLocation();
-  const { authState } = useAuth();
-  const isMobile = useMobile();
+  const { authState, signOut } = useAuth(); // Destructure signOut from useAuth
+  const isMobile = useIsMobile(); // Fixed function name
   const [isOpen, setIsOpen] = useState(!isMobile);
   
   useEffect(() => {
@@ -133,7 +134,7 @@ export function Sidebar() {
               <p className="text-xs text-gray-500">{authState.user?.email}</p>
             </div>
           </div>
-          <Button variant="outline" className="w-full mt-4" onClick={authState.signOut}>
+          <Button variant="outline" className="w-full mt-4" onClick={signOut}>
             Sign Out
           </Button>
         </div>
