@@ -15,6 +15,7 @@ export const useUserManagement = () => {
   const isMasterAdmin = authState.user?.role === 'master_admin';
   const companyId = authState.user?.company_id;
   const isAuthorized = ['master_admin', 'company_admin'].includes(authState.user?.role || '');
+  const currentUserId = authState.user?.id || '';
 
   const fetchUsers = async () => {
     try {
@@ -97,6 +98,7 @@ export const useUserManagement = () => {
     isMasterAdmin,
     isAuthorized,
     fetchUsers,
-    updateUserRole
+    updateUserRole,
+    currentUserId
   };
 };

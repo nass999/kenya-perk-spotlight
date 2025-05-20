@@ -16,12 +16,13 @@ const ManageUsers = () => {
     isMasterAdmin,
     isAuthorized,
     fetchUsers,
-    updateUserRole
+    updateUserRole,
+    currentUserId
   } = useUserManagement();
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
 
   if (!isAuthorized) {
     return (
@@ -76,7 +77,7 @@ const ManageUsers = () => {
               users={users}
               updating={updating}
               isMasterAdmin={isMasterAdmin}
-              currentUserId={useUserManagement().authState.user?.id || ''}
+              currentUserId={currentUserId}
               onUpdateUserRole={updateUserRole}
             />
           )}
