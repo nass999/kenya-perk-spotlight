@@ -1,14 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   BarChart, 
   ShoppingBag, 
   Users, 
-  CreditCard
+  CreditCard,
+  UserPlus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { DashboardStats } from '@/types/dashboard';
+import { UserInviteDialog } from '@/components/users/UserInviteDialog';
 
 interface CompanyAdminDashboardProps {
   stats: DashboardStats;
@@ -16,13 +18,21 @@ interface CompanyAdminDashboardProps {
 }
 
 const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, welcomeMessage }) => {
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">{welcomeMessage}</h1>
-        <p className="mt-2 text-gray-500">
-          Company Admin Dashboard - Manage your organization's rewards
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">{welcomeMessage}</h1>
+          <p className="mt-2 text-gray-500">
+            Company Admin Dashboard - Manage your organization's rewards
+          </p>
+        </div>
+        <Button onClick={() => setInviteDialogOpen(true)} className="flex items-center gap-2">
+          <UserPlus className="h-4 w-4" />
+          Invite Users
+        </Button>
       </div>
       
       <div className="grid gap-6 md:grid-cols-3">
@@ -123,6 +133,12 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
           </div>
         </div>
       </div>
+
+      {/* User Invite Dialog */}
+      <UserInviteDialog 
+        isOpen={inviteDialogOpen} 
+        onOpenChange={setInviteDialogOpen} 
+      />
     </div>
   );
 };

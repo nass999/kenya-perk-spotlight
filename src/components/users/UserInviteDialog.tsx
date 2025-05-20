@@ -8,14 +8,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from '@/components/ui/use-toast';
-import { Copy, Mail, Plus } from 'lucide-react';
+import { Copy, Mail, Plus, UserPlus, SendHorizontal } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 
 interface UserInviteDialogProps {
   isOpen: boolean;
@@ -64,14 +63,33 @@ export const UserInviteDialog = ({ isOpen, onOpenChange }: UserInviteDialogProps
         return;
       }
       
-      // In a real application, you would send emails here
-      // For now, just show the invitation link
+      // Store invitation link for display
       setInviteLink(registrationLink);
       
+      // Send email invitations
+      for (const email of validEmails) {
+        try {
+          // Use Supabase function to send email
+          const { error } = await supabase.functions.invoke('send-invitation', {
+            body: { 
+              email,
+              inviterName: authState.user?.full_name || 'Your colleague',
+              companyId: authState.user?.company_id,
+              registrationLink
+            }
+          });
+          
+          if (error) throw error;
+        } catch (emailError) {
+          console.error('Error sending invitation to', email, emailError);
+        }
+      }
+      
       toast({
-        title: "Registration link generated",
-        description: "Copy and share this link with your team members to register.",
+        title: "Invitations sent",
+        description: `Successfully sent invitations to ${validEmails.length} email(s).`,
       });
+      
     } catch (error) {
       console.error('Error sending invites:', error);
       toast({
@@ -167,8 +185,13 @@ export const UserInviteDialog = ({ isOpen, onOpenChange }: UserInviteDialogProps
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSendInvites} disabled={loading}>
-            {loading ? "Sending..." : "Send Invites"}
+          <Button onClick={handleSendInvites} disabled={loading} className="flex items-center gap-2">
+            {loading ? "Sending..." : (
+              <>
+                <SendHorizontal className="h-4 w-4" />
+                Send Invites
+              </>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
