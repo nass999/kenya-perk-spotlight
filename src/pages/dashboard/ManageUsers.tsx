@@ -31,8 +31,10 @@ const ManageUsers = () => {
   const [error, setError] = useState<string | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
 
-  // Only master_admin should access this page
+  // Allow both master_admin and company_admin to access this page
+  const isAuthorized = ['master_admin', 'company_admin'].includes(authState.user?.role || '');
   const isMasterAdmin = authState.user?.role === 'master_admin';
+  const companyId = authState.user?.company_id;
 
   useEffect(() => {
     fetchUsers();
@@ -43,11 +45,14 @@ const ManageUsers = () => {
       setLoading(true);
       setError(null);
       
-      // Fetch all users from the 'users' table
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .order('created_at', { ascending: false });
+      let query = supabase.from('users').select('*');
+      
+      // Company admins can only see users from their company
+      if (!isMasterAdmin && companyId) {
+        query = query.eq('company_id', companyId);
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) throw error;
       
@@ -67,6 +72,16 @@ const ManageUsers = () => {
 
   const updateUserRole = async (userId: string, newRole: UserRole) => {
     try {
+      // Company admins cannot create master_admins
+      if (authState.user?.role === 'company_admin' && newRole === 'master_admin') {
+        toast({
+          variant: "destructive",
+          title: "Permission denied",
+          description: "Company admins cannot promote users to Master Admin role."
+        });
+        return;
+      }
+      
       setUpdating(userId);
       
       // Update the user's role in the 'users' table
@@ -98,13 +113,13 @@ const ManageUsers = () => {
     }
   };
 
-  if (!isMasterAdmin) {
+  if (!isAuthorized) {
     return (
       <div className="container mx-auto py-10">
         <Alert variant="destructive">
           <AlertTitle>Unauthorized Access</AlertTitle>
           <AlertDescription>
-            You do not have permission to access this page. This area is restricted to Master Admins.
+            You do not have permission to access this page. This area is restricted to Admins.
           </AlertDescription>
         </Alert>
       </div>
@@ -116,7 +131,12 @@ const ManageUsers = () => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold">Manage Users</h1>
-          <p className="text-gray-500">Manage user roles and permissions</p>
+          <p className="text-gray-500">
+            {isMasterAdmin 
+              ? "Manage all user roles and permissions"
+              : "Manage users in your organization"
+            }
+          </p>
         </div>
         <Button onClick={fetchUsers} variant="outline" disabled={loading}>
           <Users className="mr-2 h-4 w-4" />
@@ -135,7 +155,10 @@ const ManageUsers = () => {
         <CardHeader>
           <CardTitle>User Management</CardTitle>
           <CardDescription>
-            View and modify user roles. Role changes take effect immediately.
+            {isMasterAdmin 
+              ? "View and modify user roles. Role changes take effect immediately."
+              : "View and modify roles for users in your organization. Role changes take effect immediately."
+            }
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -179,7 +202,12 @@ const ManageUsers = () => {
                       <Select
                         value={user.role}
                         onValueChange={(value) => updateUserRole(user.id, value as UserRole)}
-                        disabled={updating === user.id || user.id === authState.user?.id}
+                        disabled={
+                          updating === user.id || 
+                          user.id === authState.user?.id ||
+                          // Company admins can't modify master admins
+                          (!isMasterAdmin && user.role === 'master_admin')
+                        }
                       >
                         <SelectTrigger className="w-[180px]">
                           <SelectValue placeholder="Select role" />
@@ -187,7 +215,10 @@ const ManageUsers = () => {
                         <SelectContent>
                           <SelectItem value="employee">Employee</SelectItem>
                           <SelectItem value="company_admin">Company Admin</SelectItem>
-                          <SelectItem value="master_admin">Master Admin</SelectItem>
+                          {/* Only master admins can assign master admin role */}
+                          {isMasterAdmin && (
+                            <SelectItem value="master_admin">Master Admin</SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                     </TableCell>
