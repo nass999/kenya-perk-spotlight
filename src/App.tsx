@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
@@ -18,7 +19,8 @@ import BrowsePerks from './pages/dashboard/BrowsePerks';
 import MyRedemptions from './pages/dashboard/MyRedemptions';
 import VendorRecommendations from './pages/dashboard/VendorRecommendations';
 import ManagePerks from './pages/dashboard/ManagePerks';
-import ManageUsers from './pages/dashboard/ManageUsers'; // Import the new page
+import ManageUsers from './pages/dashboard/ManageUsers';
+import ManageVendors from './pages/dashboard/ManageVendors'; // Add the new page
 
 // Components
 import DashboardLayout from './components/DashboardLayout';
@@ -45,9 +47,10 @@ function App() {
                 <Route path="my-redemptions" element={<MyRedemptions />} />
                 <Route path="vendor-recommendations" element={<VendorRecommendations />} />
                 
-                {/* Admin Routes - Add the new route for user management */}
+                {/* Admin Routes */}
                 <Route path="manage-perks" element={<ManagePerks />} />
                 <Route path="manage-users" element={<ManageUsers />} />
+                <Route path="manage-vendors" element={<ManageVendors />} /> {/* Add the new route */}
               </Route>
             </Route>
             

@@ -10,12 +10,13 @@ import {
   Menu,
   X,
   Home,
+  Store,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useIsMobile } from '@/hooks/use-mobile'; // Fixed import name
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SidebarLinkProps {
   to: string;
@@ -32,8 +33,8 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({ to, active, children, onClick
 
 export function Sidebar() {
   const location = useLocation();
-  const { authState, signOut } = useAuth(); // Destructure signOut from useAuth
-  const isMobile = useIsMobile(); // Fixed function name
+  const { authState, signOut } = useAuth();
+  const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(!isMobile);
   
   useEffect(() => {
@@ -92,10 +93,13 @@ export function Sidebar() {
             Browse Perks
           </SidebarLink>
           
-          <SidebarLink to="/dashboard/my-redemptions" active={location.pathname === '/dashboard/my-redemptions'} onClick={closeOnMobile}>
-            <TicketCheck className="h-5 w-5 mr-3" />
-            My Redemptions
-          </SidebarLink>
+          {/* Only show My Redemptions for non-master admins */}
+          {userRole !== 'master_admin' && (
+            <SidebarLink to="/dashboard/my-redemptions" active={location.pathname === '/dashboard/my-redemptions'} onClick={closeOnMobile}>
+              <TicketCheck className="h-5 w-5 mr-3" />
+              My Redemptions
+            </SidebarLink>
+          )}
           
           <SidebarLink to="/dashboard/vendor-recommendations" active={location.pathname === '/dashboard/vendor-recommendations'} onClick={closeOnMobile}>
             <Star className="h-5 w-5 mr-3" />
@@ -118,12 +122,19 @@ export function Sidebar() {
                 Manage Perks
               </SidebarLink>
               
-              {/* Only show user management to master admins */}
+              {/* Only show user management and vendor management to master admins */}
               {isMasterAdmin && (
-                <SidebarLink to="/dashboard/manage-users" active={location.pathname === '/dashboard/manage-users'} onClick={closeOnMobile}>
-                  <Users className="h-5 w-5 mr-3" />
-                  Manage Users
-                </SidebarLink>
+                <>
+                  <SidebarLink to="/dashboard/manage-users" active={location.pathname === '/dashboard/manage-users'} onClick={closeOnMobile}>
+                    <Users className="h-5 w-5 mr-3" />
+                    Manage Users
+                  </SidebarLink>
+                  
+                  <SidebarLink to="/dashboard/manage-vendors" active={location.pathname === '/dashboard/manage-vendors'} onClick={closeOnMobile}>
+                    <Store className="h-5 w-5 mr-3" />
+                    Manage Vendors
+                  </SidebarLink>
+                </>
               )}
             </>
           )}

@@ -25,6 +25,7 @@ export type Database = {
           redemption_code: string | null
           terms_conditions: string | null
           valid_through_date: string | null
+          vendor_id: string | null
         }
         Insert: {
           category?: string | null
@@ -41,6 +42,7 @@ export type Database = {
           redemption_code?: string | null
           terms_conditions?: string | null
           valid_through_date?: string | null
+          vendor_id?: string | null
         }
         Update: {
           category?: string | null
@@ -57,8 +59,17 @@ export type Database = {
           redemption_code?: string | null
           terms_conditions?: string | null
           valid_through_date?: string | null
+          vendor_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "perks_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       users: {
         Row: {
@@ -122,6 +133,45 @@ export type Database = {
           status?: string
           user_id?: string
           vendor_name?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      vendors: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          discount_percentage: number | null
+          id: string
+          logo_url: string | null
+          name: string
+          status: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          discount_percentage?: number | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          status?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          discount_percentage?: number | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          status?: string
+          updated_at?: string
           website?: string | null
         }
         Relationships: []

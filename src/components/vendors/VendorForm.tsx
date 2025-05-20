@@ -1,0 +1,195 @@
+
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+
+const vendorSchema = z.object({
+  name: z.string().min(2, { message: 'Vendor name must be at least 2 characters' }),
+  description: z.string().optional(),
+  website: z.string().url({ message: 'Please enter a valid URL' }).optional().or(z.literal('')),
+  discount_percentage: z.number().min(0).max(100).default(0),
+});
+
+type VendorFormValues = z.infer<typeof vendorSchema>;
+
+interface VendorFormProps {
+  onSuccess?: () => void;
+  initialValues?: Partial<VendorFormValues>;
+  vendorId?: string;
+}
+
+const VendorForm: React.FC<VendorFormProps> = ({ 
+  onSuccess, 
+  initialValues = {
+    name: '',
+    description: '',
+    website: '',
+    discount_percentage: 0,
+  },
+  vendorId 
+}) => {
+  const { toast } = useToast();
+  const { authState } = useAuth();
+  const isEdit = Boolean(vendorId);
+
+  const form = useForm<VendorFormValues>({
+    resolver: zodResolver(vendorSchema),
+    defaultValues: initialValues,
+  });
+
+  const onSubmit = async (data: VendorFormValues) => {
+    try {
+      if (isEdit) {
+        // Update existing vendor
+        const { error } = await supabase
+          .from('vendors')
+          .update({
+            name: data.name,
+            description: data.description || null,
+            website: data.website || null,
+            discount_percentage: data.discount_percentage,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', vendorId);
+
+        if (error) throw error;
+        toast({
+          title: 'Vendor updated',
+          description: 'The vendor has been successfully updated.',
+        });
+      } else {
+        // Create new vendor
+        const { error } = await supabase
+          .from('vendors')
+          .insert({
+            name: data.name,
+            description: data.description || null,
+            website: data.website || null,
+            discount_percentage: data.discount_percentage,
+            created_by: authState.user?.id,
+          });
+
+        if (error) throw error;
+        form.reset();
+        toast({
+          title: 'Vendor added',
+          description: 'The vendor has been successfully added.',
+        });
+      }
+      
+      if (onSuccess) onSuccess();
+    } catch (error: any) {
+      console.error('Error saving vendor:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to save vendor.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{isEdit ? 'Edit Vendor' : 'Add New Vendor'}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Vendor Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter vendor name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter vendor description" 
+                      {...field} 
+                      value={field.value || ''}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="website"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Website</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="https://example.com" 
+                      {...field} 
+                      value={field.value || ''}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Enter the vendor's website URL
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="discount_percentage"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Discount Percentage</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      min="0" 
+                      max="100" 
+                      placeholder="0" 
+                      {...field}
+                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Enter a value between 0 and 100
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <Button type="submit" className="w-full">
+              {isEdit ? 'Update Vendor' : 'Add Vendor'}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default VendorForm;
