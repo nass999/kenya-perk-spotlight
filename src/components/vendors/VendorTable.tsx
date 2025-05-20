@@ -30,9 +30,10 @@ interface Vendor {
   name: string;
   description: string | null;
   website: string | null;
-  status: 'active' | 'on_hold';
+  status: string; // Updated to match the ManageVendors.tsx interface
   discount_percentage: number;
   created_at: string;
+  logo_url?: string | null;
 }
 
 interface VendorTableProps {

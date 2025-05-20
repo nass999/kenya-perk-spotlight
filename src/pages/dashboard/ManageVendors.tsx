@@ -17,14 +17,18 @@ import VendorTable from '@/components/vendors/VendorTable';
 import BulkVendorImport from '@/components/vendors/BulkVendorImport';
 import { Store, RefreshCcw } from 'lucide-react';
 
+// Update the interface to make status accept any string, but use type assertion when needed
 interface Vendor {
   id: string;
   name: string;
   description: string | null;
   website: string | null;
-  status: 'active' | 'on_hold';
+  status: string; // Changed from 'active' | 'on_hold' to string
   discount_percentage: number;
   created_at: string;
+  logo_url?: string | null;
+  created_by?: string | null;
+  updated_at?: string;
 }
 
 const ManageVendors = () => {
@@ -52,6 +56,7 @@ const ManageVendors = () => {
       
       if (error) throw error;
       
+      // The data is now compatible with our Vendor interface
       setVendors(data || []);
     } catch (error: any) {
       console.error('Error fetching vendors:', error);
