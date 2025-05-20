@@ -66,3 +66,11 @@ export const isExpired = (dateString: string | null) => {
   const validThrough = new Date(dateString);
   return validThrough < today;
 };
+
+export interface PerkFormProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSubmit: (values: PerkFormValues) => Promise<void>;
+  editingPerk: Perk | null;
+  isCompanyAdmin: boolean;
+}

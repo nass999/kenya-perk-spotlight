@@ -187,7 +187,7 @@ const ManagePerks = () => {
     setIsDialogOpen(true);
   };
   
-  const handleToggleStatus = async (perk: Perk) => {
+  const handleToggleStatus = async (perk: Perk): Promise<void> => {
     try {
       // Toggle the perk's enabled status
       console.log(`Toggling status for perk ID ${perk.id} from ${perk.is_enabled} to ${!perk.is_enabled}`);
