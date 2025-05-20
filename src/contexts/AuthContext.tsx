@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -68,10 +69,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.log("User signed in or updated, fetching user data...");
           await fetchUserData(session.user.id);
           
-          // Navigate to dashboard on sign in
+          // Navigate to dashboard on sign in - Fixed: move this outside of async function
           if (event === 'SIGNED_IN') {
             console.log("Navigating to dashboard after sign in");
-            navigate('/dashboard');
+            // Use setTimeout to avoid React state update conflicts
+            setTimeout(() => {
+              navigate('/dashboard');
+            }, 0);
           }
         } else if (event === 'SIGNED_OUT') {
           console.log("User signed out, clearing auth state");

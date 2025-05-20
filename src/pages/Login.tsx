@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -76,9 +77,12 @@ const Login = () => {
         description: "Welcome back to Africa Rewards Network!"
       });
       
-      // Short delay to show success state, then redirect will happen via auth state change
+      // Short delay to show success state before redirect
+      // Navigation will happen via auth state change in AuthContext
+      console.log("Setting timeout before manual redirect fallback");
       setTimeout(() => {
-        if (window.location.pathname !== '/dashboard') {
+        if (document.location.pathname !== '/dashboard') {
+          console.log("Manual redirect fallback triggered");
           navigate('/dashboard');
         }
       }, 1500);
