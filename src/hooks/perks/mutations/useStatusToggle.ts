@@ -20,7 +20,11 @@ export const useStatusToggle = ({ perks, setPerks }: UseStatusToggleProps) => {
       // Update in Supabase first
       const { error, data } = await supabase
         .from('perks')
-        .update({ is_enabled: newEnabledStatus })
+        .update({ 
+          is_enabled: newEnabledStatus,
+          // Ensure is_deleted flag is explicitly set to maintain consistency
+          is_deleted: perk.is_deleted || false
+        })
         .eq('id', perk.id)
         .select();
         

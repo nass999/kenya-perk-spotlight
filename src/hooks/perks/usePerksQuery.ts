@@ -24,24 +24,12 @@ export const usePerksQuery = () => {
       
       console.log("Fetching active perks with user role:", authState.user?.role);
       
-      // Start with a query to select all non-deleted perks
-      // Use explicit comparison for boolean values
-      let query = supabase
+      // With RLS enabled, we now get the perks based on the user's role permissions
+      // We just need to filter by is_deleted flag
+      const { data, error } = await supabase
         .from('perks')
         .select('*')
         .eq('is_deleted', false);
-      
-      // Filter by company if company admin
-      if (isCompanyAdmin && authState.user?.company_id) {
-        console.log("Filtering perks for company:", authState.user.company_id);
-        // Company admins can only see active (enabled and not expired) perks
-        const today = new Date().toISOString().split('T')[0];
-        query = query
-          .eq('company_id', authState.user.company_id)
-          .or(`valid_through_date.gt.${today},valid_through_date.is.null`);
-      }
-      
-      const { data, error } = await query;
       
       if (error) {
         console.error("Error fetching perks:", error);
@@ -71,7 +59,7 @@ export const usePerksQuery = () => {
       setDeletedError(null);
       
       console.log("Fetching deleted perks...");
-      // Use explicit boolean comparison
+      // With RLS enabled, master admins can still access deleted perks
       const { data, error } = await supabase
         .from('perks')
         .select('*')
