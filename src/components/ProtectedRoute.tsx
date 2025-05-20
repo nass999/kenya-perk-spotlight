@@ -2,12 +2,14 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserRole } from '@/lib/supabase';
+import React from 'react';
 
 interface ProtectedRouteProps {
   allowedRoles?: UserRole[];
+  children?: React.ReactNode;
 }
 
-const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
   const { authState } = useAuth();
   const location = useLocation();
   
@@ -42,7 +44,8 @@ const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
   
   // User is authenticated and authorized
   console.log("User authenticated and authorized, rendering protected content");
-  return <Outlet />;
+  // Return children if provided, otherwise return Outlet for nested routes
+  return children ? <>{children}</> : <Outlet />;
 };
 
 export default ProtectedRoute;

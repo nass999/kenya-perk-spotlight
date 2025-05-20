@@ -51,36 +51,21 @@ function App() {
                 <Route path="vendor-recommendations" element={<VendorRecommendations />} />
                 
                 {/* Admin Routes */}
-                <Route 
-                  path="manage-perks" 
-                  element={
-                    <ProtectedRoute 
-                      allowedRoles={['master_admin', 'company_admin'] as UserRole[]} 
-                    >
-                      <ManagePerks />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="manage-users" 
-                  element={
-                    <ProtectedRoute 
-                      allowedRoles={['master_admin', 'company_admin'] as UserRole[]} 
-                    >
-                      <ManageUsers />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="manage-vendors" 
-                  element={
-                    <ProtectedRoute 
-                      allowedRoles={['master_admin'] as UserRole[]} 
-                    >
-                      <ManageVendors />
-                    </ProtectedRoute>
-                  } 
-                />
+                <Route path="manage-perks" element={
+                  <ProtectedRoute allowedRoles={['master_admin', 'company_admin'] as UserRole[]}>
+                    <ManagePerks />
+                  </ProtectedRoute>
+                } />
+                <Route path="manage-users" element={
+                  <ProtectedRoute allowedRoles={['master_admin', 'company_admin'] as UserRole[]}>
+                    <ManageUsers />
+                  </ProtectedRoute>
+                } />
+                <Route path="manage-vendors" element={
+                  <ProtectedRoute allowedRoles={['master_admin'] as UserRole[]}>
+                    <ManageVendors />
+                  </ProtectedRoute>
+                } />
               </Route>
             </Route>
             
