@@ -11,24 +11,54 @@ export type Database = {
           id: string;
           email: string;
           created_at: string;
-          role: 'master_admin' | 'company_admin' | 'employee';
+          role: 'master_admin' | 'company_admin' | 'employee' | 'vendor';
           full_name: string;
           company_id: string | null;
           is_active: boolean;
         };
         Insert: {
           email: string;
-          role?: 'master_admin' | 'company_admin' | 'employee';
+          role?: 'master_admin' | 'company_admin' | 'employee' | 'vendor';
           full_name?: string;
           company_id?: string | null;
           is_active?: boolean;
         };
         Update: {
           email?: string;
-          role?: 'master_admin' | 'company_admin' | 'employee';
+          role?: 'master_admin' | 'company_admin' | 'employee' | 'vendor';
           full_name?: string;
           company_id?: string | null;
           is_active?: boolean;
+        };
+      };
+      vendor_profiles: {
+        Row: {
+          id: string;
+          company_name: string;
+          description: string | null;
+          website: string | null;
+          logo_url: string | null;
+          status: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          company_name: string;
+          description?: string | null;
+          website?: string | null;
+          logo_url?: string | null;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          company_name?: string;
+          description?: string | null;
+          website?: string | null;
+          logo_url?: string | null;
+          status?: string;
+          updated_at?: string;
         };
       };
       companies: {
@@ -146,7 +176,7 @@ export type Database = {
 export const supabase = supabaseClient as unknown as ReturnType<typeof createClient<Database>>;
 
 // Auth types
-export type UserRole = 'master_admin' | 'company_admin' | 'employee';
+export type UserRole = 'master_admin' | 'company_admin' | 'employee' | 'vendor';
 
 export interface UserData {
   id: string;

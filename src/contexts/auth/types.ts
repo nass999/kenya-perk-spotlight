@@ -9,7 +9,7 @@ export interface AuthContextProps {
   loading: boolean;
 }
 
-export type UserRole = 'master_admin' | 'company_admin' | 'employee';
+export type UserRole = 'master_admin' | 'company_admin' | 'employee' | 'vendor';
 
 // Export AuthState with the correct syntax for isolatedModules
 export type { AuthState };

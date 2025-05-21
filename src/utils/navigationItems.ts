@@ -36,6 +36,13 @@ export const getNavigationByRole = (role: UserRole | undefined): NavigationItem[
       { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart },
       { name: 'Settings', href: '/dashboard/settings', icon: Settings }
     );
+  } else if (role === 'vendor') {
+    navigation.push(
+      { name: 'Dashboard', href: '/dashboard', icon: Home },
+      { name: 'My Perks', href: '/dashboard/vendor-perks', icon: ShoppingBag },
+      { name: 'Profile', href: '/dashboard/vendor-profile', icon: User },
+      { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart },
+    );
   } else {
     // Employee role
     navigation.push(
