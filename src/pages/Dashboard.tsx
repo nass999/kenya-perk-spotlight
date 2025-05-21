@@ -1,59 +1,44 @@
 
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import { useAuth } from '@/contexts/auth';
 import { useDashboardData } from '@/hooks/useDashboardData';
-import { getWelcomeMessage } from '@/utils/greeting';
-import MasterAdminDashboard from '@/components/dashboards/MasterAdminDashboard';
-import CompanyAdminDashboard from '@/components/dashboards/CompanyAdminDashboard';
 import EmployeeDashboard from '@/components/dashboards/EmployeeDashboard';
+import CompanyAdminDashboard from '@/components/dashboards/CompanyAdminDashboard';
+import MasterAdminDashboard from '@/components/dashboards/MasterAdminDashboard';
+import VendorDashboard from '@/components/dashboards/VendorDashboard';
+import { getGreeting } from '@/utils/greeting';
 
 const Dashboard = () => {
   const { authState } = useAuth();
-  const { stats, activeVendors, loading, error } = useDashboardData();
-  const navigate = useNavigate();
+  const { stats, loading } = useDashboardData();
   
-  useEffect(() => {
-    // If not authenticated, redirect to login
-    if (!authState.loading && !authState.user) {
-      console.log("User not authenticated, redirecting to login");
-      navigate('/login');
-    }
-  }, [authState, navigate]);
-  
-  const welcomeMessage = getWelcomeMessage(authState.user?.full_name);
-
-  if (authState.loading || loading) {
+  if (loading || authState.loading) {
     return (
-      <div className="flex justify-center items-center h-full py-20">
-        <p className="text-gray-500">Loading dashboard data...</p>
+      <div className="flex justify-center items-center p-8">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+        <span className="ml-2 text-gray-500">Loading dashboard...</span>
       </div>
     );
   }
-
-  if (!authState.user) {
-    return null; // This shouldn't render as the useEffect will redirect
-  }
-
-  if (error) {
-    return (
-      <div className="flex justify-center items-center h-full py-20">
-        <p className="text-red-500">Error: {error}</p>
-      </div>
-    );
-  }
-
-  // Render different dashboards based on user role
+  
+  const userName = authState.user?.full_name?.split(' ')[0] || 'there';
+  const welcomeMessage = `${getGreeting()}, ${userName}!`;
+  
+  // Render the appropriate dashboard based on the user's role
   if (authState.user?.role === 'master_admin') {
-    console.log("Rendering Master Admin Dashboard for user:", authState.user.email);
-    return <MasterAdminDashboard stats={stats} welcomeMessage={welcomeMessage} activeVendors={activeVendors} />;
-  } else if (authState.user?.role === 'company_admin') {
-    console.log("Rendering Company Admin Dashboard for user:", authState.user.email);
-    return <CompanyAdminDashboard stats={stats} welcomeMessage={welcomeMessage} />;
-  } else {
-    console.log("Rendering Team Dashboard for user:", authState.user.email);
-    return <EmployeeDashboard stats={stats} welcomeMessage={welcomeMessage} />;
+    return <MasterAdminDashboard stats={stats} welcomeMessage={welcomeMessage} />;
   }
+  
+  if (authState.user?.role === 'company_admin') {
+    return <CompanyAdminDashboard stats={stats} welcomeMessage={welcomeMessage} />;
+  }
+  
+  if (authState.user?.role === 'vendor') {
+    return <VendorDashboard stats={stats} welcomeMessage={welcomeMessage} />;
+  }
+  
+  // Default to employee dashboard
+  return <EmployeeDashboard stats={stats} welcomeMessage={welcomeMessage} />;
 };
 
 export default Dashboard;

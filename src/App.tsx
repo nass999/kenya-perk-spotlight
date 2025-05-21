@@ -21,6 +21,8 @@ import ManagePerks from './pages/dashboard/ManagePerks';
 import ManageUsers from './pages/dashboard/ManageUsers';
 import ManageVendors from './pages/dashboard/ManageVendors';
 import Analytics from './pages/dashboard/Analytics';
+import VendorProfile from './pages/dashboard/VendorProfile';
+import VendorPerks from './pages/dashboard/VendorPerks';
 
 // Components
 import DashboardLayout from './components/DashboardLayout';
@@ -68,6 +70,18 @@ function App() {
                 <Route path="analytics" element={
                   <ProtectedRoute allowedRoles={['master_admin', 'company_admin'] as UserRole[]}>
                     <Analytics />
+                  </ProtectedRoute>
+                } />
+                
+                {/* Vendor Routes */}
+                <Route path="vendor-profile" element={
+                  <ProtectedRoute allowedRoles={['vendor'] as UserRole[]}>
+                    <VendorProfile />
+                  </ProtectedRoute>
+                } />
+                <Route path="vendor-perks" element={
+                  <ProtectedRoute allowedRoles={['vendor'] as UserRole[]}>
+                    <VendorPerks />
                   </ProtectedRoute>
                 } />
               </Route>
