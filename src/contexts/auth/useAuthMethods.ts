@@ -72,7 +72,6 @@ export const useAuthMethods = () => {
       console.log("Auth signup successful, creating profile:", authData.user.id);
       
       // The user record will be created by the fetchUserData function when the auth state changes
-      // We don't need to manually create it here anymore
       
       toast({
         title: "Account created!",

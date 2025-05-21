@@ -23,8 +23,11 @@ const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
+          <div className="mb-4">
+            <div className="animate-spin h-10 w-10 border-4 border-[#da7756] border-t-transparent rounded-full mx-auto"></div>
+          </div>
           <h1 className="text-2xl font-semibold mb-2">Loading...</h1>
-          <p className="text-gray-500">Please wait</p>
+          <p className="text-gray-500">Please wait while we prepare your dashboard</p>
         </div>
       </div>
     );

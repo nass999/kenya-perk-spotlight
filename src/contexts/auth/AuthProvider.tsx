@@ -3,19 +3,16 @@ import { useState, useEffect, createContext } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthMethods } from './useAuthMethods';
 import { useFetchUserData } from './useFetchUserData';
-import type { AuthState } from './types';
+import type { AuthState, AuthContextProps } from './types';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-interface AuthContextType {
-  authState: AuthState;
-  signIn: (email: string, password: string) => Promise<any>;
-  signOut: () => Promise<void>;
-}
-
-export const AuthContext = createContext<AuthContextType>({
+// Create the context first
+export const AuthContext = createContext<AuthContextProps>({
   authState: { user: null, session: null, loading: true },
   signIn: async () => ({ error: new Error('Not implemented') }),
+  signUp: async () => ({ error: new Error('Not implemented') }),
   signOut: async () => {},
+  loading: true
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -26,11 +23,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   });
   
   const { fetchUserData } = useFetchUserData();
-  const { signIn, signOut } = useAuthMethods();
+  const { signIn, signUp, signOut } = useAuthMethods();
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
+    console.log("Setting up auth state listener");
     // Set up auth state listener FIRST before checking for existing sessions
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -107,7 +105,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ authState, signIn, signOut }}>
+    <AuthContext.Provider value={{ 
+      authState, 
+      signIn, 
+      signUp,
+      signOut,
+      loading: authState.loading 
+    }}>
       {children}
     </AuthContext.Provider>
   );
