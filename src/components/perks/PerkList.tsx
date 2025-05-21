@@ -47,10 +47,8 @@ export const PerkList = ({
 
   // Sort perks by created_at (newest first)
   const sortedPerks = [...perks].sort((a, b) => {
-    // Use created_at as the fallback if updated_at is not available
-    const dateA = a.created_at;
-    const dateB = b.created_at;
-    return new Date(dateB).getTime() - new Date(dateA).getTime();
+    // Use created_at as the primary sort field
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
   });
   
   const filteredPerks = sortedPerks.filter(perk => 

@@ -47,7 +47,10 @@ export const usePerksManagement = () => {
   };
 
   const handleEdit = (perk: Perk) => {
-    setEditingPerk(perk);
+    // Don't allow employees to edit perks
+    if (!isEmployee) {
+      setEditingPerk(perk);
+    }
   };
 
   return {
