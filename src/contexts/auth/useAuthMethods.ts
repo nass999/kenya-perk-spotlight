@@ -51,11 +51,12 @@ export const useAuthMethods = () => {
     password: string, 
     full_name: string, 
     role: UserRole = 'employee',
-    company_id?: string | null
+    company_id?: string | null,
+    company_name?: string | null
   ) => {
     try {
       setLoading(true);
-      console.log("Attempting sign up for:", email, "with role:", role, "company_id:", company_id);
+      console.log("Attempting sign up for:", email, "with role:", role, "company_id:", company_id, "company_name:", company_name);
       
       // 1. Create auth user with metadata
       const { data: authData, error: authError } = await supabase.auth.signUp({ 
@@ -66,7 +67,8 @@ export const useAuthMethods = () => {
           data: {
             full_name,
             role,
-            company_id
+            company_id,
+            company_name
           }
         }
       });

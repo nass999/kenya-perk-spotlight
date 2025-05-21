@@ -122,7 +122,8 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
         email: data.email,
         fullName: data.fullName,
         role,
-        companyId: effectiveCompanyId
+        companyId: effectiveCompanyId,
+        companyName: companyName
       });
       
       const result = await signUp(
@@ -130,7 +131,8 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
         data.password,
         data.fullName,
         role as UserRole,
-        effectiveCompanyId
+        effectiveCompanyId,
+        companyName
       );
       
       if (result.error) {
