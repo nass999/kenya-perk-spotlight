@@ -113,7 +113,7 @@ export const useAnalyticsData = (initialTimeRange: TimeRange = '30days') => {
         categoryMap.set(category, (categoryMap.get(category) || 0) + 1);
       });
 
-      const perksRedeemedByCategory = Array.from(categoryMap.entries())
+      const perksRedeemedByCategory: CategoryData[] = Array.from(categoryMap.entries())
         .map(([name, value]) => ({ name, value }))
         .sort((a, b) => b.value - a.value);
 
@@ -137,7 +137,7 @@ export const useAnalyticsData = (initialTimeRange: TimeRange = '30days') => {
         companyRedemptionsMap.set(companyName, (companyRedemptionsMap.get(companyName) || 0) + 1);
       });
 
-      const redemptionsByCompany = Array.from(companyRedemptionsMap.entries())
+      const redemptionsByCompany: CompanyData[] = Array.from(companyRedemptionsMap.entries())
         .map(([name, value]) => ({ name, value }))
         .sort((a, b) => b.value - a.value);
 

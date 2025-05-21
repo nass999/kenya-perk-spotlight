@@ -16,7 +16,8 @@ import {
   Cell
 } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { useAnalyticsData, TimeRange } from '@/hooks/useAnalyticsData';
+import { useAnalyticsData } from '@/hooks/useAnalyticsData';
+import { TimeRange } from '@/types/analytics';
 
 const Analytics = () => {
   const { authState } = useAuth();
