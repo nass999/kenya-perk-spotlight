@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import {
@@ -13,22 +14,26 @@ import { Label } from "@/components/ui/label";
 import { toast } from '@/components/ui/use-toast';
 import { Copy, Mail, Plus, UserPlus, SendHorizontal, Loader2, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/contexts/auth';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface UserInviteDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  companyId?: string | null;
 }
 
-export const UserInviteDialog = ({ isOpen, onOpenChange }: UserInviteDialogProps) => {
+export const UserInviteDialog = ({ isOpen, onOpenChange, companyId }: UserInviteDialogProps) => {
   const { authState } = useAuth();
   const [emails, setEmails] = useState<string[]>(['']);
   const [loading, setLoading] = useState(false);
   const [inviteLink, setInviteLink] = useState<string>('');
   const [sendingStatus, setSendingStatus] = useState<Record<string, 'idle' | 'sending' | 'success' | 'error'>>({});
   
+  // Use the companyId from props if provided, otherwise fall back to the user's company_id
+  const effectiveCompanyId = companyId || authState.user?.company_id;
+  
   const baseUrl = window.location.origin;
-  const registrationLink = `${baseUrl}/register?company_id=${authState.user?.company_id}`;
+  const registrationLink = `${baseUrl}/register?company_id=${effectiveCompanyId}`;
 
   const handleAddEmail = () => {
     setEmails([...emails, '']);
@@ -86,7 +91,7 @@ export const UserInviteDialog = ({ isOpen, onOpenChange }: UserInviteDialogProps
             body: { 
               email,
               inviterName: authState.user?.full_name || 'Your colleague',
-              companyId: authState.user?.company_id,
+              companyId: effectiveCompanyId,
               registrationLink
             }
           });

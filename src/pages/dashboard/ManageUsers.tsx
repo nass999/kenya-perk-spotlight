@@ -18,7 +18,8 @@ const ManageUsers = () => {
     fetchUsers,
     updateUserRole,
     toggleUserStatus,
-    currentUserId
+    currentUserId,
+    companyId
   } = useUserManagement();
 
   useEffect(() => {
@@ -47,6 +48,7 @@ const ManageUsers = () => {
         isMasterAdmin={isMasterAdmin}
         onRefreshUsers={fetchUsers}
         loading={loading}
+        companyId={companyId}
       />
 
       {error && (

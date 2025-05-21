@@ -8,12 +8,14 @@ interface UserManagementHeaderProps {
   isMasterAdmin: boolean;
   onRefreshUsers: () => void;
   loading: boolean;
+  companyId?: string | null;
 }
 
 const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
   isMasterAdmin,
   onRefreshUsers,
-  loading
+  loading,
+  companyId
 }) => {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
 
@@ -42,7 +44,8 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
       {/* User Invite Dialog */}
       <UserInviteDialog 
         isOpen={inviteDialogOpen} 
-        onOpenChange={setInviteDialogOpen} 
+        onOpenChange={setInviteDialogOpen}
+        companyId={companyId}
       />
     </div>
   );

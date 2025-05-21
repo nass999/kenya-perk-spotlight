@@ -74,6 +74,19 @@ export const useUserManagement = () => {
         return;
       }
       
+      // Company admins can only update users in their company
+      if (authState.user?.role === 'company_admin') {
+        const userToUpdate = users.find(user => user.id === userId);
+        if (userToUpdate?.company_id !== companyId) {
+          toast({
+            variant: "destructive",
+            title: "Permission denied",
+            description: "You can only update users in your organization."
+          });
+          return;
+        }
+      }
+      
       setUpdating(userId);
       
       // Update the user's role in the 'users' table
@@ -108,6 +121,19 @@ export const useUserManagement = () => {
   // Add function to toggle user active status
   const toggleUserStatus = async (userId: string, isActive: boolean) => {
     try {
+      // Company admins can only update users in their company
+      if (authState.user?.role === 'company_admin') {
+        const userToUpdate = users.find(user => user.id === userId);
+        if (userToUpdate?.company_id !== companyId) {
+          toast({
+            variant: "destructive",
+            title: "Permission denied",
+            description: "You can only update users in your organization."
+          });
+          return;
+        }
+      }
+      
       setUpdating(userId);
       
       // Update the user's status in the 'users' table
@@ -149,6 +175,7 @@ export const useUserManagement = () => {
     fetchUsers,
     updateUserRole,
     toggleUserStatus,
-    currentUserId
+    currentUserId,
+    companyId
   };
 };
