@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { usePerksQuery } from './usePerksQuery';
+import { usePerksQuery, VendorWithPerks } from './usePerksQuery';
 import { usePerkMutations } from './usePerkMutations';
 import { Perk } from '@/components/perks/PerkTypes';
 
@@ -10,6 +10,7 @@ export const usePerksManagement = () => {
 
   const { 
     perks,
+    perksByVendor,
     setPerks,
     deletedPerks, 
     setDeletedPerks,
@@ -56,6 +57,7 @@ export const usePerksManagement = () => {
 
   return {
     perks,
+    perksByVendor,
     deletedPerks,
     loading,
     loadingDeleted,
@@ -66,7 +68,7 @@ export const usePerksManagement = () => {
     isCompanyAdmin,
     isEmployee,
     editingPerk,
-    setEditingPerk, // Make sure we expose this setter
+    setEditingPerk,
     handleSubmit,
     handleToggleStatus,
     handleDelete,

@@ -1,12 +1,14 @@
 
 import { usePerksManagement } from '@/hooks/perks';
 import { PerkList } from '@/components/perks/PerkList';
+import { PerksByVendor } from '@/components/perks/PerksByVendor';
 import { PerkTabs } from '@/components/perks/PerkTabs';
 import { PerkManagementHeader } from '@/components/perks/PerkManagementHeader';
 
 const ManagePerks = () => {
   const {
     perks,
+    perksByVendor,
     deletedPerks,
     loading,
     loadingDeleted,
@@ -55,6 +57,18 @@ const ManagePerks = () => {
           deletingPerk={deletingPerk}
           isMasterAdmin={isMasterAdmin}
           noopAsyncFunction={noopAsyncFunction}
+        />
+      ) : isCompanyAdmin ? (
+        <PerksByVendor
+          vendors={perksByVendor}
+          loading={loading}
+          error={error}
+          onEdit={handleEdit}
+          onToggleStatus={handleToggleStatus}
+          onDelete={handleDelete}
+          onRetry={fetchPerks}
+          deletingPerk={deletingPerk}
+          isMasterAdmin={isMasterAdmin}
         />
       ) : (
         <PerkList

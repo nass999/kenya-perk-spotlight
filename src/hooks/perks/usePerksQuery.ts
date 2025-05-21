@@ -5,9 +5,16 @@ import { toast } from '@/components/ui/use-toast';
 import { Perk } from '@/components/perks/PerkTypes';
 import { useAuth } from '@/contexts/auth';
 
+export interface VendorWithPerks {
+  id: string;
+  name: string;
+  perks: Perk[];
+}
+
 export const usePerksQuery = () => {
   const { authState } = useAuth();
   const [perks, setPerks] = useState<Perk[]>([]);
+  const [perksByVendor, setPerksByVendor] = useState<VendorWithPerks[]>([]);
   const [deletedPerks, setDeletedPerks] = useState<Perk[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingDeleted, setLoadingDeleted] = useState(true);
@@ -29,7 +36,13 @@ export const usePerksQuery = () => {
       // We just need to filter by is_deleted flag
       const { data, error } = await supabase
         .from('perks')
-        .select('*')
+        .select(`
+          *,
+          vendors:vendor_id (
+            id,
+            name
+          )
+        `)
         .eq('is_deleted', false)
         .order('created_at', { ascending: false });
       
@@ -40,7 +53,43 @@ export const usePerksQuery = () => {
       }
       
       console.log("Fetched active perks:", data);
-      setPerks(data as Perk[] || []);
+
+      // Process the data for flat perks list
+      const processedPerks = data?.map(item => {
+        const { vendors, ...perk } = item;
+        return {
+          ...perk,
+          vendor_name: vendors?.name || 'Unknown Vendor'
+        };
+      }) as Perk[] || [];
+      
+      setPerks(processedPerks);
+
+      // Group perks by vendor
+      const vendorsMap = new Map<string, VendorWithPerks>();
+      
+      data?.forEach(item => {
+        const { vendors, ...perk } = item;
+        const vendorId = vendors?.id || 'unknown';
+        const vendorName = vendors?.name || 'Unknown Vendor';
+        
+        if (!vendorsMap.has(vendorId)) {
+          vendorsMap.set(vendorId, {
+            id: vendorId,
+            name: vendorName,
+            perks: []
+          });
+        }
+        
+        vendorsMap.get(vendorId)?.perks.push(perk as Perk);
+      });
+      
+      // Convert map to array and sort vendors alphabetically
+      const vendorsArray = Array.from(vendorsMap.values()).sort((a, b) => 
+        a.name.localeCompare(b.name)
+      );
+      
+      setPerksByVendor(vendorsArray);
     } catch (error: any) {
       console.error('Error fetching perks:', error);
       toast({
@@ -113,6 +162,7 @@ export const usePerksQuery = () => {
 
   return {
     perks,
+    perksByVendor,
     setPerks,
     deletedPerks,
     setDeletedPerks,
