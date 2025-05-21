@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log('Auth state changed:', event, session?.user?.email);
         
         // First synchronously update session to prevent UI flicker
-        setAuthState(current => ({ ...current, session, loading: false }));
+        setAuthState(current => ({ ...current, session, loading: session ? true : false }));
         
         // Use setTimeout to defer fetching user data to prevent Supabase auth deadlocks
         if (session?.user) {
@@ -44,13 +44,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const userData = await fetchUserData(session.user.id);
             if (userData) {
               console.log("User data fetched, updating state and checking for redirect");
-              setAuthState(current => ({ ...current, user: userData }));
+              setAuthState(current => ({ ...current, user: userData, loading: false }));
               
               // When logging in, redirect to dashboard if on login/register page
               if (location.pathname === '/login' || location.pathname === '/register') {
                 console.log("Auth state change - redirecting to dashboard from", location.pathname);
                 navigate('/dashboard');
               }
+            } else {
+              setAuthState(current => ({ ...current, loading: false }));
             }
           }, 0);
         } else {
@@ -97,6 +99,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } else {
         setAuthState(current => ({ ...current, loading: false }));
       }
+    }).catch(error => {
+      console.error('Error checking session:', error);
+      setAuthState(current => ({ ...current, loading: false }));
     });
     
     return () => {

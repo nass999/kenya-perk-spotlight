@@ -95,9 +95,29 @@ export const useAuthMethods = () => {
   const signOut = async () => {
     try {
       setLoading(true);
+      
+      // Check if we have a session first
+      const { data: sessionData } = await supabase.auth.getSession();
+      
+      if (!sessionData.session) {
+        console.log('No active session found, redirecting to login without API call');
+        toast({
+          title: "Signed out",
+          description: "You've been successfully signed out.",
+        });
+        
+        navigate('/login');
+        return;
+      }
+      
+      // If we have a session, proceed with logout
+      console.log('Active session found, signing out via API');
       const { error } = await supabase.auth.signOut();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Sign out error:', error);
+        throw error;
+      }
       
       toast({
         title: "Signed out",
@@ -106,12 +126,12 @@ export const useAuthMethods = () => {
       
       navigate('/login');
     } catch (error: any) {
+      console.error('Sign out error:', error);
       toast({
         variant: "destructive",
         title: "Error signing out",
         description: error.message || "There was a problem signing you out.",
       });
-      console.error('Sign out error:', error);
     } finally {
       setLoading(false);
     }
