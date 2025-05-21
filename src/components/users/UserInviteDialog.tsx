@@ -75,6 +75,8 @@ export const UserInviteDialog = ({ isOpen, onOpenChange, companyId: propCompanyI
       if (!newCompanyId) {
         try {
           console.log('Creating new company:', companyName);
+          // Make sure to use the service role or the master admin's token
+          // The RLS policy we added will now allow master admins to create companies
           const { data, error } = await supabase
             .from('companies')
             .insert([{ name: companyName }])
@@ -225,12 +227,10 @@ export const UserInviteDialog = ({ isOpen, onOpenChange, companyId: propCompanyI
         
         <div className="mt-4 space-y-6">
           {/* Role selection for Master Admin */}
-          {isMasterAdmin && (
-            <InviteByRole
-              onChange={handleRoleChange}
-              isMasterAdmin={isMasterAdmin}
-            />
-          )}
+          <InviteByRole
+            onChange={handleRoleChange}
+            isMasterAdmin={isMasterAdmin}
+          />
         
           <RegistrationLink 
             registrationLink={registrationLink}
