@@ -40,6 +40,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Handle sign-out event specifically
         if (event === 'SIGNED_OUT') {
           console.log('User signed out, clearing state and redirecting');
+          // Fully reset auth state to ensure complete cleanup
           setAuthState({ user: null, session: null, loading: false });
           
           // Only redirect to login if not already there
@@ -61,7 +62,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               // When logging in, redirect to dashboard if on login/register page
               if (location.pathname === '/login' || location.pathname === '/register') {
                 console.log("Auth state change - redirecting to dashboard from", location.pathname);
-                navigate('/dashboard');
+                navigate('/dashboard', { replace: true });
               }
             } else {
               setAuthState(current => ({ ...current, loading: false }));
@@ -77,7 +78,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               location.pathname !== '/pricing' &&
               !location.pathname.startsWith('/auth/callback')) {
             console.log("Not authenticated, redirecting to login from", location.pathname);
-            navigate('/login');
+            navigate('/login', { replace: true });
           }
         }
       }
@@ -102,7 +103,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             // If on login/register page with existing session, redirect to dashboard
             if (location.pathname === '/login' || location.pathname === '/register') {
               console.log("Existing session - redirecting to dashboard from", location.pathname);
-              navigate('/dashboard');
+              navigate('/dashboard', { replace: true });
             }
           } else {
             setAuthState(current => ({ ...current, loading: false }));

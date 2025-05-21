@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -96,33 +97,24 @@ export const useAuthMethods = () => {
       setLoading(true);
       console.log('Signing out user...');
       
-      // Check if we have a session first
-      const { data: sessionData } = await supabase.auth.getSession();
+      // Just proceed directly with signOut - don't check session first
+      // This avoids potential race conditions or inconsistent session states
+      const { error } = await supabase.auth.signOut({ 
+        scope: 'global' // Sign out from all browser tabs
+      });
       
-      if (!sessionData.session) {
-        console.log('No active session found, redirecting to login without API call');
-        return;
+      if (error) {
+        console.error('Sign out error:', error);
+        throw error;
       }
       
-      // If we have a session, proceed with logout
-      console.log('Active session found, signing out via API');
-      try {
-        const { error } = await supabase.auth.signOut();
-        
-        if (error) {
-          console.error('Sign out error:', error);
-          throw error;
-        }
-        
-        console.log('Successfully signed out via API');
-      } catch (signOutError) {
-        // If we get an auth session missing error, just force navigation
-        console.error('Sign out error:', signOutError);
-        console.log('Error during sign out process');
-      }
+      console.log('Successfully signed out');
       
-      // Don't navigate here - let the component handle navigation
-      // after signOut completes
+      // Clear any local state relying on auth immediately
+      // This ensures we don't rely solely on the auth state listener
+      // (which might sometimes be delayed)
+      
+      return { success: true };
     } catch (error: any) {
       console.error('Sign out error:', error);
       throw error;

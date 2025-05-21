@@ -1,215 +1,94 @@
-import { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { supabase } from '@/integrations/supabase/client';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from '@/components/ui/form';
-import { toast } from '@/components/ui/use-toast';
-import { UserRole } from '@/lib/supabase';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
+import { useAuth } from '@/contexts/auth';
+import BackToHomeButton from '@/components/BackToHomeButton';
+import RegistrationForm from '@/components/auth/RegistrationForm';
+import SuccessState from '@/components/auth/SuccessState';
 
-const formSchema = z.object({
-  fullName: z.string().min(2, {
-    message: "Full name must be at least 2 characters.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  password: z.string().min(6, {
-    message: "Password must be at least 6 characters.",
-  }),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
-
-export default function Register() {
+const Register = () => {
+  const { authState, signOut } = useAuth();
+  const [isSuccess, setIsSuccess] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const companyId = searchParams.get('company_id');
-  const roleParam = searchParams.get('role') as UserRole | null;
+  const role = searchParams.get('role');
   
-  // Default to 'employee' if no role is specified, or use the role from URL
-  const userRole = roleParam || 'employee';
-  
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasCompanyCreated, setHasCompanyCreated] = useState(!!companyId);
-  
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      fullName: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    },
-  });
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      setIsLoading(true);
-      
-      // Register the user with Supabase
-      const { data, error } = await supabase.auth.signUp({
-        email: values.email,
-        password: values.password,
-        options: {
-          data: {
-            full_name: values.fullName,
-            company_id: companyId || null,
-            role: userRole, // Use the role from URL or default
-          }
+  useEffect(() => {
+    const checkAndSignOut = async () => {
+      // If user is already authenticated and they're accessing a registration link,
+      // sign them out first to ensure a clean registration
+      if (authState.user && !authState.loading && (companyId || role)) {
+        console.log("User is logged in but accessing a registration link, signing them out first");
+        try {
+          await signOut();
+          // We don't navigate here - we let the registration continue after signout
+        } catch (error) {
+          console.error("Error signing out:", error);
         }
-      });
-      
-      if (error) throw error;
-      
-      console.log("Registration successful:", data);
-      
-      toast({
-        title: "Registration successful",
-        description: "Your account has been created. Please check your email to verify your account.",
-      });
-      
-      navigate('/login');
-    } catch (error: any) {
-      console.error('Registration error:', error);
-      toast({
-        variant: "destructive",
-        title: "Registration failed",
-        description: error.message || "There was an error creating your account. Please try again.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }
+      } 
+      // If user is already authenticated without a registration link, redirect to dashboard
+      else if (authState.user && !authState.loading && !companyId && !role) {
+        console.log("User already authenticated, redirecting to dashboard");
+        navigate('/dashboard');
+      }
+    };
+    
+    checkAndSignOut();
+  }, [authState.user, authState.loading, navigate, companyId, role, signOut]);
   
-  // Get role display name for UI
-  const getRoleDisplayName = (role: UserRole) => {
-    switch (role) {
-      case 'master_admin': return 'Platform Administrator';
-      case 'company_admin': return 'Company Administrator';
-      case 'employee': return 'Employee';
-      case 'vendor': return 'Vendor';
-      default: return 'User';
-    }
+  const handleRegistrationSuccess = () => {
+    setIsSuccess(true);
+    
+    // After successful registration, redirect to dashboard
+    setTimeout(() => {
+      navigate('/dashboard');
+    }, 1500);
   };
   
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
-        <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold">Create an account</h1>
-          <p className="text-gray-500">
-            {companyId 
-              ? `Sign up to join your organization's rewards program` 
-              : "Enter your information to create an account"
-            }
-          </p>
-        </div>
-        
-        {/* Role alert notification */}
-        {userRole && userRole !== 'employee' && (
-          <Alert className="bg-blue-50 border-blue-200">
-            <Info className="h-4 w-4 text-blue-600" />
-            <AlertTitle className="text-blue-800">You're signing up as a {getRoleDisplayName(userRole)}</AlertTitle>
-            <AlertDescription className="text-blue-700">
-              {userRole === 'company_admin' 
-                ? "You'll have administrative permissions for your organization." 
-                : userRole === 'master_admin'
-                  ? "You'll have full platform administrative permissions."
-                  : "Your account will have specific permissions based on this role."
-              }
-            </AlertDescription>
-          </Alert>
-        )}
-        
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="fullName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Full Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="John Doe" {...field} disabled={isLoading} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="john.doe@example.com" {...field} disabled={isLoading} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} disabled={isLoading} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirm Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} disabled={isLoading} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div className="space-y-4">
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creating account..." : "Create account"}
-              </Button>
-              
-              <div className="text-center text-sm">
-                Already have an account?{' '}
-                <Link to="/login" className="font-medium text-blue-600 hover:underline">
-                  Sign in
-                </Link>
-              </div>
-            </div>
-          </form>
-        </Form>
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <SuccessState />
+        <BackToHomeButton />
       </div>
+    );
+  }
+  
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold">Create Your Account</CardTitle>
+          <CardDescription>
+            {companyId 
+              ? "Join your company on Africa Rewards Network" 
+              : "Sign up for Africa Rewards Network"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {(companyId || role) && (
+            <Alert className="mb-6 bg-blue-50">
+              <Info className="h-4 w-4 text-blue-500" />
+              <AlertDescription className="text-blue-700">
+                You've been invited to join{companyId ? ' a company' : ''} 
+                {role ? ` as ${role.replace('_', ' ')}` : ''}.
+              </AlertDescription>
+            </Alert>
+          )}
+          <RegistrationForm
+            companyId={companyId}
+            invitedRole={role as any}
+            onSuccess={handleRegistrationSuccess}
+          />
+        </CardContent>
+      </Card>
+      <BackToHomeButton />
     </div>
   );
-}
+};
+
+export default Register;

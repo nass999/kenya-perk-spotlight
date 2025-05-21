@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/auth';
 import BackToHomeButton from '@/components/BackToHomeButton';
@@ -8,17 +8,19 @@ import LoginForm from '@/components/auth/LoginForm';
 import SuccessState from '@/components/auth/SuccessState';
 
 const Login = () => {
-  const { authState } = useAuth();
+  const { authState, signOut } = useAuth();
   const [isSuccess, setIsSuccess] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirectTo');
   
   useEffect(() => {
     // If user is already authenticated, redirect to dashboard
     if (authState.user && !authState.loading) {
       console.log("User already authenticated, redirecting to dashboard", authState.user);
-      navigate('/dashboard');
+      navigate(redirectTo || '/dashboard');
     }
-  }, [authState.user, authState.loading, navigate]);
+  }, [authState.user, authState.loading, navigate, redirectTo]);
   
   const handleLoginSuccess = () => {
     setIsSuccess(true);
@@ -27,7 +29,7 @@ const Login = () => {
     console.log("Setting immediate redirect to dashboard");
     setTimeout(() => {
       console.log("Executing manual navigation to dashboard");
-      navigate('/dashboard');
+      navigate(redirectTo || '/dashboard');
     }, 1000);
   };
   

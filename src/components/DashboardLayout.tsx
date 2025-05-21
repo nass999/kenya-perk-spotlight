@@ -16,11 +16,26 @@ const DashboardLayout = () => {
   
   const handleSignOut = async () => {
     try {
+      console.log('Starting signout process');
+      // First show toast to provide immediate feedback
+      toast({
+        title: "Signing out...",
+        description: "Please wait while we sign you out."
+      });
+      
       await signOut();
+      
+      // Force clear any local storage items that might be persisting auth
+      localStorage.removeItem('supabase.auth.token');
+      
+      console.log('Signout complete, redirecting to login');
+      
+      // Show success toast
       toast({
         title: "Signed out successfully",
         description: "You have been signed out of your account."
       });
+      
       // Ensure navigation happens after signOut completes
       navigate('/login', { replace: true });
     } catch (error) {
