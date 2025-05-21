@@ -48,7 +48,7 @@ export const useFetchUserData = () => {
         if (role === 'company_admin' && companyName && !companyId) {
           console.log("Creating company for new company admin");
           try {
-            // Use service_role to bypass RLS when creating companies
+            // Use admin functions to bypass RLS when creating companies
             const { data: companyData, error: companyError } = await supabase.auth.admin.createCompany(companyName);
             
             if (companyError) {
