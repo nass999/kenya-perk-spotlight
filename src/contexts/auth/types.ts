@@ -11,5 +11,5 @@ export interface AuthContextProps {
 
 export type UserRole = 'master_admin' | 'company_admin' | 'employee';
 
-// Export AuthState
-export { AuthState };
+// Export AuthState with the correct syntax for isolatedModules
+export type { AuthState };
