@@ -51,8 +51,7 @@ export const useAuthMethods = () => {
     try {
       console.log('Creating new company:', name);
       
-      // Important: For company creation, use service role if possible to bypass RLS
-      // For this example, we'll create it with the current user right after signup
+      // Create the company
       const { data, error } = await supabase
         .from('companies')
         .insert([{ name }])
@@ -98,7 +97,6 @@ export const useAuthMethods = () => {
       console.log("Attempting sign up for:", email, "with role:", role, "company_id:", company_id, "company_name:", company_name);
       
       // 1. Create auth user with metadata
-      // Make sure the role is correctly passed to the user metadata
       const { data: authData, error: authError } = await supabase.auth.signUp({ 
         email, 
         password,
@@ -118,16 +116,25 @@ export const useAuthMethods = () => {
         throw authError;
       }
       
-      console.log("Auth signup successful, creating profile:", authData.user.id);
+      console.log("Auth signup successful:", authData.user.id);
       
       // 2. Create company if needed (for company_admin role with company_name but no company_id)
-      // We do this AFTER the user is created, so the new user can be the creator
       if (role === 'company_admin' && company_name && !company_id) {
-        // Wait for the session to be established
-        const { data: sessionData } = await supabase.auth.getSession();
-        if (sessionData?.session) {
-          console.log('Creating company after successful signup');
-          await createCompany(company_name);
+        console.log('Creating company after successful signup');
+        const newCompanyId = await createCompany(company_name);
+        
+        if (newCompanyId) {
+          console.log('Updating user with new company ID:', newCompanyId);
+          
+          // Update the user's company_id in the users table
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({ company_id: newCompanyId })
+            .eq('id', authData.user.id);
+            
+          if (updateError) {
+            console.error('Failed to update user with company ID:', updateError);
+          }
         }
       }
       

@@ -56,17 +56,17 @@ const Register = () => {
   const handleRegistrationSuccess = () => {
     setIsSuccess(true);
     
-    // After successful registration, redirect to dashboard
+    // After successful registration, redirect to dashboard after a short delay
     setTimeout(() => {
-      navigate('/dashboard');
-    }, 1500);
+      console.log("Redirecting to dashboard after successful registration");
+      navigate('/dashboard', { replace: true });
+    }, 2000); // Increased delay to 2 seconds to ensure state update and show success message
   };
   
   if (isSuccess) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <SuccessState />
-        <BackToHomeButton />
       </div>
     );
   }
