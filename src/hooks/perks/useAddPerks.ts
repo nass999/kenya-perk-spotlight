@@ -43,7 +43,7 @@ export const useAddPerks = (onClose: () => void) => {
         discount_amount: perk.discount_amount,
         discount_type: perk.discount_type,
         category: perk.category,
-        expiry_date: perk.expiry_date,
+        expiry_date: perk.expiry_date || null,
         terms_conditions: perk.terms_conditions,
         company_id: authState.user?.company_id, // Associate with this organization
         is_enabled: true, // Activated by default when added to organization

@@ -166,7 +166,7 @@ const VendorPerks = () => {
         onSubmit={async (values) => {
           // Implement submit functionality
           handlePerkAdded();
-          return true;
+          return true; // Return true to indicate success
         }}
         editingPerk={null}
         isCompanyAdmin={false}

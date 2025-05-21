@@ -1,9 +1,8 @@
 
 import { useEffect } from 'react';
-import { PerkFormProps } from './PerkTypes';
+import { PerkFormProps, PerkFormValues, perkSchema } from './PerkTypes';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { perkSchema, PerkFormValues } from './PerkTypes';
 import { Form } from '@/components/ui/form';
 import {
   Dialog,
@@ -63,20 +62,20 @@ export const PerkFormDialog = ({
         discount_amount: editingPerk.discount_amount,
         discount_type: editingPerk.discount_type,
         category: editingPerk.category,
-        expiry_date: editingPerk.expiry_date ? new Date(editingPerk.expiry_date).toISOString().split('T')[0] : null,
+        expiry_date: editingPerk.expiry_date || null,
         terms_conditions: editingPerk.terms_conditions,
         image_url: editingPerk.image_url,
         is_enabled: editingPerk.is_enabled,
-        valid_through_date: editingPerk.valid_through_date ? new Date(editingPerk.valid_through_date).toISOString().split('T')[0] : null,
+        valid_through_date: editingPerk.valid_through_date || null,
         vendor_id: editingPerk.vendor_id || undefined,
       });
     }
   }, [editingPerk, form]);
 
   const handleSubmit = async (values: PerkFormValues) => {
-    const success = await onSubmit(values);
-    if (success) {
-      onOpenChange(false);
+    const result = await onSubmit(values);
+    if (result === true) {
+      onOpenChange?.(false);
     }
   };
 
@@ -100,14 +99,14 @@ export const PerkFormDialog = ({
             <DiscountFields form={form} />
             <VendorField form={form} />
             <CategoryDateFields form={form} />
-            <AvailabilityFields form={form} isCompanyAdmin={isCompanyAdmin} />
+            <AvailabilityFields form={form} isCompanyAdmin={!!isCompanyAdmin} />
             <AdditionalInfoFields form={form} />
             
             <DialogFooter>
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={() => onOpenChange(false)}
+                onClick={() => onOpenChange?.(false)}
               >
                 Cancel
               </Button>
