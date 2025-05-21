@@ -37,49 +37,48 @@ export const PerkManagementHeader = ({
               : "Create and manage platform-wide perks"}
         </p>
       </div>
-      <div className="flex items-center gap-3">
-        {/* Only show buttons for admins, not for employees */}
-        {!isEmployee && (
-          <>
-            {isCompanyAdmin && (
-              <>
-                <Button 
-                  variant="outline" 
-                  className="flex items-center gap-2"
-                  onClick={() => setIsInviteDialogOpen(true)}
-                >
-                  <Share2 className="h-4 w-4" />
-                  Invite Users
-                </Button>
-                <Button 
-                  onClick={() => setIsPerkSelectDialogOpen(true)}
-                  className="flex items-center gap-2 bg-[#da7756]"
-                >
-                  <Plus className="h-4 w-4" />
-                  Activate Perks
-                </Button>
-              </>
-            )}
-            {!isCompanyAdmin && (
+      
+      {/* Only show action buttons for admins, not for employees */}
+      {!isEmployee && (
+        <div className="flex items-center gap-3">
+          {isCompanyAdmin && (
+            <>
               <Button 
-                onClick={() => setIsDialogOpen(true)} 
+                variant="outline" 
+                className="flex items-center gap-2"
+                onClick={() => setIsInviteDialogOpen(true)}
+              >
+                <Share2 className="h-4 w-4" />
+                Invite Users
+              </Button>
+              <Button 
+                onClick={() => setIsPerkSelectDialogOpen(true)}
                 className="flex items-center gap-2 bg-[#da7756]"
               >
                 <Plus className="h-4 w-4" />
-                Create Perk
+                Activate Perks
               </Button>
-            )}
-          </>
-        )}
+            </>
+          )}
+          {!isCompanyAdmin && (
+            <Button 
+              onClick={() => setIsDialogOpen(true)} 
+              className="flex items-center gap-2 bg-[#da7756]"
+            >
+              <Plus className="h-4 w-4" />
+              Create Perk
+            </Button>
+          )}
 
-        <PerkForm
-          isOpen={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-          onSubmit={onSubmit}
-          editingPerk={editingPerk}
-          isCompanyAdmin={isCompanyAdmin}
-        />
-      </div>
+          <PerkForm
+            isOpen={isDialogOpen}
+            onOpenChange={setIsDialogOpen}
+            onSubmit={onSubmit}
+            editingPerk={editingPerk}
+            isCompanyAdmin={isCompanyAdmin}
+          />
+        </div>
+      )}
       
       {/* Invite Users Dialog */}
       {isCompanyAdmin && !isEmployee && (
