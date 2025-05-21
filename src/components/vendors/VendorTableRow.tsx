@@ -53,7 +53,7 @@ const VendorTableRow: React.FC<VendorTableRowProps> = ({
           {vendor.status === 'active' ? 'Active' : 'On Hold'}
         </Badge>
       </TableCell>
-      <TableCell>{vendor.discount_percentage}%</TableCell>
+      <TableCell>{vendor.discount_percentage !== null && vendor.discount_percentage !== undefined ? `${vendor.discount_percentage}%` : '-'}</TableCell>
       <TableCell>
         {vendor.website ? (
           <a 

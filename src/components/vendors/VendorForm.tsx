@@ -16,7 +16,6 @@ const vendorSchema = z.object({
   name: z.string().min(2, { message: 'Vendor name must be at least 2 characters' }),
   description: z.string().optional(),
   website: z.string().url({ message: 'Please enter a valid URL' }).optional().or(z.literal('')),
-  discount_percentage: z.number().min(0).max(100).default(0),
 });
 
 type VendorFormValues = z.infer<typeof vendorSchema>;
@@ -33,7 +32,6 @@ const VendorForm: React.FC<VendorFormProps> = ({
     name: '',
     description: '',
     website: '',
-    discount_percentage: 0,
   },
   vendorId 
 }) => {
@@ -56,7 +54,6 @@ const VendorForm: React.FC<VendorFormProps> = ({
             name: data.name,
             description: data.description || null,
             website: data.website || null,
-            discount_percentage: data.discount_percentage,
             updated_at: new Date().toISOString(),
           })
           .eq('id', vendorId);
@@ -74,7 +71,6 @@ const VendorForm: React.FC<VendorFormProps> = ({
             name: data.name,
             description: data.description || null,
             website: data.website || null,
-            discount_percentage: data.discount_percentage,
             created_by: authState.user?.id,
           });
 
@@ -152,30 +148,6 @@ const VendorForm: React.FC<VendorFormProps> = ({
                   </FormControl>
                   <FormDescription>
                     Enter the vendor's website URL
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="discount_percentage"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Discount Percentage</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="number" 
-                      min="0" 
-                      max="100" 
-                      placeholder="0" 
-                      {...field}
-                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Enter a value between 0 and 100
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

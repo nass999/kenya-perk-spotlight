@@ -7,7 +7,7 @@ import {
   TabsList, 
   TabsTrigger 
 } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,7 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import VendorForm from '@/components/vendors/VendorForm';
 import VendorTable from '@/components/vendors/VendorTable';
 import BulkVendorImport from '@/components/vendors/BulkVendorImport';
-import { Store, RefreshCcw } from 'lucide-react';
+import { RefreshCcw } from 'lucide-react';
 import { Vendor } from '@/types/vendor';
 
 const ManageVendors = () => {

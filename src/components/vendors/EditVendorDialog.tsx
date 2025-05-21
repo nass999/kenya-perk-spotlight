@@ -31,7 +31,6 @@ const EditVendorDialog: React.FC<EditVendorDialogProps> = ({
             name: vendor.name,
             description: vendor.description || '',
             website: vendor.website || '',
-            discount_percentage: vendor.discount_percentage,
           }}
           onSuccess={() => {
             onSuccess();

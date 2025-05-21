@@ -5,7 +5,7 @@ export interface Vendor {
   description: string | null;
   website: string | null;
   status: string;
-  discount_percentage: number;
+  discount_percentage?: number | null;
   created_at: string;
   logo_url?: string | null;
   created_by?: string | null;
