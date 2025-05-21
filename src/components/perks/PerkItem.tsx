@@ -1,141 +1,112 @@
 
-import { Perk, formatDate, isExpired } from './PerkTypes';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { TableCell, TableRow } from '@/components/ui/table';
-import { Pencil, Trash2, ToggleRight, ToggleLeft, Percent, RefreshCw } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Perk } from './PerkTypes';
+import { Calendar, Tag } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/auth';
+import { useRedeemPerk } from '@/hooks/perks/useRedeemPerk';
 
 interface PerkItemProps {
   perk: Perk;
-  onEdit: (perk: Perk) => void;
-  onToggleStatus: (perk: Perk) => Promise<void>;
-  onDelete: (id: string) => void;
-  onRestore?: (id: string) => void;
-  deletingPerk: string | null;
-  isMasterAdmin: boolean;
-  isDeletedList?: boolean;
+  onRedeem?: (perkId: string) => void;
+  showRedeemButton?: boolean;
 }
 
-export const PerkItem = ({
-  perk,
-  onEdit,
-  onToggleStatus,
-  onDelete,
-  onRestore,
-  deletingPerk,
-  isMasterAdmin,
-  isDeletedList = false,
+export const PerkItem = ({ 
+  perk, 
+  onRedeem,
+  showRedeemButton = true
 }: PerkItemProps) => {
+  const [isRedeemed, setIsRedeemed] = useState(false);
+  const { authState } = useAuth();
+  const { redeemPerk, isRedeeming } = useRedeemPerk();
+  
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'No expiration';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+  
+  const handleRedeem = async () => {
+    const result = await redeemPerk(perk.id);
+    if (result.success && onRedeem) {
+      setIsRedeemed(true);
+      onRedeem(perk.id);
+    }
+  };
+  
+  const isEmployee = authState.user?.role === 'employee';
+  
   return (
-    <TableRow className={isExpired(perk.valid_through_date) ? "bg-gray-50" : ""}>
-      <TableCell className="font-medium">
-        <div className="flex flex-col">
-          <span>{perk.name}</span>
-          {isExpired(perk.valid_through_date) && (
-            <span className="text-xs text-red-500">Expired</span>
-          )}
-          {isDeletedList && (
-            <span className="text-xs text-red-500">Deleted</span>
-          )}
-        </div>
-      </TableCell>
-      <TableCell>
-        {perk.discount_type === 'percentage' ? (
-          <span className="flex items-center">
-            <Percent className="h-3 w-3 mr-1" /> 
-            {perk.discount_amount}%
-          </span>
+    <Card className="overflow-hidden h-full flex flex-col">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 h-28 flex items-center justify-center border-b">
+        {perk.image_url ? (
+          <img 
+            src={perk.image_url} 
+            alt={perk.name}
+            className="h-full w-full object-cover"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.onerror = null;
+              target.src = '/placeholder.svg';
+            }}
+          />
         ) : (
-          <span>KSh {perk.discount_amount}</span>
+          <Tag className="h-12 w-12 text-blue-500" />
         )}
-      </TableCell>
-      <TableCell>{perk.category || 'Uncategorized'}</TableCell>
-      <TableCell>
-        <span className={isExpired(perk.valid_through_date) ? "text-red-500" : ""}>
-          {formatDate(perk.valid_through_date)}
-        </span>
-      </TableCell>
-      {isMasterAdmin && !isDeletedList && (
-        <TableCell>
-          <div className="flex items-center">
-            <span className={`h-2 w-2 rounded-full mr-2 ${perk.is_enabled ? 'bg-green-500' : 'bg-red-500'}`}></span>
-            <span>{perk.is_enabled ? 'Enabled' : 'Disabled'}</span>
-          </div>
-        </TableCell>
-      )}
-      <TableCell className="text-right">
-        <div className="flex justify-end gap-2">
-          {!isDeletedList && (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => onEdit(perk)}
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-          )}
-          
-          {!isDeletedList && isMasterAdmin && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={perk.is_enabled ? "outline" : "default"}
-                    size="icon"
-                    className={perk.is_enabled ? "text-gray-500 hover:text-gray-700" : "bg-green-500 hover:bg-green-600"}
-                    onClick={() => onToggleStatus(perk)}
-                  >
-                    {perk.is_enabled ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {perk.is_enabled ? 'Disable perk' : 'Enable perk'}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-          
-          {isDeletedList && onRestore && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="text-blue-500 hover:text-blue-700"
-                    onClick={() => onRestore(perk.id)}
-                    disabled={deletingPerk === perk.id}
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  Restore perk
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-          
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="text-red-500 hover:text-red-700"
-                  onClick={() => onDelete(perk.id)}
-                  disabled={deletingPerk === perk.id}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {isDeletedList ? 'Permanently delete' : 'Delete perk'}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+      </div>
+      
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
+          <h3 className="text-lg font-semibold">{perk.name}</h3>
+          <Badge className="bg-[#da7756]">
+            {perk.discount_amount}% off
+          </Badge>
         </div>
-      </TableCell>
-    </TableRow>
+      </CardHeader>
+      
+      <CardContent className="flex-1">
+        <p className="text-sm text-gray-600 mb-3">{perk.description}</p>
+        
+        <div className="flex items-center mt-2 text-xs text-gray-500">
+          <Calendar className="h-4 w-4 mr-1" />
+          <span>Valid until {formatDate(perk.expiry_date)}</span>
+        </div>
+        
+        {perk.category && (
+          <Badge variant="outline" className="mt-2">
+            {perk.category}
+          </Badge>
+        )}
+      </CardContent>
+      
+      <CardFooter>
+        {showRedeemButton ? (
+          isRedeemed ? (
+            <Button className="w-full" disabled>
+              Redeemed
+            </Button>
+          ) : (
+            <Button 
+              className="w-full bg-[#da7756] hover:bg-[#c96a4c]" 
+              onClick={handleRedeem}
+              disabled={isRedeeming || !isEmployee}
+            >
+              {isRedeeming ? "Processing..." : isEmployee ? "Redeem Now" : "Only Employees Can Redeem"}
+            </Button>
+          )
+        ) : (
+          <Button className="w-full bg-[#da7756] hover:bg-[#c96a4c]" asChild>
+            <Link to={`/dashboard/browse-perks/${perk.id}`}>View Details</Link>
+          </Button>
+        )}
+      </CardFooter>
+    </Card>
   );
 };
