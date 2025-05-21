@@ -1,4 +1,3 @@
-
 export interface Vendor {
   id: string;
   name: string;
@@ -30,4 +29,17 @@ export interface VendorProfile {
 
 export function isVendorUser(role: string | undefined): boolean {
   return role === 'vendor';
+}
+
+export interface Perk {
+  id: string;
+  name: string;
+  description: string;
+  discount_amount: number;
+  discount_type: 'percentage' | 'fixed';
+  vendor_id: string;
+  is_enabled: boolean;
+  created_at: string;
+  valid_through_date?: string | null;
+  category?: string | null;
 }
