@@ -2,6 +2,9 @@
 import { supabase } from '@/lib/supabase';
 import { UserData, UserRole } from '@/lib/supabase';
 
+// Import admin extension to ensure TypeScript knows about it
+import '@/lib/supabase-admin';
+
 export const useFetchUserData = () => {
   const fetchUserData = async (userId: string) => {
     try {

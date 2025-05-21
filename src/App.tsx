@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/auth';
 import { Toaster } from '@/components/ui/toaster';
 
-// Import our admin extension
+// Import our admin extension early to ensure it's initialized
 import '@/lib/supabase-admin';
 
 // Pages

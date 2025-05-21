@@ -27,14 +27,15 @@ export const adminFunctions = {
   }
 };
 
-// Extend the supabase client with admin methods
-supabase.auth.admin = adminFunctions;
+// Attach the admin functions to the supabase client
+supabase.auth.admin = {
+  ...supabase.auth.admin,  // Preserve any existing admin methods
+  ...adminFunctions        // Add our custom admin functions
+};
 
 // Add type declarations
 declare module '@supabase/supabase-js' {
   interface SupabaseAuthClient {
-    admin: {
-      createCompany: (name: string) => Promise<{ data?: any; error?: any }>;
-    };
+    admin: typeof adminFunctions & Record<string, any>;
   }
 }

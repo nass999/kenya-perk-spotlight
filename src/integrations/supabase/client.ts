@@ -14,5 +14,5 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 });
 
-// Import admin extension
-import '@/lib/supabase-admin';
+// Ensure admin extension will be initialized properly
+// Import is done in App.tsx to ensure it happens early
