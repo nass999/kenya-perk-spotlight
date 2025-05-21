@@ -106,17 +106,24 @@ export const useAuthMethods = () => {
           description: "You've been successfully signed out.",
         });
         
-        navigate('/login');
+        // Clear any auth state from context
+        navigate('/login', { replace: true });
         return;
       }
       
       // If we have a session, proceed with logout
       console.log('Active session found, signing out via API');
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        console.error('Sign out error:', error);
-        throw error;
+      try {
+        const { error } = await supabase.auth.signOut();
+        
+        if (error) {
+          console.error('Sign out error:', error);
+          throw error;
+        }
+      } catch (signOutError) {
+        // If we get an auth session missing error, just force navigation
+        console.error('Sign out error:', signOutError);
+        console.log('Forcing navigation to login page due to sign out error');
       }
       
       toast({
@@ -124,7 +131,7 @@ export const useAuthMethods = () => {
         description: "You've been successfully signed out.",
       });
       
-      navigate('/login');
+      navigate('/login', { replace: true });
     } catch (error: any) {
       console.error('Sign out error:', error);
       toast({
