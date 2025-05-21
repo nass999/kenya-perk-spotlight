@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -46,6 +45,45 @@ export const useAuthMethods = () => {
     }
   };
   
+  // Function to create a company and return the ID
+  const createCompany = async (name: string) => {
+    try {
+      console.log('Creating new company:', name);
+      
+      // Important: For company creation, use service role if possible to bypass RLS
+      // For this example, we'll create it with the current user right after signup
+      const { data, error } = await supabase
+        .from('companies')
+        .insert([{ name }])
+        .select('id')
+        .single();
+        
+      if (error) {
+        console.error('Error creating company:', error);
+        toast({
+          title: "Company creation failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        return null;
+      }
+      
+      if (data) {
+        console.log('New company created with ID:', data.id);
+        toast({
+          title: "Company created",
+          description: `Created company "${name}" successfully`,
+        });
+        return data.id;
+      }
+      
+      return null;
+    } catch (err) {
+      console.error('Failed to create company:', err);
+      return null;
+    }
+  };
+  
   const signUp = async (
     email: string, 
     password: string, 
@@ -80,7 +118,16 @@ export const useAuthMethods = () => {
       
       console.log("Auth signup successful, creating profile:", authData.user.id);
       
-      // The user record will be created by the fetchUserData function when the auth state changes
+      // 2. Create company if needed (for company_admin role with company_name but no company_id)
+      // We do this AFTER the user is created, so the new user can be the creator
+      if (role === 'company_admin' && company_name && !company_id) {
+        // Wait for the session to be established
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData?.session) {
+          console.log('Creating company after successful signup');
+          await createCompany(company_name);
+        }
+      }
       
       toast({
         title: "Account created!",
