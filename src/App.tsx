@@ -4,6 +4,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/auth';
 import { Toaster } from '@/components/ui/toaster';
 
+// Import our admin extension
+import '@/lib/supabase-admin';
+
 // Pages
 import Index from './pages/Index';
 import Login from './pages/Login';

@@ -39,7 +39,7 @@ const LoginForm = ({ onSuccess }: LoginFormProps) => {
   // Redirect to dashboard if already logged in
   React.useEffect(() => {
     if (authState.user && !authState.loading) {
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
     }
   }, [authState.user, authState.loading, navigate]);
   

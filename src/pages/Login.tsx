@@ -18,7 +18,7 @@ const Login = () => {
     // If user is already authenticated, redirect to dashboard
     if (authState.user && !authState.loading) {
       console.log("User already authenticated, redirecting to dashboard", authState.user);
-      navigate(redirectTo || '/dashboard');
+      navigate(redirectTo || '/dashboard', { replace: true });
     }
   }, [authState.user, authState.loading, navigate, redirectTo]);
   
@@ -29,7 +29,7 @@ const Login = () => {
     console.log("Setting immediate redirect to dashboard");
     setTimeout(() => {
       console.log("Executing manual navigation to dashboard");
-      navigate(redirectTo || '/dashboard');
+      navigate(redirectTo || '/dashboard', { replace: true });
     }, 1000);
   };
   

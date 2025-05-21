@@ -5,6 +5,7 @@ import { useAuthMethods } from './useAuthMethods';
 import { useFetchUserData } from './useFetchUserData';
 import type { AuthState, AuthContextProps, UserRole } from './types';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { toast } from '@/components/ui/use-toast';
 
 // Create the context first
 export const AuthContext = createContext<AuthContextProps>({
@@ -62,6 +63,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               // When logging in, redirect to dashboard if on login/register page
               if (location.pathname === '/login' || location.pathname === '/register') {
                 console.log("Auth state change - redirecting to dashboard from", location.pathname);
+                toast({
+                  title: "Welcome!",
+                  description: "You've been successfully logged in.",
+                });
                 navigate('/dashboard', { replace: true });
               }
             } else {

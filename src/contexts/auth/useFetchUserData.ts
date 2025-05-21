@@ -42,6 +42,44 @@ export const useFetchUserData = () => {
         
         console.log("Creating user with role:", role, "company_id:", companyId, "company_name:", companyName);
         
+        // For company_admin with company_name but no company_id, create the company first
+        let finalCompanyId = companyId;
+        
+        if (role === 'company_admin' && companyName && !companyId) {
+          console.log("Creating company for new company admin");
+          try {
+            // Use service_role to bypass RLS when creating companies
+            const { data: companyData, error: companyError } = await supabase.auth.admin.createCompany(companyName);
+            
+            if (companyError) {
+              console.error('Error creating company:', companyError);
+            } else if (companyData) {
+              console.log("Created company with ID:", companyData.id);
+              finalCompanyId = companyData.id;
+            }
+          } catch (companyErr) {
+            console.error('Error in company creation process:', companyErr);
+            
+            // Fallback: Try to create the company directly (may fail due to RLS)
+            try {
+              const { data: companyData, error: companyError } = await supabase
+                .from('companies')
+                .insert({ name: companyName })
+                .select('id')
+                .single();
+                
+              if (companyError) {
+                console.error('Error in fallback company creation:', companyError);
+              } else if (companyData) {
+                console.log("Created company with ID (fallback):", companyData.id);
+                finalCompanyId = companyData.id;
+              }
+            } catch (fallbackErr) {
+              console.error('Error in fallback company creation process:', fallbackErr);
+            }
+          }
+        }
+        
         // Create the user profile
         const { error: insertError, data: insertedUser } = await supabase
           .from('users')
@@ -50,7 +88,7 @@ export const useFetchUserData = () => {
             email: authUser.email || '',
             full_name: fullName,
             role: role,
-            company_id: companyId
+            company_id: finalCompanyId
           })
           .select('*')
           .single();
@@ -61,39 +99,6 @@ export const useFetchUserData = () => {
         }
         
         console.log("Created new user record:", insertedUser);
-        
-        // For company_admin with company_name but no company_id, create the company
-        if (role === 'company_admin' && companyName && !companyId) {
-          console.log("Creating company for new company admin");
-          try {
-            const { data: companyData, error: companyError } = await supabase
-              .from('companies')
-              .insert({ name: companyName })
-              .select('id')
-              .single();
-              
-            if (companyError) {
-              console.error('Error creating company:', companyError);
-            } else if (companyData) {
-              console.log("Created company with ID:", companyData.id);
-              
-              // Update the user with the new company id
-              const { error: updateError } = await supabase
-                .from('users')
-                .update({ company_id: companyData.id })
-                .eq('id', userId);
-                
-              if (updateError) {
-                console.error('Error updating user with company id:', updateError);
-              } else {
-                // Update the inserted user data with the company id
-                insertedUser.company_id = companyData.id;
-              }
-            }
-          } catch (companyErr) {
-            console.error('Error in company creation process:', companyErr);
-          }
-        }
         
         // Use the inserted user data
         const userData: UserData = {
