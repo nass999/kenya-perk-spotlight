@@ -1,6 +1,6 @@
 
-import AuthContext, { useAuth } from './AuthContext';
-import { AuthProvider } from './AuthProvider';
+import { AuthContext, AuthProvider } from './AuthProvider';
+import { useAuth } from './AuthContext';
+import { AuthContextProps, AuthState } from './types';
 
-export { AuthContext, useAuth, AuthProvider };
-export * from './types';
+export { AuthContext, AuthProvider, useAuth, type AuthContextProps, type AuthState };
