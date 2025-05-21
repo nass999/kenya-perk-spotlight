@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { UserData, UserRole } from '@/lib/supabase';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import { toast } from '@/components/ui/use-toast';
 
 export const useUserManagement = () => {
@@ -37,8 +37,9 @@ export const useUserManagement = () => {
           query = query.eq('id', currentUserId);
         }
       } else if (isMasterAdmin) {
-        console.log('Master admin fetching all users');
+        console.log('Master admin fetching all users - including inactive');
         // Master admin can see all users - no additional filter needed
+        // No is_active filter - we want to show all users including inactive ones
       }
       
       const { data, error } = await query.order('created_at', { ascending: false });
