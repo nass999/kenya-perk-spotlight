@@ -13,6 +13,7 @@ export interface Perk {
   terms_conditions: string | null;
   company_id: string | null;
   created_at: string;
+  updated_at?: string | null;
   is_enabled: boolean;
   valid_through_date: string | null;
   is_deleted?: boolean;

@@ -45,10 +45,11 @@ export const PerkList = ({
 }: PerkListProps) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Sort perks by created_at or updated_at (newest first)
+  // Sort perks by created_at (newest first)
   const sortedPerks = [...perks].sort((a, b) => {
-    const dateA = a.updated_at || a.created_at;
-    const dateB = b.updated_at || b.created_at;
+    // Use created_at as the fallback if updated_at is not available
+    const dateA = a.created_at;
+    const dateB = b.created_at;
     return new Date(dateB).getTime() - new Date(dateA).getTime();
   });
   
