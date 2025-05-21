@@ -35,6 +35,10 @@ serve(async (req) => {
       );
     }
 
+    console.log(`Processing invitation for ${email} from ${inviterName}`);
+    console.log(`Company ID: ${companyId}, Company Name: ${companyName || 'Not specified'}`);
+    console.log(`Registration link: ${registrationLink}`);
+
     // In development mode (local), log what would happen but don't send emails
     if (Deno.env.get("SUPABASE_ENV") === "development" || !Deno.env.get("RESEND_API_KEY")) {
       console.log(`Development mode: Would send invite to ${email} for company ${companyId}`);
@@ -59,11 +63,13 @@ serve(async (req) => {
     // Production mode - Send actual email via Resend
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     if (!resendApiKey) {
+      console.error("RESEND_API_KEY environment variable is not set");
       throw new Error("RESEND_API_KEY environment variable is required");
     }
 
     const orgName = companyName || 'their organization';
     
+    console.log(`Sending email via Resend API for ${email}`);
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -95,10 +101,12 @@ serve(async (req) => {
     });
 
     const data = await res.json();
+    console.log(`Resend API response:`, data);
     
     if (res.status >= 400) {
+      console.error(`Resend API error: ${res.status} ${JSON.stringify(data)}`);
       return new Response(
-        JSON.stringify({ error: data.message || "Failed to send invitation" }),
+        JSON.stringify({ error: data.message || "Failed to send invitation", details: data }),
         { 
           status: res.status,
           headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -117,6 +125,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
+    console.error("Error in send-invitation function:", error);
     return new Response(
       JSON.stringify({ 
         error: "Internal Server Error", 

@@ -88,8 +88,10 @@ export const UserInviteDialog = ({ isOpen, onOpenChange, companyId, companyName 
       // Send invitations in parallel
       await Promise.all(validEmails.map(async (email) => {
         try {
+          console.log(`Sending invitation to ${email}`);
+          
           // Use Supabase function to send email
-          const response = await supabase.functions.invoke('send-invitation', {
+          const { data, error } = await supabase.functions.invoke('send-invitation', {
             body: { 
               email,
               inviterName: authState.user?.full_name || 'Your colleague',
@@ -99,15 +101,17 @@ export const UserInviteDialog = ({ isOpen, onOpenChange, companyId, companyName 
             }
           });
           
-          if (response.error) {
-            console.error('Error sending invitation to', email, response.error);
+          if (error) {
+            console.error('Error sending invitation to', email, error);
             setSendingStatus(prev => ({...prev, [email]: 'error'}));
             failCount++;
             return;
           }
           
+          console.log('Invitation response:', data);
+          
           // Check for development mode response
-          if (response.data?.message?.includes("Development mode")) {
+          if (data?.message?.includes("Development mode")) {
             console.log("Development mode: Email would be sent in production", email);
             toast({
               title: "Development Mode",
