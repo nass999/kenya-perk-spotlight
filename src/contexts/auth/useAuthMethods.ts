@@ -92,7 +92,7 @@ export const useAuthMethods = () => {
     }
   };
   
-  const signOut = async () => {
+  const signOut = async (): Promise<void> => {
     try {
       setLoading(true);
       console.log('Signing out user...');
@@ -114,7 +114,6 @@ export const useAuthMethods = () => {
       // This ensures we don't rely solely on the auth state listener
       // (which might sometimes be delayed)
       
-      return { success: true };
     } catch (error: any) {
       console.error('Sign out error:', error);
       throw error;

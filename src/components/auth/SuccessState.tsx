@@ -1,36 +1,18 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { CheckCircle } from 'lucide-react';
+import { Check } from 'lucide-react';
 
-const SuccessState = () => {
-  const navigate = useNavigate();
-  
+const SuccessState: React.FC = () => {
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="text-center">
-        <CheckCircle className="mx-auto h-16 w-16 text-green-500 mb-4" />
-        <CardTitle className="text-2xl font-bold">Login Successful!</CardTitle>
-        <CardDescription className="text-lg">
-          Welcome back to Africa Rewards Network
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-600 mb-4">
-            Redirecting to your dashboard...
-          </p>
-          <Button 
-            className="bg-[#da7756] w-full"
-            onClick={() => navigate('/dashboard')}
-          >
-            Go to Dashboard Now
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="text-center">
+      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-6">
+        <Check className="h-8 w-8 text-green-600" />
+      </div>
+      <h2 className="text-2xl font-bold mb-2">Registration Successful!</h2>
+      <p className="text-gray-500 mb-4">
+        Your account has been created. You'll be redirected to your dashboard shortly.
+      </p>
+    </div>
   );
 };
 
