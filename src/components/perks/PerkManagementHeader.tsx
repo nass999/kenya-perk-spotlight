@@ -41,7 +41,7 @@ export const PerkManagementHeader = ({
       {/* Only show action buttons for admins, not for employees */}
       {!isEmployee && (
         <div className="flex items-center gap-3">
-          {isCompanyAdmin && (
+          {isCompanyAdmin ? (
             <>
               <Button 
                 variant="outline" 
@@ -59,8 +59,7 @@ export const PerkManagementHeader = ({
                 Activate Perks
               </Button>
             </>
-          )}
-          {!isCompanyAdmin && (
+          ) : (
             <Button 
               onClick={() => setIsDialogOpen(true)} 
               className="flex items-center gap-2 bg-[#da7756]"
