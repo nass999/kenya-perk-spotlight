@@ -10,3 +10,6 @@ export interface AuthContextProps {
 }
 
 export type UserRole = 'master_admin' | 'company_admin' | 'employee';
+
+// Export AuthState
+export { AuthState };

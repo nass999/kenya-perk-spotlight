@@ -10,14 +10,12 @@ interface AuthContextType {
   authState: AuthState;
   signIn: (email: string, password: string) => Promise<any>;
   signOut: () => Promise<void>;
-  updateProfile: (data: any) => Promise<any>;
 }
 
 export const AuthContext = createContext<AuthContextType>({
   authState: { user: null, session: null, loading: true },
   signIn: async () => ({ error: new Error('Not implemented') }),
   signOut: async () => {},
-  updateProfile: async () => ({ error: new Error('Not implemented') }),
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -27,8 +25,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loading: true,
   });
   
-  const { getUserData } = useFetchUserData();
-  const { signIn, signOut, updateProfile } = useAuthMethods(setAuthState, getUserData);
+  const { fetchUserData } = useFetchUserData();
+  const { signIn, signOut } = useAuthMethods();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -44,7 +42,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Use setTimeout to defer fetching user data to prevent Supabase auth deadlocks
         if (session?.user) {
           setTimeout(async () => {
-            const userData = await getUserData(session.user.id);
+            const userData = await fetchUserData(session.user.id);
             if (userData) {
               setAuthState(current => ({ ...current, user: userData }));
             }
@@ -74,7 +72,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         // Fetch user data in a deferred call
         setTimeout(async () => {
-          const userData = await getUserData(session.user.id);
+          const userData = await fetchUserData(session.user.id);
           if (userData) {
             setAuthState(current => ({ ...current, user: userData, loading: false }));
           } else {
@@ -92,7 +90,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ authState, signIn, signOut, updateProfile }}>
+    <AuthContext.Provider value={{ authState, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
