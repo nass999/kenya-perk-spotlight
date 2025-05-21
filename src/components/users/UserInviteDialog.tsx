@@ -42,6 +42,7 @@ export const UserInviteDialog = ({ isOpen, onOpenChange, companyId: propCompanyI
   const isMasterAdmin = authState.user?.role === 'master_admin';
   
   const baseUrl = window.location.origin;
+  // Ensure the role is properly included in the registration link
   let registrationLink = `${baseUrl}/register?role=${selectedRole}`;
   
   if (effectiveCompanyId) {
@@ -76,7 +77,6 @@ export const UserInviteDialog = ({ isOpen, onOpenChange, companyId: propCompanyI
     // If company name is provided, store it 
     if (role === 'company_admin' && companyName) {
       setNewCompanyName(companyName);
-      // No longer creating the company at invitation time
     }
   };
   
@@ -114,7 +114,7 @@ export const UserInviteDialog = ({ isOpen, onOpenChange, companyId: propCompanyI
       // Send invitations in parallel
       await Promise.all(validEmails.map(async (email) => {
         try {
-          console.log(`Sending invitation to ${email}`);
+          console.log(`Sending invitation to ${email} with role ${selectedRole}`);
           
           // Use Supabase function to send email
           const { data, error } = await supabase.functions.invoke('send-invitation', {
@@ -124,7 +124,7 @@ export const UserInviteDialog = ({ isOpen, onOpenChange, companyId: propCompanyI
               companyId: effectiveCompanyId,
               companyName: organizationName,
               registrationLink,
-              userRole: selectedRole
+              userRole: selectedRole  // Make sure this is passed correctly
             }
           });
           

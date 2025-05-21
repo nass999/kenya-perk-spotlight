@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -61,12 +60,8 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
     try {
       setIsLoading(true);
       
-      // Determine the role to use - either from invite or default to employee
+      // Ensure we're using the invitedRole passed from props, not defaulting unnecessarily
       const role = invitedRole || 'employee';
-      
-      // For company_admin role with a companyName but no companyId,
-      // we'll pass the companyName to be created during user registration
-      // The actual company creation is now handled in the auth hook after successful signup
       
       console.log('Registration with data:', { 
         email: data.email,
@@ -80,7 +75,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
         data.email,
         data.password,
         data.fullName,
-        role as UserRole,
+        role,
         companyId,
         companyName
       );

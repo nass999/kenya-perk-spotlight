@@ -8,15 +8,27 @@ import { useAuth } from '@/contexts/auth';
 import BackToHomeButton from '@/components/BackToHomeButton';
 import RegistrationForm from '@/components/auth/RegistrationForm';
 import SuccessState from '@/components/auth/SuccessState';
+import { UserRole } from '@/contexts/auth/types';
 
 const Register = () => {
   const { authState, signOut } = useAuth();
   const [isSuccess, setIsSuccess] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  
+  // Parse query parameters
   const companyId = searchParams.get('company_id');
   const companyName = searchParams.get('company_name');
-  const role = searchParams.get('role');
+  const roleParam = searchParams.get('role');
+  
+  // Validate that role is a valid UserRole type
+  const isValidRole = (role: string | null): role is UserRole => {
+    if (!role) return false;
+    return ['master_admin', 'company_admin', 'employee', 'vendor'].includes(role);
+  };
+  
+  // Only use the role if it's a valid UserRole
+  const role = isValidRole(roleParam) ? roleParam : null;
   
   useEffect(() => {
     const checkAndSignOut = async () => {
@@ -83,7 +95,7 @@ const Register = () => {
           <RegistrationForm
             companyId={companyId}
             companyName={companyName}
-            invitedRole={role as any}
+            invitedRole={role}
             onSuccess={handleRegistrationSuccess}
           />
         </CardContent>

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -97,6 +98,7 @@ export const useAuthMethods = () => {
       console.log("Attempting sign up for:", email, "with role:", role, "company_id:", company_id, "company_name:", company_name);
       
       // 1. Create auth user with metadata
+      // Make sure the role is correctly passed to the user metadata
       const { data: authData, error: authError } = await supabase.auth.signUp({ 
         email, 
         password,
@@ -104,7 +106,7 @@ export const useAuthMethods = () => {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
             full_name,
-            role,
+            role, // This role will be used when creating the user record
             company_id,
             company_name
           }

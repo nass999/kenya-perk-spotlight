@@ -32,8 +32,13 @@ export const useFetchUserData = () => {
         
         // Extract metadata from the auth user
         const metadata = authUser.user_metadata as any;
-        const fullName = metadata?.full_name || 'User';
+        
+        // Ensure we use the role from metadata, defaulting to 'employee' only if no role is provided
         const role = (metadata?.role || 'employee') as UserRole;
+        const fullName = metadata?.full_name || 'User';
+        const companyId = metadata?.company_id || null;
+        
+        console.log("Creating user with role:", role);
         
         // Create the user profile
         const { error: insertError, data: insertedUser } = await supabase
@@ -43,6 +48,7 @@ export const useFetchUserData = () => {
             email: authUser.email || '',
             full_name: fullName,
             role: role,
+            company_id: companyId
           })
           .select('*')
           .single();
