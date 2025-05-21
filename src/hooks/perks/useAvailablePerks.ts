@@ -28,6 +28,11 @@ export const useAvailablePerks = () => {
       const today = new Date().toISOString().split('T')[0];
       
       // First, get all the global perks (created by master admins)
+      // We want perks that:
+      // 1. Are not associated with a company (global/platform-wide)
+      // 2. Are enabled
+      // 3. Are not deleted
+      // 4. Are not expired or don't have an expiration date
       const { data: globalPerks, error: globalError } = await supabase
         .from('perks')
         .select('*')
@@ -37,7 +42,10 @@ export const useAvailablePerks = () => {
         .or(`valid_through_date.gt.${today},valid_through_date.is.null`) // Not expired
         .order('name');
       
-      if (globalError) throw globalError;
+      if (globalError) {
+        console.error('Error fetching global perks:', globalError);
+        throw globalError;
+      }
       
       console.log(`Found ${globalPerks?.length || 0} global perks`);
       
@@ -47,7 +55,10 @@ export const useAvailablePerks = () => {
         .select('id')
         .eq('company_id', authState.user.company_id);
       
-      if (companyError) throw companyError;
+      if (companyError) {
+        console.error('Error fetching company perks:', companyError);
+        throw companyError;
+      }
       
       // Get IDs of perks already associated with this company
       const companyPerkIds = companyPerks?.map(p => p.id) || [];

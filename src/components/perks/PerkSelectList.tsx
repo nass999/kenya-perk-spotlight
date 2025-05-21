@@ -4,6 +4,8 @@ import { useAvailablePerks } from '@/hooks/perks/useAvailablePerks';
 import { useAddPerks } from '@/hooks/perks/useAddPerks';
 import PerkSelectItem from './PerkSelectItem';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useEffect } from 'react';
+import { RefreshCw } from 'lucide-react';
 
 interface PerkSelectListProps {
   onClose: () => void;
@@ -12,6 +14,11 @@ interface PerkSelectListProps {
 const PerkSelectList = ({ onClose }: PerkSelectListProps) => {
   const { perks, loading, error, fetchAvailablePerks } = useAvailablePerks();
   const { selectedPerks, saving, handleTogglePerk, handleAddSelectedPerks } = useAddPerks(onClose);
+  
+  // Force refresh when component mounts to ensure we get the latest data
+  useEffect(() => {
+    fetchAvailablePerks();
+  }, []);
   
   return (
     <div className="space-y-4">
@@ -22,13 +29,16 @@ const PerkSelectList = ({ onClose }: PerkSelectListProps) => {
       ) : error ? (
         <div className="text-center py-6">
           <p className="text-red-500">{error}</p>
-          <Button onClick={fetchAvailablePerks} className="mt-2">Try Again</Button>
+          <Button onClick={fetchAvailablePerks} className="mt-2">
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Try Again
+          </Button>
         </div>
       ) : perks.length === 0 ? (
         <div className="text-center py-6">
           <p className="text-gray-500">No available perks found.</p>
           <p className="text-sm text-gray-400 mt-1">
-            Master admins need to create perks before you can add them to your company.
+            All platform perks have already been added to your company or the platform admin needs to create more perks.
           </p>
         </div>
       ) : (

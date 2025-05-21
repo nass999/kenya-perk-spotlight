@@ -50,12 +50,20 @@ export const useAddPerks = (onClose: () => void) => {
       }));
       
       console.log("Inserting new perks:", newPerks);
+      
+      if (!authState.user?.company_id) {
+        throw new Error("No company ID available for this user");
+      }
+      
       const { data, error } = await supabase
         .from('perks')
         .insert(newPerks)
         .select();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error inserting perks:", error);
+        throw error;
+      }
       
       console.log("Successfully added perks:", data);
       toast({
