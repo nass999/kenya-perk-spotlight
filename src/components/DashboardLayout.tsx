@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
-import { Menu } from 'lucide-react';
+import { Menu, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/use-toast';
 import { getNavigationByRole } from '@/utils/navigationItems';
 import MobileSidebar from './dashboard/MobileSidebar';
 import DesktopSidebar from './dashboard/DesktopSidebar';
@@ -11,9 +12,24 @@ import DesktopSidebar from './dashboard/DesktopSidebar';
 const DashboardLayout = () => {
   const { authState, signOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
   
-  const handleSignOut = () => {
-    signOut();
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed out successfully",
+        description: "You have been signed out of your account."
+      });
+      navigate('/login');
+    } catch (error) {
+      console.error('Sign out error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error signing out",
+        description: "There was a problem signing you out. Please try again."
+      });
+    }
   };
   
   const userInitials = authState.user?.full_name
@@ -43,6 +59,18 @@ const DashboardLayout = () => {
           className="bg-white"
         >
           <Menu className="h-5 w-5" />
+        </Button>
+      </div>
+
+      {/* Sign out button in top right for mobile */}
+      <div className="md:hidden fixed top-4 right-4 z-30">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleSignOut}
+          className="bg-white text-red-500"
+        >
+          <LogOut className="h-5 w-5" />
         </Button>
       </div>
 
