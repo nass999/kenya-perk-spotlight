@@ -16,7 +16,6 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/auth';
 import { UserRole } from '@/contexts/auth/types';
 import { toast } from '@/components/ui/use-toast';
-import { supabase } from '@/lib/supabase';
 
 // Form validation schema
 const registerSchema = z.object({
@@ -72,13 +71,18 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
         companyName: companyName
       });
       
+      // Create metadata object with all the user information
+      const metadata = {
+        full_name: data.fullName,
+        role,
+        company_id: companyId,
+        company_name: companyName
+      };
+      
       const result = await signUp(
         data.email,
         data.password,
-        data.fullName,
-        role,
-        companyId,
-        companyName
+        metadata
       );
       
       if (result.error) {

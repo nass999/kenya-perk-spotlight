@@ -1,9 +1,7 @@
 
 import { supabase } from '@/lib/supabase';
 import { UserData, UserRole } from '@/lib/supabase';
-
-// Import admin extension to ensure TypeScript knows about it
-import '@/lib/supabase-admin';
+import { createCompany } from '@/lib/supabase-admin';
 
 export const useFetchUserData = () => {
   const fetchUserData = async (userId: string) => {
@@ -57,9 +55,10 @@ export const useFetchUserData = () => {
         
         if (role === 'company_admin' && companyName && !companyId) {
           console.log("Creating company for new company admin");
+          
           try {
-            // Use admin functions to bypass RLS when creating companies
-            const { data: companyData, error: companyError } = await supabase.auth.admin.createCompany(companyName);
+            // Use admin functions to create company
+            const { data: companyData, error: companyError } = await createCompany(companyName);
             
             if (companyError) {
               console.error('Error creating company:', companyError);

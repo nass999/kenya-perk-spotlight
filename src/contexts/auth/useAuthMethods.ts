@@ -46,56 +46,14 @@ export const useAuthMethods = () => {
     }
   };
   
-  // Function to create a company using service role (bypassing RLS)
-  const createCompany = async (name: string) => {
-    try {
-      console.log('Creating new company:', name);
-      
-      // Create the company with admin privileges to bypass RLS
-      // In a real project, you'd have a secure edge function for this
-      const { data, error } = await supabase
-        .from('companies')
-        .insert([{ name }])
-        .select('id')
-        .single();
-        
-      if (error) {
-        console.error('Error creating company:', error);
-        toast({
-          title: "Company creation failed",
-          description: error.message,
-          variant: "destructive"
-        });
-        return null;
-      }
-      
-      if (data) {
-        console.log('New company created with ID:', data.id);
-        toast({
-          title: "Company created",
-          description: `Created company "${name}" successfully`,
-        });
-        return data.id;
-      }
-      
-      return null;
-    } catch (err) {
-      console.error('Failed to create company:', err);
-      return null;
-    }
-  };
-  
   const signUp = async (
     email: string, 
     password: string, 
-    full_name: string, 
-    role: UserRole = 'employee',
-    company_id?: string | null,
-    company_name?: string | null
+    metadata: any = {}
   ) => {
     try {
       setLoading(true);
-      console.log("Attempting sign up for:", email, "with role:", role, "company_id:", company_id, "company_name:", company_name);
+      console.log("Attempting sign up for:", email, "with metadata:", metadata);
       
       // 1. Create auth user with metadata
       const { data: authData, error: authError } = await supabase.auth.signUp({ 
@@ -103,12 +61,7 @@ export const useAuthMethods = () => {
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
-          data: {
-            full_name,
-            role, // This role will be used when creating the user record
-            company_id,
-            company_name
-          }
+          data: metadata
         }
       });
       
@@ -118,9 +71,6 @@ export const useAuthMethods = () => {
       }
       
       console.log("Auth signup successful:", authData.user.id);
-      
-      // The company creation will be handled in useFetchUserData 
-      // when the user record is created to avoid RLS issues
       
       toast({
         title: "Account created!",
