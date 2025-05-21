@@ -93,7 +93,7 @@ serve(async (req) => {
         Authorization: `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        from: "Perks Platform <invitations@perksplatform.com>",
+        from: "Perks Platform <onboarding@resend.dev>", // Using resend.dev domain which doesn't require verification
         to: email,
         subject: `${inviterName} has invited you to join ${orgName} on the Perks Platform`,
         html: `
