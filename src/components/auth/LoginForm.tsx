@@ -48,6 +48,7 @@ const LoginForm = ({ onSuccess }: LoginFormProps) => {
       setIsSubmitting(true);
       setLoginError(null);
       console.log("Form submitted, signing in...");
+      
       const result = await signIn(values.email, values.password);
       
       if (result?.error) {
@@ -68,6 +69,7 @@ const LoginForm = ({ onSuccess }: LoginFormProps) => {
         description: "Welcome back to Africa Rewards Network!"
       });
       
+      // Call onSuccess to show success state and trigger redirect
       onSuccess();
     } catch (error: any) {
       console.error('Login error:', error);
@@ -123,7 +125,7 @@ const LoginForm = ({ onSuccess }: LoginFormProps) => {
           <Button 
             type="submit" 
             className="w-full bg-[#da7756]" 
-            disabled={authState.loading || isSubmitting}
+            disabled={isSubmitting}
           >
             {isSubmitting ? 'Signing in...' : 'Sign In'}
           </Button>

@@ -3,7 +3,7 @@ import { useState, useEffect, createContext } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthMethods } from './useAuthMethods';
 import { useFetchUserData } from './useFetchUserData';
-import { AuthState } from './types';
+import type { AuthState } from './types';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 interface AuthContextType {
@@ -45,6 +45,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const userData = await fetchUserData(session.user.id);
             if (userData) {
               setAuthState(current => ({ ...current, user: userData }));
+              
+              // When logging in, redirect to dashboard if on login/register page
+              if (location.pathname === '/login' || location.pathname === '/register') {
+                navigate('/dashboard');
+              }
             }
           }, 0);
         } else {
