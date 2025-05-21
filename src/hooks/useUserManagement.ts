@@ -26,11 +26,19 @@ export const useUserManagement = () => {
       let query = supabase.from('users').select('*');
       
       // Company admins can only see users from their company
-      if (!isMasterAdmin && companyId) {
-        console.log('Filtering by company_id:', companyId);
-        query = query.eq('company_id', companyId);
-      } else {
+      if (authState.user?.role === 'company_admin') {
+        // If the company admin has a company_id, filter by it
+        if (companyId) {
+          console.log('Filtering by company_id:', companyId);
+          query = query.eq('company_id', companyId);
+        } else {
+          // If the company admin doesn't have a company_id, they should only see themselves
+          console.log('Company admin without company_id, showing only self');
+          query = query.eq('id', currentUserId);
+        }
+      } else if (isMasterAdmin) {
         console.log('Master admin fetching all users');
+        // Master admin can see all users - no additional filter needed
       }
       
       const { data, error } = await query.order('created_at', { ascending: false });
@@ -40,8 +48,15 @@ export const useUserManagement = () => {
         throw error;
       }
       
-      console.log(`Fetched ${data?.length || 0} users:`, data);
-      setUsers(data as UserData[]);
+      // For company admins, filter out master_admins from the results
+      // This is an additional client-side filter in case there are any master admins in the company
+      let filteredUsers = data as UserData[];
+      if (authState.user?.role === 'company_admin') {
+        filteredUsers = filteredUsers.filter(user => user.role !== 'master_admin');
+      }
+      
+      console.log(`Fetched ${filteredUsers?.length || 0} users:`, filteredUsers);
+      setUsers(filteredUsers);
     } catch (error: any) {
       console.error('Error fetching users:', error);
       setError(error.message || 'Failed to load users');
@@ -53,7 +68,7 @@ export const useUserManagement = () => {
     } finally {
       setLoading(false);
     }
-  }, [authState.user?.role, companyId, isMasterAdmin]);
+  }, [authState.user?.role, companyId, isMasterAdmin, currentUserId]);
 
   useEffect(() => {
     // Fetch users when component mounts or when user role/company changes
@@ -77,7 +92,7 @@ export const useUserManagement = () => {
       // Company admins can only update users in their company
       if (authState.user?.role === 'company_admin') {
         const userToUpdate = users.find(user => user.id === userId);
-        if (userToUpdate?.company_id !== companyId) {
+        if (userToUpdate?.company_id !== companyId || userToUpdate?.role === 'master_admin') {
           toast({
             variant: "destructive",
             title: "Permission denied",
@@ -124,7 +139,7 @@ export const useUserManagement = () => {
       // Company admins can only update users in their company
       if (authState.user?.role === 'company_admin') {
         const userToUpdate = users.find(user => user.id === userId);
-        if (userToUpdate?.company_id !== companyId) {
+        if (userToUpdate?.company_id !== companyId || userToUpdate?.role === 'master_admin') {
           toast({
             variant: "destructive",
             title: "Permission denied",
