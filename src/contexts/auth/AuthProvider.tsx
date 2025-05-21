@@ -79,14 +79,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             console.log("User data fetched, updating state and checking for redirect");
             setAuthState(current => ({ ...current, user: userData, loading: false }));
             
-            // When logging in, redirect to dashboard if on login/register page
-            if (location.pathname === '/login' || location.pathname === '/register') {
-              console.log("Auth state change - redirecting to dashboard from", location.pathname);
-              toast({
-                title: "Welcome!",
-                description: "You've been successfully logged in.",
-              });
-              navigate('/dashboard', { replace: true });
+            // When logging in or when user session is created/changed, redirect to dashboard
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+              console.log(`Auth state change (${event}) - redirecting to dashboard from`, location.pathname);
+              
+              // Only redirect if on login/register page to avoid disrupting user navigation
+              if (location.pathname === '/login' || location.pathname === '/register') {
+                toast({
+                  title: "Welcome!",
+                  description: "You've been successfully logged in.",
+                });
+                navigate('/dashboard', { replace: true });
+              }
             }
           }, 0);
         } else {

@@ -72,6 +72,22 @@ export const useAuthMethods = () => {
       
       console.log("Auth signup successful:", authData.user.id);
       
+      // Explicitly sign in the user to ensure session is created
+      // This step helps when emailRedirectTo might not work as expected
+      if (!authData.session) {
+        console.log("No session after signup, attempting explicit sign in");
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        
+        if (signInError) {
+          console.error("Error signing in after signup:", signInError);
+        } else {
+          console.log("Explicit sign in successful after signup");
+        }
+      }
+      
       toast({
         title: "Account created!",
         description: "You've been signed in automatically.",
