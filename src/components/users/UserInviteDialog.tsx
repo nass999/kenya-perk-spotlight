@@ -20,9 +20,10 @@ interface UserInviteDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   companyId?: string | null;
+  companyName?: string;
 }
 
-export const UserInviteDialog = ({ isOpen, onOpenChange, companyId }: UserInviteDialogProps) => {
+export const UserInviteDialog = ({ isOpen, onOpenChange, companyId, companyName }: UserInviteDialogProps) => {
   const { authState } = useAuth();
   const [emails, setEmails] = useState<string[]>(['']);
   const [loading, setLoading] = useState(false);
@@ -31,6 +32,7 @@ export const UserInviteDialog = ({ isOpen, onOpenChange, companyId }: UserInvite
   
   // Use the companyId from props if provided, otherwise fall back to the user's company_id
   const effectiveCompanyId = companyId || authState.user?.company_id;
+  const organizationName = companyName || 'your organization';
   
   const baseUrl = window.location.origin;
   const registrationLink = `${baseUrl}/register?company_id=${effectiveCompanyId}`;
@@ -92,6 +94,7 @@ export const UserInviteDialog = ({ isOpen, onOpenChange, companyId }: UserInvite
               email,
               inviterName: authState.user?.full_name || 'Your colleague',
               companyId: effectiveCompanyId,
+              companyName: organizationName,
               registrationLink
             }
           });
@@ -177,9 +180,9 @@ export const UserInviteDialog = ({ isOpen, onOpenChange, companyId }: UserInvite
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Invite Team Members</DialogTitle>
+          <DialogTitle>Invite Team Members to {organizationName}</DialogTitle>
           <DialogDescription>
-            Send invitations to your team members to join the platform.
+            Send invitations to your team members to join {organizationName} on the platform.
           </DialogDescription>
         </DialogHeader>
         
@@ -203,7 +206,7 @@ export const UserInviteDialog = ({ isOpen, onOpenChange, companyId }: UserInvite
               </Button>
             </div>
             <p className="text-sm text-gray-500 mt-2">
-              Share this link with your team members to sign up for an account.
+              Share this link with your team members to sign up for an account in {organizationName}.
             </p>
           </div>
           

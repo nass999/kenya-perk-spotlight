@@ -1,11 +1,12 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { User, Loader2 } from 'lucide-react';
 import UserTable from '@/components/users/UserTable';
 import UserManagementHeader from '@/components/users/UserManagementHeader';
+import { supabase } from '@/lib/supabase';
 
 const ManageUsers = () => {
   const {
@@ -21,6 +22,37 @@ const ManageUsers = () => {
     currentUserId,
     companyId
   } = useUserManagement();
+  
+  const [companyName, setCompanyName] = useState<string>('');
+  const [loadingCompany, setLoadingCompany] = useState<boolean>(false);
+
+  // Fetch company/organization name if applicable
+  useEffect(() => {
+    const fetchCompanyDetails = async () => {
+      if (companyId) {
+        try {
+          setLoadingCompany(true);
+          const { data, error } = await supabase
+            .from('companies')
+            .select('name')
+            .eq('id', companyId)
+            .single();
+            
+          if (error) {
+            console.error('Error fetching company details:', error);
+          } else if (data) {
+            setCompanyName(data.name);
+          }
+        } catch (err) {
+          console.error('Failed to fetch company details:', err);
+        } finally {
+          setLoadingCompany(false);
+        }
+      }
+    };
+    
+    fetchCompanyDetails();
+  }, [companyId]);
 
   useEffect(() => {
     console.log('ManageUsers component mounted, authorized:', isAuthorized);
@@ -49,6 +81,7 @@ const ManageUsers = () => {
         onRefreshUsers={fetchUsers}
         loading={loading}
         companyId={companyId}
+        companyName={companyName}
       />
 
       {error && (
@@ -64,7 +97,7 @@ const ManageUsers = () => {
           <CardDescription>
             {isMasterAdmin 
               ? "View and modify user roles. Role changes take effect immediately."
-              : "View and modify roles for users in your organization. Role changes take effect immediately."
+              : `View and modify users in ${companyName || 'your organization'}. Role changes take effect immediately.`
             }
           </CardDescription>
         </CardHeader>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +20,7 @@ interface Perk {
   expiry_date: string | null;
   is_enabled: boolean;
   valid_through_date: string | null;
+  company_id: string | null;
 }
 
 const categories = [
@@ -40,7 +40,31 @@ const BrowsePerks = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [companyName, setCompanyName] = useState<string>('');
   const { authState } = useAuth();
+
+  useEffect(() => {
+    // Fetch company name if user is part of a company
+    const fetchCompanyName = async () => {
+      if (authState.user?.company_id) {
+        try {
+          const { data, error } = await supabase
+            .from('companies')
+            .select('name')
+            .eq('id', authState.user.company_id)
+            .single();
+            
+          if (data && !error) {
+            setCompanyName(data.name);
+          }
+        } catch (err) {
+          console.error('Error fetching company name:', err);
+        }
+      }
+    };
+    
+    fetchCompanyName();
+  }, [authState.user?.company_id]);
 
   useEffect(() => {
     const fetchPerks = async () => {
@@ -50,14 +74,16 @@ const BrowsePerks = () => {
         // Get today's date for filtering
         const today = new Date().toISOString().split('T')[0];
         
+        // Base query conditions
         let query = supabase
           .from('perks')
           .select('*')
           .eq('is_enabled', true)
+          .eq('is_deleted', false)
           .or(`valid_through_date.gt.${today},valid_through_date.is.null`);
           
-        // If user is an employee, only show perks available to their company
-        if (authState.user?.role === 'employee' && authState.user?.company_id) {
+        // If employee, only show perks for their company or globally available perks (null company_id)
+        if (authState.user?.company_id) {
           query = query.or(`company_id.eq.${authState.user.company_id},company_id.is.null`);
         }
         
@@ -111,7 +137,10 @@ const BrowsePerks = () => {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-8">Browse Perks</h1>
+      <h1 className="text-3xl font-bold mb-2">Browse Perks</h1>
+      {companyName && (
+        <p className="text-gray-500 mb-6">Available perks for {companyName}</p>
+      )}
       
       <div className="flex flex-col md:flex-row gap-4 mb-8">
         <div className="flex-1">

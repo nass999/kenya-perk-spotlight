@@ -1,118 +1,131 @@
 
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.42.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 interface InvitationRequest {
   email: string;
   inviterName: string;
-  companyId: string;
+  companyId?: string;
+  companyName?: string;
   registrationLink: string;
 }
 
-const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
+serve(async (req) => {
+  // This is needed if you're planning to invoke your function from a browser.
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const { email, inviterName, companyId, registrationLink }: InvitationRequest = await req.json();
-
+    const { email, inviterName, companyId, companyName, registrationLink } = await req.json() as InvitationRequest;
+    
+    // Validate required fields
     if (!email) {
-      throw new Error("Email is required");
+      return new Response(
+        JSON.stringify({ error: "Email is required" }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
     }
 
-    console.log(`Sending invitation to ${email} from ${inviterName}`);
+    // In development mode (local), log what would happen but don't send emails
+    if (Deno.env.get("SUPABASE_ENV") === "development" || !Deno.env.get("RESEND_API_KEY")) {
+      console.log(`Development mode: Would send invite to ${email} for company ${companyId}`);
+      console.log(`Inviter: ${inviterName}`);
+      console.log(`Company: ${companyName || 'Not specified'}`);
+      console.log(`Registration link: ${registrationLink}`);
+      
+      return new Response(
+        JSON.stringify({ 
+          message: "Development mode: Email would be sent in production", 
+          email,
+          inviter: inviterName,
+          company: companyName || 'organization' 
+        }),
+        { 
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
 
-    try {
-      const emailResponse = await resend.emails.send({
-        from: "Team Perks <onboarding@resend.dev>", // You can update this with your verified domain once set up in Resend
-        to: [email],
-        subject: `${inviterName} invited you to join their team on Team Perks`,
+    // Production mode - Send actual email via Resend
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendApiKey) {
+      throw new Error("RESEND_API_KEY environment variable is required");
+    }
+
+    const orgName = companyName || 'their organization';
+    
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${resendApiKey}`,
+      },
+      body: JSON.stringify({
+        from: "Perks Platform <invitations@perksplatform.com>",
+        to: email,
+        subject: `${inviterName} has invited you to join ${orgName} on the Perks Platform`,
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #4F46E5; font-size: 24px; margin-bottom: 20px;">You've been invited!</h1>
-            <p>Hello,</p>
-            <p><strong>${inviterName}</strong> has invited you to join their team on the Team Perks platform.</p>
-            <p>Click the button below to create your account and get started:</p>
+            <h2>You've been invited!</h2>
+            <p>${inviterName} has invited you to join ${orgName} on the Perks Platform.</p>
+            <p>Click the button below to create your account and access your exclusive perks.</p>
             <div style="margin: 30px 0;">
-              <a href="${registrationLink}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">
-                Join Team
+              <a href="${registrationLink}" style="background-color: #da7756; color: white; padding: 12px 20px; border-radius: 4px; text-decoration: none; font-weight: bold;">
+                Join ${orgName}
               </a>
             </div>
             <p>Or copy and paste this link into your browser:</p>
-            <p style="color: #6B7280; word-break: break-all;">${registrationLink}</p>
-            <p style="margin-top: 40px; color: #6B7280; font-size: 14px;">
-              If you didn't expect this invitation, you can ignore this email.
-            </p>
-            <p style="color: #6B7280; font-size: 12px; margin-top: 30px; border-top: 1px solid #E5E7EB; padding-top: 20px;">
-              This email was sent from Team Perks, a platform for managing employee benefits and perks.
+            <p><a href="${registrationLink}">${registrationLink}</a></p>
+            <p style="color: #666; font-size: 14px; margin-top: 30px;">
+              If you believe this email was sent to you by mistake, you can ignore it. The invitation link will expire in 7 days.
             </p>
           </div>
         `,
-      });
+      }),
+    });
 
-      // Check for Resend Free Plan restrictions (can only send to the account owner's email)
-      if (emailResponse.error && emailResponse.error.statusCode === 403) {
-        console.log("Email sending restricted: Free tier limitation detected");
-        
-        // Return a modified success response for the frontend to simulate success
-        // This is a workaround for development/testing purposes
-        return new Response(JSON.stringify({
-          data: { id: "simulated-email-id" },
-          message: "Development mode: Email would be sent in production"
-        }), {
-          status: 200,
-          headers: {
-            "Content-Type": "application/json",
-            ...corsHeaders,
-          },
-        });
-      }
-
-      console.log("Email attempt result:", emailResponse);
-      
-      return new Response(JSON.stringify(emailResponse), {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          ...corsHeaders,
-        },
-      });
-    } catch (emailError: any) {
-      console.error("Email service error:", emailError);
-      
-      // For development, return a success response if it's a known Resend limitation
-      if (emailError.message && emailError.message.includes("You can only send testing emails to your own email")) {
-        return new Response(JSON.stringify({
-          data: { id: "simulated-email-id" },
-          message: "Development mode: Email would be sent in production"
-        }), {
-          status: 200,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        });
-      }
-      
-      throw emailError;
+    const data = await res.json();
+    
+    if (res.status >= 400) {
+      return new Response(
+        JSON.stringify({ error: data.message || "Failed to send invitation" }),
+        { 
+          status: res.status,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
     }
-  } catch (error: any) {
-    console.error("Error in send-invitation function:", error);
+
     return new Response(
-      JSON.stringify({ error: error.message }),
-      {
+      JSON.stringify({ 
+        message: "Invitation sent successfully", 
+        id: data.id 
+      }),
+      { 
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      }
+    );
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ 
+        error: "Internal Server Error", 
+        details: error instanceof Error ? error.message : String(error) 
+      }),
+      { 
         status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       }
     );
   }
-};
-
-serve(handler);
+});
