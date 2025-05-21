@@ -15,12 +15,12 @@ import PricingPage from './pages/PricingPage';
 import AuthCallback from './pages/AuthCallback';
 
 // Dashboard Pages
-import BrowsePerks from './pages/dashboard/BrowsePerks';
 import MyRedemptions from './pages/dashboard/MyRedemptions';
 import VendorRecommendations from './pages/dashboard/VendorRecommendations';
 import ManagePerks from './pages/dashboard/ManagePerks';
 import ManageUsers from './pages/dashboard/ManageUsers';
 import ManageVendors from './pages/dashboard/ManageVendors';
+import Analytics from './pages/dashboard/Analytics';
 
 // Components
 import DashboardLayout from './components/DashboardLayout';
@@ -46,13 +46,12 @@ function App() {
                 <Route index element={<Dashboard />} />
                 
                 {/* Employee Routes */}
-                <Route path="browse-perks" element={<BrowsePerks />} />
                 <Route path="my-redemptions" element={<MyRedemptions />} />
                 <Route path="vendor-recommendations" element={<VendorRecommendations />} />
                 
                 {/* Admin Routes */}
                 <Route path="manage-perks" element={
-                  <ProtectedRoute allowedRoles={['master_admin', 'company_admin'] as UserRole[]}>
+                  <ProtectedRoute allowedRoles={['master_admin', 'company_admin', 'employee'] as UserRole[]}>
                     <ManagePerks />
                   </ProtectedRoute>
                 } />
@@ -64,6 +63,11 @@ function App() {
                 <Route path="manage-vendors" element={
                   <ProtectedRoute allowedRoles={['master_admin'] as UserRole[]}>
                     <ManageVendors />
+                  </ProtectedRoute>
+                } />
+                <Route path="analytics" element={
+                  <ProtectedRoute allowedRoles={['master_admin', 'company_admin'] as UserRole[]}>
+                    <Analytics />
                   </ProtectedRoute>
                 } />
               </Route>

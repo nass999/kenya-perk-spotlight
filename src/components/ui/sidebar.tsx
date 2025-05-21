@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
@@ -10,6 +11,8 @@ import {
   X,
   Home,
   Store,
+  BarChart,
+  ShoppingBag,
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
@@ -94,13 +97,13 @@ export function Sidebar() {
             Dashboard
           </SidebarLink>
           
-          <SidebarLink to="/dashboard/browse-perks" active={location.pathname === '/dashboard/browse-perks'} onClick={closeOnMobile}>
-            <GiftIcon className="h-5 w-5 mr-3" />
-            Browse Perks
+          <SidebarLink to="/dashboard/manage-perks" active={location.pathname === '/dashboard/manage-perks'} onClick={closeOnMobile}>
+            <ShoppingBag className="h-5 w-5 mr-3" />
+            {userRole === 'employee' ? 'Perks' : 'Manage Perks'}
           </SidebarLink>
           
           {/* Only show My Redemptions for non-master admins */}
-          {userRole !== 'master_admin' && (
+          {userRole === 'employee' && (
             <SidebarLink to="/dashboard/my-redemptions" active={location.pathname === '/dashboard/my-redemptions'} onClick={closeOnMobile}>
               <TicketCheck className="h-5 w-5 mr-3" />
               My Redemptions
@@ -123,14 +126,15 @@ export function Sidebar() {
                 </div>
               </div>
               
-              <SidebarLink to="/dashboard/manage-perks" active={location.pathname === '/dashboard/manage-perks'} onClick={closeOnMobile}>
-                <Package className="h-5 w-5 mr-3" />
-                Manage Perks
-              </SidebarLink>
-              
               <SidebarLink to="/dashboard/manage-users" active={location.pathname === '/dashboard/manage-users'} onClick={closeOnMobile}>
                 <Users className="h-5 w-5 mr-3" />
                 Manage Users
+              </SidebarLink>
+              
+              {/* Analytics for both admin types */}
+              <SidebarLink to="/dashboard/analytics" active={location.pathname === '/dashboard/analytics'} onClick={closeOnMobile}>
+                <BarChart className="h-5 w-5 mr-3" />
+                Analytics
               </SidebarLink>
               
               {/* Only show vendor management to master admins */}
