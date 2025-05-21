@@ -18,7 +18,7 @@ const PerkSelectList = ({ onClose }: PerkSelectListProps) => {
   // Force refresh when component mounts to ensure we get the latest data
   useEffect(() => {
     fetchAvailablePerks();
-  }, []);
+  }, [fetchAvailablePerks]);
   
   return (
     <div className="space-y-4">
@@ -38,7 +38,7 @@ const PerkSelectList = ({ onClose }: PerkSelectListProps) => {
         <div className="text-center py-6">
           <p className="text-gray-500">No available perks found.</p>
           <p className="text-sm text-gray-400 mt-1">
-            All platform perks have already been added to your company or the platform admin needs to create more perks.
+            All platform perks have already been added to your organization or the platform admin needs to create more perks.
           </p>
         </div>
       ) : (

@@ -104,6 +104,11 @@ export const PerkList = ({
                         Try adjusting your search
                       </p>
                     )}
+                    {!isDeletedList && !isMasterAdmin && filteredPerks.length === 0 && !searchQuery && (
+                      <p className="text-sm text-gray-400 mt-1">
+                        Click "Activate Perks" to make platform perks available to your users
+                      </p>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>

@@ -22,7 +22,7 @@ export const useAddPerks = (onClose: () => void) => {
     if (selectedPerks.length === 0) {
       toast({
         title: "No perks selected",
-        description: "Please select at least one perk to enable for your organization.",
+        description: "Please select at least one perk to enable for your organization's users.",
       });
       return;
     }
@@ -32,9 +32,10 @@ export const useAddPerks = (onClose: () => void) => {
       
       // Get the perks that were selected
       const perksToCopy = perksArray.filter(perk => selectedPerks.includes(perk.id));
-      console.log("Enabling the following perks for the company:", perksToCopy);
+      console.log("Enabling the following perks for the organization:", perksToCopy);
       
       // Create copies of these perks for the company
+      // These will be the activated perks available to the organization's users
       const newPerks = perksToCopy.map(perk => ({
         name: perk.name,
         description: perk.description,
@@ -44,12 +45,12 @@ export const useAddPerks = (onClose: () => void) => {
         category: perk.category,
         expiry_date: perk.expiry_date,
         terms_conditions: perk.terms_conditions,
-        company_id: authState.user?.company_id,
-        is_enabled: true,
+        company_id: authState.user?.company_id, // Associate with this organization
+        is_enabled: true, // Activated by default when added to organization
         valid_through_date: perk.valid_through_date,
       }));
       
-      console.log("Inserting new perks for company:", newPerks);
+      console.log("Activating perks for organization:", newPerks);
       
       if (!authState.user?.company_id) {
         throw new Error("No company ID available for this user");
@@ -61,14 +62,14 @@ export const useAddPerks = (onClose: () => void) => {
         .select();
       
       if (error) {
-        console.error("Error inserting perks:", error);
+        console.error("Error activating perks:", error);
         throw error;
       }
       
-      console.log("Successfully enabled perks for company:", data);
+      console.log("Successfully activated perks for organization:", data);
       toast({
-        title: "Perks enabled successfully",
-        description: `${selectedPerks.length} perks have been enabled for your organization.`,
+        title: "Perks activated successfully",
+        description: `${selectedPerks.length} perks have been activated for your organization's users.`,
       });
       
       onClose();
@@ -77,11 +78,11 @@ export const useAddPerks = (onClose: () => void) => {
       window.dispatchEvent(new CustomEvent('refreshPerks'));
       
     } catch (error: any) {
-      console.error('Error enabling perks:', error);
+      console.error('Error activating perks:', error);
       toast({
         variant: "destructive",
-        title: "Error enabling perks",
-        description: error.message || "There was a problem enabling the selected perks.",
+        title: "Error activating perks",
+        description: error.message || "There was a problem activating the selected perks.",
       });
     } finally {
       setSaving(false);

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import { toast } from '@/components/ui/use-toast';
@@ -11,10 +11,11 @@ export const useAvailablePerks = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const fetchAvailablePerks = async () => {
+  const fetchAvailablePerks = useCallback(async () => {
     try {
       if (!authState.user || !authState.user.company_id) {
         console.log("No user or company_id available", authState.user);
+        setError("No company ID available. Please contact support.");
         setLoading(false);
         return;
       }
@@ -27,7 +28,7 @@ export const useAvailablePerks = () => {
       // Get the current date for comparing with valid_through_date
       const today = new Date().toISOString().split('T')[0];
       
-      // First, get all the global perks (created by master admins)
+      // First, get all the global perks (created by platform/master admins)
       // We want perks that:
       // 1. Are not associated with a company (global/platform-wide)
       // 2. Are enabled
@@ -49,7 +50,8 @@ export const useAvailablePerks = () => {
       
       console.log(`Found ${globalPerks?.length || 0} global perks`);
       
-      // Then, get all perks already associated with the company
+      // Then, get all perks already associated with this company
+      // These are perks that have already been activated by the org admin
       const { data: companyPerks, error: companyError } = await supabase
         .from('perks')
         .select('id')
@@ -60,15 +62,16 @@ export const useAvailablePerks = () => {
         throw companyError;
       }
       
-      // Get IDs of perks already associated with this company
+      // Get IDs of perks already activated for this company
       const companyPerkIds = companyPerks?.map(p => p.id) || [];
       
-      console.log(`Company already has ${companyPerkIds.length} perks`);
+      console.log(`Company already has ${companyPerkIds.length} activated perks`);
       
-      // Filter out perks that are already associated with this company
+      // Filter out perks that are already activated for this company
+      // These are the perks that the org admin can still activate
       const availablePerks = globalPerks?.filter(p => !companyPerkIds.includes(p.id)) || [];
       
-      console.log(`Found ${availablePerks.length} available perks to add for company ${authState.user.company_id}`);
+      console.log(`Found ${availablePerks.length} available perks to activate for company ${authState.user.company_id}`);
       setPerks(availablePerks as Perk[]);
     } catch (error: any) {
       console.error('Error fetching available perks:', error);
@@ -81,7 +84,7 @@ export const useAvailablePerks = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [authState.user]);
 
   useEffect(() => {
     if (authState.user && authState.user.company_id) {
@@ -89,7 +92,7 @@ export const useAvailablePerks = () => {
     } else {
       setLoading(false);
     }
-  }, [authState.user]);
+  }, [authState.user, fetchAvailablePerks]);
 
   return {
     perks,

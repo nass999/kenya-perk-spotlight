@@ -5,7 +5,7 @@ import { Share2, Plus } from 'lucide-react';
 import { PerkForm } from './PerkForm';
 import { Perk, PerkFormValues } from './PerkTypes';
 import { UserInviteDialog } from '@/components/users/UserInviteDialog';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import PerkSelectList from './PerkSelectList';
 
 interface PerkManagementHeaderProps {
@@ -29,8 +29,8 @@ export const PerkManagementHeader = ({
         <h1 className="text-3xl font-bold">Manage Perks</h1>
         <p className="text-gray-500 mt-1">
           {isCompanyAdmin 
-            ? "Enable and manage perks for your organization's users" 
-            : "Create, edit, and manage perks for the platform"}
+            ? "Activate and manage perks for your organization's users" 
+            : "Create and manage platform-wide perks"}
         </p>
       </div>
       <div className="flex items-center gap-3">
@@ -49,7 +49,7 @@ export const PerkManagementHeader = ({
               className="flex items-center gap-2 bg-[#da7756]"
             >
               <Plus className="h-4 w-4" />
-              Enable Perks
+              Activate Perks
             </Button>
           </>
         )}
@@ -85,7 +85,10 @@ export const PerkManagementHeader = ({
         <Dialog open={isPerkSelectDialogOpen} onOpenChange={setIsPerkSelectDialogOpen}>
           <DialogContent className="sm:max-w-[600px] max-h-[80vh]">
             <DialogHeader>
-              <DialogTitle>Enable Perks For Your Organization</DialogTitle>
+              <DialogTitle>Activate Perks For Your Organization</DialogTitle>
+              <DialogDescription>
+                Select platform perks to activate for all your organization's users.
+              </DialogDescription>
             </DialogHeader>
             <PerkSelectList onClose={() => setIsPerkSelectDialogOpen(false)} />
           </DialogContent>
