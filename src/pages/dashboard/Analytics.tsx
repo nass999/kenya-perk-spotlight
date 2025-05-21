@@ -1,11 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { 
   AreaChart,
   Area,
@@ -14,137 +11,33 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
   PieChart,
   Pie,
   Cell
 } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-
-// Interface for analytics data
-interface AnalyticsData {
-  dailyUsers: any[];
-  dailyOrgs: any[];
-  perksRedeemed: any[];
-  perksRedeemedByCategory: any[];
-  redemptionsByCompany: any[];
-  timeRange: '7days' | '30days' | '90days';
-}
+import { useAnalyticsData, TimeRange } from '@/hooks/useAnalyticsData';
 
 const Analytics = () => {
   const { authState } = useAuth();
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
-    dailyUsers: [],
-    dailyOrgs: [],
-    perksRedeemed: [],
-    perksRedeemedByCategory: [],
-    redemptionsByCompany: [],
-    timeRange: '30days'
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { 
+    dailyUsers, 
+    dailyOrgs, 
+    perksRedeemed, 
+    perksRedeemedByCategory,
+    redemptionsByCompany,
+    timeRange,
+    isLoading,
+    error,
+    handleTimeRangeChange
+  } = useAnalyticsData('30days');
   
   const isMasterAdmin = authState.user?.role === 'master_admin';
-  const isCompanyAdmin = authState.user?.role === 'company_admin';
   
   // Mock colors for charts
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#da7756'];
   
-  // Function to get date range
-  const getDateRange = (days: number) => {
-    const endDate = new Date();
-    const startDate = subDays(endDate, days);
-    return { startDate, endDate };
-  };
-  
-  // Load analytics data
-  useEffect(() => {
-    const fetchAnalyticsData = async () => {
-      if (!authState.user) return;
-      
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const days = analyticsData.timeRange === '7days' ? 7 : 
-                    analyticsData.timeRange === '30days' ? 30 : 90;
-                    
-        const { startDate, endDate } = getDateRange(days);
-        
-        // Generate date labels for the charts
-        const dateLabels = [];
-        for (let i = 0; i <= days; i++) {
-          const date = subDays(endDate, days - i);
-          dateLabels.push({
-            date: format(date, 'yyyy-MM-dd'),
-            displayDate: format(date, 'MMM dd')
-          });
-        }
-        
-        // Generate mock data for demonstration
-        // In a real application, this would be replaced with actual Supabase queries
-        
-        // 1. Daily New Users
-        const dailyUsers = dateLabels.map(({ date, displayDate }) => ({
-          date: displayDate,
-          count: Math.floor(Math.random() * 10) + 1
-        }));
-        
-        // 2. Daily New Organizations
-        const dailyOrgs = dateLabels.map(({ date, displayDate }) => ({
-          date: displayDate,
-          count: Math.floor(Math.random() * 3)
-        }));
-        
-        // 3. Perks Redeemed Over Time
-        const perksRedeemed = dateLabels.map(({ date, displayDate }) => ({
-          date: displayDate,
-          count: Math.floor(Math.random() * 15) + 5
-        }));
-        
-        // 4. Perks Redeemed by Category
-        const categories = ['Retail', 'Food & Dining', 'Travel', 'Wellness', 'Technology', 'Entertainment'];
-        const perksRedeemedByCategory = categories.map(category => ({
-          name: category,
-          value: Math.floor(Math.random() * 50) + 10
-        }));
-        
-        // 5. Redemptions by Company (for master admin only)
-        const companies = ['Acme Corp', 'Globex', 'Initech', 'Umbrella Corp', 'Stark Industries'];
-        const redemptionsByCompany = companies.map(company => ({
-          name: company,
-          value: Math.floor(Math.random() * 100) + 20
-        }));
-        
-        setAnalyticsData({
-          ...analyticsData,
-          dailyUsers,
-          dailyOrgs,
-          perksRedeemed,
-          perksRedeemedByCategory,
-          redemptionsByCompany
-        });
-      } catch (err: any) {
-        console.error("Error fetching analytics data:", err);
-        setError(err.message || "Failed to load analytics data");
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchAnalyticsData();
-  }, [authState.user, analyticsData.timeRange]);
-  
-  const handleTimeRangeChange = (value: '7days' | '30days' | '90days') => {
-    setAnalyticsData({
-      ...analyticsData,
-      timeRange: value
-    });
-  };
-  
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <p className="text-gray-500">Loading analytics data...</p>
@@ -167,8 +60,8 @@ const Analytics = () => {
         
         <div className="flex items-center gap-4">
           <Select 
-            value={analyticsData.timeRange}
-            onValueChange={(value: any) => handleTimeRangeChange(value)}
+            value={timeRange}
+            onValueChange={(value: TimeRange) => handleTimeRangeChange(value)}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select timeframe" />
@@ -200,7 +93,7 @@ const Analytics = () => {
                 }}
               >
                 <AreaChart
-                  data={analyticsData.dailyUsers}
+                  data={dailyUsers}
                   margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
                 >
                   <defs>
@@ -258,7 +151,7 @@ const Analytics = () => {
                 }}
               >
                 <AreaChart
-                  data={analyticsData.dailyOrgs}
+                  data={dailyOrgs}
                   margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
                 >
                   <defs>
@@ -316,7 +209,7 @@ const Analytics = () => {
                 }}
               >
                 <BarChart
-                  data={analyticsData.perksRedeemed}
+                  data={perksRedeemed}
                   margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
@@ -362,7 +255,7 @@ const Analytics = () => {
               >
                 <PieChart width={400} height={300}>
                   <Pie
-                    data={analyticsData.perksRedeemedByCategory}
+                    data={perksRedeemedByCategory}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
@@ -371,7 +264,7 @@ const Analytics = () => {
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {analyticsData.perksRedeemedByCategory.map((entry, index) => (
+                    {perksRedeemedByCategory.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -414,7 +307,7 @@ const Analytics = () => {
                   }}
                 >
                   <BarChart
-                    data={analyticsData.redemptionsByCompany}
+                    data={redemptionsByCompany}
                     layout="vertical"
                     margin={{ top: 20, right: 30, left: 100, bottom: 10 }}
                   >
