@@ -37,6 +37,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // First synchronously update session to prevent UI flicker
         setAuthState(current => ({ ...current, session, loading: session ? true : false }));
         
+        // Handle sign-out event specifically
+        if (event === 'SIGNED_OUT') {
+          console.log('User signed out, clearing state and redirecting');
+          setAuthState({ user: null, session: null, loading: false });
+          
+          // Only redirect to login if not already there
+          if (location.pathname !== '/login' && location.pathname !== '/register') {
+            navigate('/login', { replace: true });
+          }
+          return;
+        }
+        
         // Use setTimeout to defer fetching user data to prevent Supabase auth deadlocks
         if (session?.user) {
           setTimeout(async () => {

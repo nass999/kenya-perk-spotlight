@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -95,19 +94,13 @@ export const useAuthMethods = () => {
   const signOut = async () => {
     try {
       setLoading(true);
+      console.log('Signing out user...');
       
       // Check if we have a session first
       const { data: sessionData } = await supabase.auth.getSession();
       
       if (!sessionData.session) {
         console.log('No active session found, redirecting to login without API call');
-        toast({
-          title: "Signed out",
-          description: "You've been successfully signed out.",
-        });
-        
-        // Clear any auth state from context
-        navigate('/login', { replace: true });
         return;
       }
       
@@ -120,25 +113,19 @@ export const useAuthMethods = () => {
           console.error('Sign out error:', error);
           throw error;
         }
+        
+        console.log('Successfully signed out via API');
       } catch (signOutError) {
         // If we get an auth session missing error, just force navigation
         console.error('Sign out error:', signOutError);
-        console.log('Forcing navigation to login page due to sign out error');
+        console.log('Error during sign out process');
       }
       
-      toast({
-        title: "Signed out",
-        description: "You've been successfully signed out.",
-      });
-      
-      navigate('/login', { replace: true });
+      // Don't navigate here - let the component handle navigation
+      // after signOut completes
     } catch (error: any) {
       console.error('Sign out error:', error);
-      toast({
-        variant: "destructive",
-        title: "Error signing out",
-        description: error.message || "There was a problem signing you out.",
-      });
+      throw error;
     } finally {
       setLoading(false);
     }

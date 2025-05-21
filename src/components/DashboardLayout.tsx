@@ -21,7 +21,8 @@ const DashboardLayout = () => {
         title: "Signed out successfully",
         description: "You have been signed out of your account."
       });
-      navigate('/login');
+      // Ensure navigation happens after signOut completes
+      navigate('/login', { replace: true });
     } catch (error) {
       console.error('Sign out error:', error);
       toast({
