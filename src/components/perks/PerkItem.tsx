@@ -13,12 +13,26 @@ interface PerkItemProps {
   perk: Perk;
   onRedeem?: (perkId: string) => void;
   showRedeemButton?: boolean;
+  onEdit?: (perk: Perk) => void;
+  onToggleStatus?: (perk: Perk) => Promise<void>;
+  onDelete?: (id: string) => void;
+  onRestore?: (id: string) => void;
+  deletingPerk?: string;
+  isMasterAdmin?: boolean;
+  isDeletedList?: boolean;
 }
 
 export const PerkItem = ({ 
   perk, 
   onRedeem,
-  showRedeemButton = true
+  showRedeemButton = true,
+  onEdit,
+  onToggleStatus,
+  onDelete,
+  onRestore,
+  deletingPerk,
+  isMasterAdmin,
+  isDeletedList
 }: PerkItemProps) => {
   const [isRedeemed, setIsRedeemed] = useState(false);
   const { authState } = useAuth();
