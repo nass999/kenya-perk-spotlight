@@ -46,8 +46,11 @@ const VendorForm: React.FC<VendorFormProps> = ({
 
   const onSubmit = async (data: VendorFormValues) => {
     try {
+      console.log('Submitting vendor form with data:', data);
+      
       if (isEdit) {
         // Update existing vendor
+        console.log('Updating vendor with ID:', vendorId);
         const { error } = await supabase
           .from('vendors')
           .update({
@@ -65,16 +68,24 @@ const VendorForm: React.FC<VendorFormProps> = ({
         });
       } else {
         // Create new vendor
-        const { error } = await supabase
+        console.log('Creating new vendor');
+        const { error, data: newVendor } = await supabase
           .from('vendors')
           .insert({
             name: data.name,
             description: data.description || null,
             website: data.website || null,
             created_by: authState.user?.id,
-          });
+            status: 'active'
+          })
+          .select();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error creating vendor:', error);
+          throw error;
+        }
+        
+        console.log('New vendor created:', newVendor);
         form.reset();
         toast({
           title: 'Vendor added',
