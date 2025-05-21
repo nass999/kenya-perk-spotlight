@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/auth';
 import { UserRole } from '@/contexts/auth/types';
 import { toast } from '@/components/ui/use-toast';
+import { supabase } from '@/lib/supabase';
 
 // Form validation schema
 const registerSchema = z.object({
@@ -32,12 +33,14 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 interface RegistrationFormProps {
   companyId?: string | null;
+  companyName?: string | null;
   invitedRole?: UserRole | null;
   onSuccess: () => void;
 }
 
 const RegistrationForm: React.FC<RegistrationFormProps> = ({ 
   companyId, 
+  companyName,
   invitedRole = 'employee', 
   onSuccess 
 }) => {
@@ -54,6 +57,42 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
     },
   });
 
+  // Function to create a company and return the ID
+  const createCompany = async (name: string) => {
+    try {
+      console.log('Creating new company:', name);
+      const { data, error } = await supabase
+        .from('companies')
+        .insert([{ name }])
+        .select('id')
+        .single();
+        
+      if (error) {
+        console.error('Error creating company:', error);
+        toast({
+          title: "Company creation failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        return null;
+      }
+      
+      if (data) {
+        console.log('New company created with ID:', data.id);
+        toast({
+          title: "Company created",
+          description: `Created company "${name}" successfully`,
+        });
+        return data.id;
+      }
+      
+      return null;
+    } catch (err) {
+      console.error('Failed to create company:', err);
+      return null;
+    }
+  };
+
   const onSubmit = async (data: RegisterFormData) => {
     try {
       setIsLoading(true);
@@ -61,18 +100,37 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
       // Determine the role to use - either from invite or default to employee
       const role = invitedRole || 'employee';
       
+      // If invited as company_admin and we have a company name but no ID,
+      // create the company first
+      let effectiveCompanyId = companyId;
+      
+      if (role === 'company_admin' && companyName && !companyId) {
+        console.log('Creating company during registration:', companyName);
+        effectiveCompanyId = await createCompany(companyName);
+        
+        if (!effectiveCompanyId) {
+          toast({
+            variant: "destructive",
+            title: "Registration failed",
+            description: "Could not create company. Please try again.",
+          });
+          return;
+        }
+      }
+      
       console.log('Registration with data:', { 
         email: data.email,
         fullName: data.fullName,
         role,
-        companyId
+        companyId: effectiveCompanyId
       });
       
       const result = await signUp(
         data.email,
         data.password,
         data.fullName,
-        role as UserRole
+        role as UserRole,
+        effectiveCompanyId
       );
       
       if (result.error) {

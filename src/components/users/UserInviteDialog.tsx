@@ -35,16 +35,23 @@ export const UserInviteDialog = ({ isOpen, onOpenChange, companyId: propCompanyI
   // New state for role-based invites
   const [selectedRole, setSelectedRole] = useState<UserRole>('employee');
   const [newCompanyName, setNewCompanyName] = useState<string>('');
-  const [newCompanyId, setNewCompanyId] = useState<string | null>(null);
   
   // Use the companyId from props if provided, otherwise fall back to the user's company_id
-  const effectiveCompanyId = newCompanyId || propCompanyId || authState.user?.company_id;
+  const effectiveCompanyId = propCompanyId || authState.user?.company_id;
   const organizationName = newCompanyName || propCompanyName || 'your organization';
   
   const isMasterAdmin = authState.user?.role === 'master_admin';
   
   const baseUrl = window.location.origin;
-  const registrationLink = `${baseUrl}/register?company_id=${effectiveCompanyId}${selectedRole ? `&role=${selectedRole}` : ''}`;
+  let registrationLink = `${baseUrl}/register?role=${selectedRole}`;
+  
+  if (effectiveCompanyId) {
+    // If we have an existing company ID, include it in the link
+    registrationLink += `&company_id=${effectiveCompanyId}`;
+  } else if (newCompanyName && selectedRole === 'company_admin') {
+    // For new company admins, pass the company name as a parameter instead
+    registrationLink += `&company_name=${encodeURIComponent(newCompanyName)}`;
+  }
 
   const handleAddEmail = () => {
     setEmails([...emails, '']);
@@ -64,51 +71,13 @@ export const UserInviteDialog = ({ isOpen, onOpenChange, companyId: propCompanyI
   };
   
   // Handle role and company changes from InviteByRole component
-  const handleRoleChange = async (role: UserRole, companyName?: string) => {
+  const handleRoleChange = (role: UserRole, companyName?: string) => {
     setSelectedRole(role);
     
-    // If company name is provided, create a new company
-    if (role === 'company_admin' && companyName && isMasterAdmin) {
+    // If company name is provided, store it 
+    if (role === 'company_admin' && companyName) {
       setNewCompanyName(companyName);
-      
-      // Create company in database if it doesn't exist yet
-      if (!newCompanyId) {
-        try {
-          console.log('Creating new company:', companyName);
-          // Make sure to use the service role or the master admin's token
-          // The RLS policy we added will now allow master admins to create companies
-          const { data, error } = await supabase
-            .from('companies')
-            .insert([{ name: companyName }])
-            .select('id')
-            .single();
-            
-          if (error) {
-            console.error('Error creating company:', error);
-            toast({
-              title: "Company creation failed",
-              description: error.message,
-              variant: "destructive"
-            });
-            return;
-          }
-          
-          if (data) {
-            setNewCompanyId(data.id);
-            console.log('New company created with ID:', data.id);
-            toast({
-              title: "Company created",
-              description: `Created company "${companyName}" successfully`,
-            });
-          }
-        } catch (err) {
-          console.error('Failed to create company:', err);
-        }
-      }
-    } else if (role !== 'company_admin') {
-      // Reset company data if not a company admin
-      setNewCompanyName('');
-      setNewCompanyId(null);
+      // No longer creating the company at invitation time
     }
   };
   

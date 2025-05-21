@@ -15,13 +15,14 @@ const Register = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const companyId = searchParams.get('company_id');
+  const companyName = searchParams.get('company_name');
   const role = searchParams.get('role');
   
   useEffect(() => {
     const checkAndSignOut = async () => {
       // If user is already authenticated and they're accessing a registration link,
       // sign them out first to ensure a clean registration
-      if (authState.user && !authState.loading && (companyId || role)) {
+      if (authState.user && !authState.loading && (companyId || companyName || role)) {
         console.log("User is logged in but accessing a registration link, signing them out first");
         try {
           await signOut();
@@ -31,14 +32,14 @@ const Register = () => {
         }
       } 
       // If user is already authenticated without a registration link, redirect to dashboard
-      else if (authState.user && !authState.loading && !companyId && !role) {
+      else if (authState.user && !authState.loading && !companyId && !companyName && !role) {
         console.log("User already authenticated, redirecting to dashboard");
         navigate('/dashboard');
       }
     };
     
     checkAndSignOut();
-  }, [authState.user, authState.loading, navigate, companyId, role, signOut]);
+  }, [authState.user, authState.loading, navigate, companyId, companyName, role, signOut]);
   
   const handleRegistrationSuccess = () => {
     setIsSuccess(true);
@@ -64,23 +65,24 @@ const Register = () => {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Create Your Account</CardTitle>
           <CardDescription>
-            {companyId 
+            {companyId || companyName 
               ? "Join your company on Africa Rewards Network" 
               : "Sign up for Africa Rewards Network"}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {(companyId || role) && (
+          {(companyId || companyName || role) && (
             <Alert className="mb-6 bg-blue-50">
               <Info className="h-4 w-4 text-blue-500" />
               <AlertDescription className="text-blue-700">
-                You've been invited to join{companyId ? ' a company' : ''} 
+                You've been invited to join{companyId || companyName ? ' a company' : ''} 
                 {role ? ` as ${role.replace('_', ' ')}` : ''}.
               </AlertDescription>
             </Alert>
           )}
           <RegistrationForm
             companyId={companyId}
+            companyName={companyName}
             invitedRole={role as any}
             onSuccess={handleRegistrationSuccess}
           />
