@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import {
@@ -83,7 +82,7 @@ export const UserInviteDialog = ({ isOpen, onOpenChange }: UserInviteDialogProps
       await Promise.all(validEmails.map(async (email) => {
         try {
           // Use Supabase function to send email
-          const { error } = await supabase.functions.invoke('send-invitation', {
+          const response = await supabase.functions.invoke('send-invitation', {
             body: { 
               email,
               inviterName: authState.user?.full_name || 'Your colleague',
@@ -92,11 +91,21 @@ export const UserInviteDialog = ({ isOpen, onOpenChange }: UserInviteDialogProps
             }
           });
           
-          if (error) {
-            console.error('Error sending invitation to', email, error);
+          if (response.error) {
+            console.error('Error sending invitation to', email, response.error);
             setSendingStatus(prev => ({...prev, [email]: 'error'}));
             failCount++;
             return;
+          }
+          
+          // Check for development mode response
+          if (response.data?.message?.includes("Development mode")) {
+            console.log("Development mode: Email would be sent in production", email);
+            toast({
+              title: "Development Mode",
+              description: "In development mode, emails are not actually sent to recipients. Registration links still work for testing.",
+              duration: 10000,
+            });
           }
           
           setSendingStatus(prev => ({...prev, [email]: 'success'}));
