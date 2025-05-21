@@ -33,12 +33,12 @@ export const useSubmitPerk = ({
     try {
       console.log("Submitting perk form with values:", values);
       
-      // Process vendor_id - if it's "none", set it to null
+      // Process form values for submission
       const processedValues = {
         ...values,
         is_deleted: false, // Explicitly set is_deleted to false
         is_enabled: values.is_enabled !== undefined ? values.is_enabled : true,
-        vendor_id: values.vendor_id === "none" ? null : values.vendor_id
+        // vendor_id is now required, so we don't need to check for "none" value
       };
       
       if (editingPerk) {

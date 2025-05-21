@@ -47,7 +47,7 @@ export const VendorField = ({ form }: VendorFieldProps) => {
       name="vendor_id"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Associated Vendor</FormLabel>
+          <FormLabel>Associated Vendor<span className="text-red-500 ml-1">*</span></FormLabel>
           <Select
             onValueChange={field.onChange}
             defaultValue={field.value || undefined}
@@ -55,7 +55,7 @@ export const VendorField = ({ form }: VendorFieldProps) => {
           >
             <FormControl>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select vendor (optional)" />
+                <SelectValue placeholder="Select vendor" />
               </SelectTrigger>
             </FormControl>
             <SelectContent>
@@ -64,14 +64,11 @@ export const VendorField = ({ form }: VendorFieldProps) => {
               ) : vendors.length === 0 ? (
                 <SelectItem value="no-vendors" disabled>No vendors available</SelectItem>
               ) : (
-                <>
-                  <SelectItem value="none">None</SelectItem>
-                  {vendors.map((vendor) => (
-                    <SelectItem key={vendor.id} value={vendor.id}>
-                      {vendor.name}
-                    </SelectItem>
-                  ))}
-                </>
+                vendors.map((vendor) => (
+                  <SelectItem key={vendor.id} value={vendor.id}>
+                    {vendor.name}
+                  </SelectItem>
+                ))
               )}
             </SelectContent>
           </Select>

@@ -46,7 +46,7 @@ export const perkSchema = z.object({
   is_enabled: z.boolean().default(true),
   valid_through_date: z.string().optional().nullable(),
   company_id: z.string().optional().nullable(),
-  vendor_id: z.string().optional().nullable(),
+  vendor_id: z.string({ required_error: 'Please select a vendor' }),
 });
 
 export type PerkFormValues = z.infer<typeof perkSchema>;

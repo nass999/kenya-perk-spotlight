@@ -43,7 +43,7 @@ export const PerkFormDialog = ({
       image_url: null,
       is_enabled: true,
       valid_through_date: null,
-      vendor_id: null,
+      vendor_id: undefined, // Changed from null to undefined to force selection
     }
   });
 
@@ -68,7 +68,7 @@ export const PerkFormDialog = ({
         image_url: editingPerk.image_url,
         is_enabled: editingPerk.is_enabled,
         valid_through_date: editingPerk.valid_through_date ? new Date(editingPerk.valid_through_date).toISOString().split('T')[0] : null,
-        vendor_id: editingPerk.vendor_id || null,
+        vendor_id: editingPerk.vendor_id || undefined,
       });
     }
   }, [editingPerk, form]);
