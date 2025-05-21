@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -43,15 +42,13 @@ const ManageVendors = () => {
       const { data, error } = await supabase
         .from('vendors')
         .select('*')
-        .eq('status', 'active')
-        .or('status.eq.on_hold')
+        .in('status', ['active', 'on_hold'])
         .order('name');
       
       if (error) throw error;
       
       console.log(`Fetched ${data?.length || 0} vendors:`, data);
       
-      // The data is now compatible with our Vendor interface
       setVendors(data || []);
     } catch (error: any) {
       console.error('Error fetching vendors:', error);
