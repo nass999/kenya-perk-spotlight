@@ -43,6 +43,7 @@ export const PerkItem = ({
   isEmployee = false
 }: PerkItemProps) => {
   const [isRedeemed, setIsRedeemed] = useState(false);
+  const [redemptionCode, setRedemptionCode] = useState<string | null>(null);
   const { authState } = useAuth();
   const { redeemPerk, isRedeeming } = useRedeemPerk();
   
@@ -59,6 +60,7 @@ export const PerkItem = ({
     const result = await redeemPerk(perk.id);
     if (result.success && onRedeem) {
       setIsRedeemed(true);
+      setRedemptionCode(result.data?.redemption_code || 'CODE');
       onRedeem(perk.id);
     }
   };
@@ -122,14 +124,21 @@ export const PerkItem = ({
           ) : (
             <>
               {isEmployee ? (
-                <Button 
-                  className="bg-[#da7756] hover:bg-[#c96a4c]" 
-                  size="sm"
-                  onClick={handleRedeem}
-                  disabled={isRedeeming || !canRedeem}
-                >
-                  {isRedeeming ? "Processing..." : "Redeem"}
-                </Button>
+                isRedeemed || redemptionCode ? (
+                  <div className="bg-green-50 border border-green-200 rounded-md px-3 py-1.5 text-green-800">
+                    <div className="text-xs text-green-600 mb-0.5">Redemption Code:</div>
+                    <div className="font-mono font-semibold">{redemptionCode}</div>
+                  </div>
+                ) : (
+                  <Button 
+                    className="bg-[#da7756] hover:bg-[#c96a4c]" 
+                    size="sm"
+                    onClick={handleRedeem}
+                    disabled={isRedeeming || !canRedeem}
+                  >
+                    {isRedeeming ? "Processing..." : "Redeem"}
+                  </Button>
+                )
               ) : (
                 <>
                   {onEdit && (

@@ -38,33 +38,38 @@ export const PerkManagementHeader = ({
         </p>
       </div>
       <div className="flex items-center gap-3">
-        {isCompanyAdmin && !isEmployee && (
+        {/* Only show buttons for admins, not for employees */}
+        {!isEmployee && (
           <>
-            <Button 
-              variant="outline" 
-              className="flex items-center gap-2"
-              onClick={() => setIsInviteDialogOpen(true)}
-            >
-              <Share2 className="h-4 w-4" />
-              Invite Users
-            </Button>
-            <Button 
-              onClick={() => setIsPerkSelectDialogOpen(true)}
-              className="flex items-center gap-2 bg-[#da7756]"
-            >
-              <Plus className="h-4 w-4" />
-              Activate Perks
-            </Button>
+            {isCompanyAdmin && (
+              <>
+                <Button 
+                  variant="outline" 
+                  className="flex items-center gap-2"
+                  onClick={() => setIsInviteDialogOpen(true)}
+                >
+                  <Share2 className="h-4 w-4" />
+                  Invite Users
+                </Button>
+                <Button 
+                  onClick={() => setIsPerkSelectDialogOpen(true)}
+                  className="flex items-center gap-2 bg-[#da7756]"
+                >
+                  <Plus className="h-4 w-4" />
+                  Activate Perks
+                </Button>
+              </>
+            )}
+            {!isCompanyAdmin && (
+              <Button 
+                onClick={() => setIsDialogOpen(true)} 
+                className="flex items-center gap-2 bg-[#da7756]"
+              >
+                <Plus className="h-4 w-4" />
+                Create Perk
+              </Button>
+            )}
           </>
-        )}
-        {!isCompanyAdmin && !isEmployee && (
-          <Button 
-            onClick={() => setIsDialogOpen(true)} 
-            className="flex items-center gap-2 bg-[#da7756]"
-          >
-            <Plus className="h-4 w-4" />
-            Create Perk
-          </Button>
         )}
 
         <PerkForm
