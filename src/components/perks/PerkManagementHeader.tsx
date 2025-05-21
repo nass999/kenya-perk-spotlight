@@ -10,12 +10,14 @@ import PerkSelectList from './PerkSelectList';
 
 interface PerkManagementHeaderProps {
   isCompanyAdmin: boolean;
+  isEmployee?: boolean;
   onSubmit: (values: PerkFormValues) => Promise<boolean>;
   editingPerk: Perk | null;
 }
 
 export const PerkManagementHeader = ({
   isCompanyAdmin,
+  isEmployee = false,
   onSubmit,
   editingPerk
 }: PerkManagementHeaderProps) => {
@@ -26,15 +28,17 @@ export const PerkManagementHeader = ({
   return (
     <div className="flex justify-between items-center mb-6">
       <div>
-        <h1 className="text-3xl font-bold">Manage Perks</h1>
+        <h1 className="text-3xl font-bold">{isEmployee ? "Available Perks" : "Manage Perks"}</h1>
         <p className="text-gray-500 mt-1">
-          {isCompanyAdmin 
-            ? "Activate and manage perks for your organization's users" 
-            : "Create and manage platform-wide perks"}
+          {isEmployee 
+            ? "View and redeem perks available to you" 
+            : isCompanyAdmin 
+              ? "Activate and manage perks for your organization's users" 
+              : "Create and manage platform-wide perks"}
         </p>
       </div>
       <div className="flex items-center gap-3">
-        {isCompanyAdmin && (
+        {isCompanyAdmin && !isEmployee && (
           <>
             <Button 
               variant="outline" 
@@ -53,7 +57,7 @@ export const PerkManagementHeader = ({
             </Button>
           </>
         )}
-        {!isCompanyAdmin && (
+        {!isCompanyAdmin && !isEmployee && (
           <Button 
             onClick={() => setIsDialogOpen(true)} 
             className="flex items-center gap-2 bg-[#da7756]"
@@ -73,7 +77,7 @@ export const PerkManagementHeader = ({
       </div>
       
       {/* Invite Users Dialog */}
-      {isCompanyAdmin && (
+      {isCompanyAdmin && !isEmployee && (
         <UserInviteDialog
           isOpen={isInviteDialogOpen}
           onOpenChange={setIsInviteDialogOpen}
@@ -81,7 +85,7 @@ export const PerkManagementHeader = ({
       )}
 
       {/* Select Perks Dialog */}
-      {isCompanyAdmin && (
+      {isCompanyAdmin && !isEmployee && (
         <Dialog open={isPerkSelectDialogOpen} onOpenChange={setIsPerkSelectDialogOpen}>
           <DialogContent className="sm:max-w-[600px] max-h-[80vh]">
             <DialogHeader>

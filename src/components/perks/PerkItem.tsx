@@ -8,6 +8,12 @@ import { Calendar, Tag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import { useRedeemPerk } from '@/hooks/perks/useRedeemPerk';
+import { 
+  TableCell, 
+  TableRow 
+} from '@/components/ui/table';
+import { Switch } from '@/components/ui/switch';
+import { Pencil, Trash2, RotateCw } from 'lucide-react';
 
 interface PerkItemProps {
   perk: Perk;
@@ -17,9 +23,10 @@ interface PerkItemProps {
   onToggleStatus?: (perk: Perk) => Promise<void>;
   onDelete?: (id: string) => void;
   onRestore?: (id: string) => void;
-  deletingPerk?: string;
+  deletingPerk?: string | null;
   isMasterAdmin?: boolean;
   isDeletedList?: boolean;
+  isEmployee?: boolean;
 }
 
 export const PerkItem = ({ 
@@ -32,7 +39,8 @@ export const PerkItem = ({
   onRestore,
   deletingPerk,
   isMasterAdmin,
-  isDeletedList
+  isDeletedList,
+  isEmployee = false
 }: PerkItemProps) => {
   const [isRedeemed, setIsRedeemed] = useState(false);
   const { authState } = useAuth();
@@ -55,72 +63,104 @@ export const PerkItem = ({
     }
   };
   
-  const isEmployee = authState.user?.role === 'employee';
-  
+  // Only employees can redeem
+  const canRedeem = authState.user?.role === 'employee';
+
+  // This is a table row component, not a card
   return (
-    <Card className="overflow-hidden h-full flex flex-col">
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 h-28 flex items-center justify-center border-b">
-        {perk.image_url ? (
-          <img 
-            src={perk.image_url} 
-            alt={perk.name}
-            className="h-full w-full object-cover"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.onerror = null;
-              target.src = '/placeholder.svg';
-            }}
+    <TableRow key={perk.id}>
+      <TableCell>
+        <div className="flex items-center space-x-3">
+          {perk.image_url && (
+            <img 
+              src={perk.image_url} 
+              alt={perk.name} 
+              className="h-8 w-8 rounded object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.onerror = null;
+                target.src = '/placeholder.svg';
+              }}
+            />
+          )}
+          <div>
+            <div className="font-medium">{perk.name}</div>
+            <div className="text-xs text-gray-500 line-clamp-1 max-w-xs">
+              {perk.description}
+            </div>
+          </div>
+        </div>
+      </TableCell>
+      <TableCell>{perk.discount_amount}%</TableCell>
+      <TableCell>{perk.category || 'General'}</TableCell>
+      <TableCell>{formatDate(perk.valid_through_date)}</TableCell>
+      {isMasterAdmin && !isDeletedList && !isEmployee && (
+        <TableCell>
+          <Switch 
+            checked={perk.is_enabled} 
+            onCheckedChange={() => onToggleStatus && onToggleStatus(perk)}
+            aria-label={perk.is_enabled ? "Disable perk" : "Enable perk"}
           />
-        ) : (
-          <Tag className="h-12 w-12 text-blue-500" />
-        )}
-      </div>
-      
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <h3 className="text-lg font-semibold">{perk.name}</h3>
-          <Badge className="bg-[#da7756]">
-            {perk.discount_amount}% off
-          </Badge>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="flex-1">
-        <p className="text-sm text-gray-600 mb-3">{perk.description}</p>
-        
-        <div className="flex items-center mt-2 text-xs text-gray-500">
-          <Calendar className="h-4 w-4 mr-1" />
-          <span>Valid until {formatDate(perk.expiry_date)}</span>
-        </div>
-        
-        {perk.category && (
-          <Badge variant="outline" className="mt-2">
-            {perk.category}
-          </Badge>
-        )}
-      </CardContent>
-      
-      <CardFooter>
-        {showRedeemButton ? (
-          isRedeemed ? (
-            <Button className="w-full" disabled>
-              Redeemed
-            </Button>
+        </TableCell>
+      )}
+      <TableCell className="text-right">
+        <div className="flex justify-end items-center space-x-2">
+          {isDeletedList ? (
+            <>
+              {onRestore && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => onRestore(perk.id)}
+                >
+                  <RotateCw className="h-4 w-4 mr-1" />
+                  Restore
+                </Button>
+              )}
+              {/* Permanent delete button for deleted list */}
+            </>
           ) : (
-            <Button 
-              className="w-full bg-[#da7756] hover:bg-[#c96a4c]" 
-              onClick={handleRedeem}
-              disabled={isRedeeming || !isEmployee}
-            >
-              {isRedeeming ? "Processing..." : isEmployee ? "Redeem Now" : "Only Employees Can Redeem"}
-            </Button>
-          )
-        ) : (
-          <Button className="w-full bg-[#da7756] hover:bg-[#c96a4c]" asChild>
-            <Link to={`/dashboard/browse-perks/${perk.id}`}>View Details</Link>
-          </Button>
-        )}
-      </CardFooter>
-    </Card>
+            <>
+              {isEmployee ? (
+                <Button 
+                  className="bg-[#da7756] hover:bg-[#c96a4c]" 
+                  size="sm"
+                  onClick={handleRedeem}
+                  disabled={isRedeeming || !canRedeem}
+                >
+                  {isRedeeming ? "Processing..." : "Redeem"}
+                </Button>
+              ) : (
+                <>
+                  {onEdit && (
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      onClick={() => onEdit(perk)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {onDelete && (
+                    <Button 
+                      variant="destructive" 
+                      size="icon"
+                      onClick={() => onDelete(perk.id)}
+                      disabled={deletingPerk === perk.id}
+                    >
+                      {deletingPerk === perk.id ? (
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </Button>
+                  )}
+                </>
+              )}
+            </>
+          )}
+        </div>
+      </TableCell>
+    </TableRow>
   );
 };

@@ -20,7 +20,8 @@ export const usePerksManagement = () => {
     fetchPerks,
     fetchDeletedPerks,
     isMasterAdmin,
-    isCompanyAdmin
+    isCompanyAdmin,
+    isEmployee
   } = usePerksQuery();
 
   const {
@@ -59,6 +60,7 @@ export const usePerksManagement = () => {
     deletingPerk,
     isMasterAdmin,
     isCompanyAdmin,
+    isEmployee,
     editingPerk,
     handleSubmit,
     handleToggleStatus,

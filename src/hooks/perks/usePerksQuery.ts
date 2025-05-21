@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/components/ui/use-toast';
 import { Perk } from '@/components/perks/PerkTypes';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 
 export const usePerksQuery = () => {
   const { authState } = useAuth();
@@ -16,6 +16,7 @@ export const usePerksQuery = () => {
 
   const isMasterAdmin = authState.user?.role === 'master_admin';
   const isCompanyAdmin = authState.user?.role === 'company_admin';
+  const isEmployee = authState.user?.role === 'employee';
 
   const fetchPerks = async () => {
     try {
@@ -29,7 +30,8 @@ export const usePerksQuery = () => {
       const { data, error } = await supabase
         .from('perks')
         .select('*')
-        .eq('is_deleted', false);
+        .eq('is_deleted', false)
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error("Error fetching perks:", error);
@@ -63,7 +65,8 @@ export const usePerksQuery = () => {
       const { data, error } = await supabase
         .from('perks')
         .select('*')
-        .eq('is_deleted', true);
+        .eq('is_deleted', true)
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error("Error fetching deleted perks:", error);
@@ -121,5 +124,6 @@ export const usePerksQuery = () => {
     fetchDeletedPerks,
     isMasterAdmin,
     isCompanyAdmin,
+    isEmployee,
   };
 };

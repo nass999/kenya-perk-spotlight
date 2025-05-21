@@ -15,6 +15,7 @@ const ManagePerks = () => {
     deletingPerk,
     isMasterAdmin,
     isCompanyAdmin,
+    isEmployee,
     editingPerk,
     handleSubmit,
     handleToggleStatus,
@@ -31,6 +32,7 @@ const ManagePerks = () => {
     <div>
       <PerkManagementHeader 
         isCompanyAdmin={isCompanyAdmin}
+        isEmployee={isEmployee}
         onSubmit={handleSubmit}
         editingPerk={editingPerk}
       />
@@ -59,12 +61,13 @@ const ManagePerks = () => {
           perks={perks}
           loading={loading}
           error={error}
-          onEdit={handleEdit}
-          onToggleStatus={handleToggleStatus}
-          onDelete={handleDelete}
+          onEdit={isEmployee ? undefined : handleEdit}
+          onToggleStatus={isEmployee ? undefined : handleToggleStatus}
+          onDelete={isEmployee ? undefined : handleDelete}
           onRetry={fetchPerks}
           deletingPerk={deletingPerk}
           isMasterAdmin={isMasterAdmin}
+          isEmployee={isEmployee}
         />
       )}
     </div>
