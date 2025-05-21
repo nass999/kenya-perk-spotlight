@@ -9,7 +9,10 @@ export const useDashboardData = () => {
   const [stats, setStats] = useState<DashboardStats>({
     totalPerks: 0,
     availablePerks: 0,
+    activePerks: 0,
     redeemedPerks: 0,
+    totalRedemptions: 0,
+    pendingRedemptions: 0,
     companies: 0,
     users: 0,
     totalSavings: 0,
@@ -61,7 +64,10 @@ export const useDashboardData = () => {
           setStats({
             totalPerks: totalPerksResult.count || 0,
             availablePerks: totalPerksResult.count || 0,
+            activePerks: totalPerksResult.count || 0, // Added new property
             redeemedPerks: 0, // Would need another query
+            totalRedemptions: 0, // Added new property
+            pendingRedemptions: 0, // Added new property
             companies: companiesResult.count || 0,
             users: usersResult.count || 0,
             totalSavings: 0,
@@ -86,9 +92,34 @@ export const useDashboardData = () => {
           setStats({
             totalPerks: companyPerksResult.count || 0,
             availablePerks: companyPerksResult.count || 0,
+            activePerks: companyPerksResult.count || 0, // Added new property
             redeemedPerks: redeemedPerksResult.count || 0,
+            totalRedemptions: redeemedPerksResult.count || 0, // Added new property
+            pendingRedemptions: 0, // Added new property
             companies: 1,
             users: companyUsersResult.count || 0,
+            totalSavings: 0,
+          });
+        } else if (authState.user?.role === 'vendor') {
+          // Vendor sees their own perks stats
+          const [vendorPerksResult, activePerksResult, redemptionsResult] = await Promise.all([
+            supabase.from('perks').select('*', { count: 'exact' }).eq('vendor_id', authState.user.id),
+            supabase.from('perks').select('*', { count: 'exact' }).eq('vendor_id', authState.user.id).eq('is_enabled', true),
+            supabase.from('redemptions').select('*', { count: 'exact' }).eq('vendor_id', authState.user.id),
+          ]);
+
+          // Could add a specific query for pending redemptions in a real app
+          const pendingRedemptions = 0;
+          
+          setStats({
+            totalPerks: vendorPerksResult.count || 0,
+            availablePerks: vendorPerksResult.count || 0,
+            activePerks: activePerksResult.count || 0,
+            redeemedPerks: 0,
+            totalRedemptions: redemptionsResult.count || 0,
+            pendingRedemptions: pendingRedemptions,
+            companies: 0,
+            users: 0,
             totalSavings: 0,
           });
         } else {
@@ -111,7 +142,10 @@ export const useDashboardData = () => {
           setStats({
             totalPerks: availablePerksResult.count || 0,
             availablePerks: availablePerksResult.count || 0,
+            activePerks: availablePerksResult.count || 0, // Added new property
             redeemedPerks: userRedemptionsResult.count || 0,
+            totalRedemptions: userRedemptionsResult.count || 0, // Added new property
+            pendingRedemptions: 0, // Added new property
             companies: 0,
             users: 0,
             totalSavings: estimatedSavings,

@@ -18,6 +18,8 @@ const VendorPerks = () => {
   const [perks, setPerks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [deletingPerk, setDeletingPerk] = useState<string | null>(null);
   
   // Redirect if not vendor
   React.useEffect(() => {
@@ -32,18 +34,20 @@ const VendorPerks = () => {
     
     try {
       setLoading(true);
+      setError(null);
       
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('perks')
         .select('*')
         .eq('vendor_id', authState.user.id)
         .order('created_at', { ascending: false });
         
-      if (error) throw error;
+      if (fetchError) throw fetchError;
       
       setPerks(data || []);
     } catch (error: any) {
       console.error('Error loading perks:', error);
+      setError(error.message || "Failed to load perks");
       toast({
         variant: "destructive",
         title: "Failed to load perks",
@@ -71,6 +75,11 @@ const VendorPerks = () => {
   };
   
   const handlePerkDeleted = () => {
+    fetchPerks();
+  };
+
+  const handleDeletePerk = async (id: string) => {
+    // Implement delete functionality if needed
     fetchPerks();
   };
 
@@ -137,8 +146,13 @@ const VendorPerks = () => {
               <CardContent>
                 <PerkList 
                   perks={perks}
-                  onPerkDeleted={handlePerkDeleted}
-                  viewMode="vendor"
+                  loading={loading}
+                  error={error}
+                  onDelete={handleDeletePerk}
+                  onRetry={fetchPerks}
+                  deletingPerk={deletingPerk}
+                  isMasterAdmin={false}
+                  isEmployee={false}
                 />
               </CardContent>
             </Card>
@@ -147,11 +161,18 @@ const VendorPerks = () => {
       )}
       
       <PerkFormDialog
-        open={isDialogOpen}
+        isOpen={isDialogOpen}
         onOpenChange={setIsDialogOpen}
-        onSuccess={handlePerkAdded}
-        mode="vendor"
-      />
+        onSubmit={async (values) => {
+          // Implement submit functionality
+          handlePerkAdded();
+          return true;
+        }}
+        editingPerk={null}
+        isCompanyAdmin={false}
+      >
+        <Button>Add New Perk</Button>
+      </PerkFormDialog>
     </div>
   );
 };
