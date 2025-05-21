@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { UserData, UserRole } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,22 +17,30 @@ export const useUserManagement = () => {
   const isAuthorized = ['master_admin', 'company_admin'].includes(authState.user?.role || '');
   const currentUserId = authState.user?.id || '';
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
+      console.log('Fetching users, role:', authState.user?.role, 'company_id:', companyId);
       
       let query = supabase.from('users').select('*');
       
       // Company admins can only see users from their company
       if (!isMasterAdmin && companyId) {
+        console.log('Filtering by company_id:', companyId);
         query = query.eq('company_id', companyId);
+      } else {
+        console.log('Master admin fetching all users');
       }
       
       const { data, error } = await query.order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error from Supabase:', error);
+        throw error;
+      }
       
+      console.log(`Fetched ${data?.length || 0} users:`, data);
       setUsers(data as UserData[]);
     } catch (error: any) {
       console.error('Error fetching users:', error);
@@ -45,7 +53,14 @@ export const useUserManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [authState.user?.role, companyId, isMasterAdmin]);
+
+  useEffect(() => {
+    // Fetch users when component mounts or when user role/company changes
+    if (isAuthorized) {
+      fetchUsers();
+    }
+  }, [isAuthorized, fetchUsers]);
 
   const updateUserRole = async (userId: string, newRole: UserRole) => {
     try {

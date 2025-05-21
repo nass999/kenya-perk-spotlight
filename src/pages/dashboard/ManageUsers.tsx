@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { User } from 'lucide-react';
+import { User, Loader2 } from 'lucide-react';
 import UserTable from '@/components/users/UserTable';
 import UserManagementHeader from '@/components/users/UserManagementHeader';
 
@@ -21,8 +21,11 @@ const ManageUsers = () => {
   } = useUserManagement();
 
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    console.log('ManageUsers component mounted, authorized:', isAuthorized);
+    if (isAuthorized) {
+      fetchUsers();
+    }
+  }, [fetchUsers, isAuthorized]);
 
   if (!isAuthorized) {
     return (
@@ -64,7 +67,8 @@ const ManageUsers = () => {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8">
+            <div className="text-center py-8 flex flex-col items-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
               <p className="text-gray-500">Loading users...</p>
             </div>
           ) : users.length === 0 ? (
