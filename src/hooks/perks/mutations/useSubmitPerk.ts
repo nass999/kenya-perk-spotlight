@@ -33,11 +33,12 @@ export const useSubmitPerk = ({
     try {
       console.log("Submitting perk form with values:", values);
       
-      const perkData = {
+      // Process vendor_id - if it's "none", set it to null
+      const processedValues = {
         ...values,
         is_deleted: false, // Explicitly set is_deleted to false
         is_enabled: values.is_enabled !== undefined ? values.is_enabled : true,
-        vendor_id: values.vendor_id || null // Ensure vendor_id is null if empty string
+        vendor_id: values.vendor_id === "none" ? null : values.vendor_id
       };
       
       if (editingPerk) {
@@ -45,7 +46,7 @@ export const useSubmitPerk = ({
         console.log("Updating perk with ID:", editingPerk.id);
         const { error } = await supabase
           .from('perks')
-          .update(perkData)
+          .update(processedValues)
           .eq('id', editingPerk.id);
           
         if (error) {
@@ -59,18 +60,14 @@ export const useSubmitPerk = ({
         });
         
         // Update the perk in the local state
-        setPerks(perks.map(p => p.id === editingPerk.id ? { ...p, ...perkData, id: editingPerk.id } as Perk : p));
+        setPerks(perks.map(p => p.id === editingPerk.id ? { ...p, ...processedValues, id: editingPerk.id } as Perk : p));
         setEditingPerk(null);
       } else {
         // Create new perk
         console.log("Creating new perk");
         const { data, error } = await supabase
           .from('perks')
-          .insert([{ 
-            ...perkData, 
-            is_deleted: false,
-            is_enabled: perkData.is_enabled !== undefined ? perkData.is_enabled : true 
-          }])
+          .insert([processedValues])
           .select();
           
         if (error) {

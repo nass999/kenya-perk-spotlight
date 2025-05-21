@@ -62,10 +62,10 @@ export const VendorField = ({ form }: VendorFieldProps) => {
               {loading ? (
                 <SelectItem value="loading" disabled>Loading vendors...</SelectItem>
               ) : vendors.length === 0 ? (
-                <SelectItem value="none" disabled>No vendors available</SelectItem>
+                <SelectItem value="no-vendors" disabled>No vendors available</SelectItem>
               ) : (
                 <>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                   {vendors.map((vendor) => (
                     <SelectItem key={vendor.id} value={vendor.id}>
                       {vendor.name}
