@@ -1,38 +1,76 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/contexts/auth';
-import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 
-// Analytics Components
-import TimeRangeSelector from '@/components/analytics/TimeRangeSelector';
+// Hooks
+import { 
+  useUserAnalytics,
+  useCompanyAnalytics,
+  usePerkAnalytics,
+  useRevenueAnalytics,
+  useCompanyRedemptionsAnalytics,
+  useAnalyticsTimeRange
+} from '@/hooks/analytics';
+
+// Components
+import AnalyticsHeader from '@/components/analytics/AnalyticsHeader';
 import KPISection from '@/components/analytics/KPISection';
-import AreaChartCard from '@/components/analytics/AreaChartCard';
-import BarChartCard from '@/components/analytics/BarChartCard';
-import PieChartCard from '@/components/analytics/PieChartCard';
+import AnalyticsCharts from '@/components/analytics/AnalyticsCharts';
+import AnalyticsLoadingState from '@/components/analytics/AnalyticsLoadingState';
+import AnalyticsErrorState from '@/components/analytics/AnalyticsErrorState';
 
 const Analytics = () => {
   const { authState } = useAuth();
-  const { 
-    dailyUsers, 
-    dailyOrgs, 
-    perksRedeemed, 
-    perksRedeemedByCategory,
-    redemptionsByCompany,
-    revenueData,
-    activeUsersCount,
-    totalCompaniesCount,
-    totalPerksCount,
-    redemptionRate,
-    timeRange,
-    isLoading,
-    error,
-    handleTimeRangeChange
-  } = useAnalyticsData('30days');
-  
   const isMasterAdmin = authState.user?.role === 'master_admin';
   
   // Chart colors
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#da7756'];
+  
+  // Time range state management
+  const { timeRange, handleTimeRangeChange } = useAnalyticsTimeRange('30days');
+  
+  // Fetch different types of analytics data
+  const {
+    dailyUsers,
+    activeUsersCount,
+    isLoading: loadingUserData,
+    error: userError
+  } = useUserAnalytics(timeRange);
+  
+  const {
+    dailyOrgs,
+    totalCompaniesCount,
+    isLoading: loadingCompanyData,
+    error: companyError
+  } = useCompanyAnalytics(timeRange);
+  
+  const {
+    perksRedeemed,
+    perksRedeemedByCategory,
+    totalPerksCount,
+    redemptionRate,
+    isLoading: loadingPerkData,
+    error: perkError
+  } = usePerkAnalytics(timeRange);
+  
+  const {
+    revenueData,
+    isLoading: loadingRevenueData,
+    error: revenueError
+  } = useRevenueAnalytics(timeRange);
+  
+  const {
+    redemptionsByCompany,
+    isLoading: loadingCompanyRedemptionsData,
+    error: companyRedemptionsError
+  } = useCompanyRedemptionsAnalytics(timeRange);
+  
+  // Check for any loading or error state
+  const isLoading = loadingUserData || loadingCompanyData || loadingPerkData || loadingRevenueData || 
+    (isMasterAdmin && loadingCompanyRedemptionsData);
+  
+  const error = userError || companyError || perkError || revenueError || 
+    (isMasterAdmin && companyRedemptionsError);
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -44,37 +82,19 @@ const Analytics = () => {
   };
   
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
-          <p className="mt-4 text-gray-500">Loading analytics data...</p>
-        </div>
-      </div>
-    );
+    return <AnalyticsLoadingState />;
   }
   
   if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <strong className="font-bold">Error: </strong>
-          <span className="block sm:inline">{error}</span>
-        </div>
-      </div>
-    );
+    return <AnalyticsErrorState error={error} />;
   }
   
   return (
     <div className="container mx-auto p-4 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-        
-        <TimeRangeSelector 
-          timeRange={timeRange}
-          onTimeRangeChange={handleTimeRangeChange}
-        />
-      </div>
+      <AnalyticsHeader 
+        timeRange={timeRange} 
+        onTimeRangeChange={handleTimeRangeChange} 
+      />
 
       {/* KPI Cards */}
       <KPISection 
@@ -84,76 +104,17 @@ const Analytics = () => {
         redemptionRate={redemptionRate}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* New Users Over Time */}
-        <AreaChartCard
-          title="New Users"
-          description="Daily new user registrations"
-          data={dailyUsers}
-          color="#0088FE"
-          gradient={{
-            id: "userColorFill",
-            startColor: "#0088FE",
-            endColor: "#0088FE"
-          }}
-        />
-        
-        {/* New Organizations Over Time */}
-        <AreaChartCard
-          title="New Organizations"
-          description="Daily new company registrations"
-          data={dailyOrgs}
-          color="#00C49F"
-          gradient={{
-            id: "orgColorFill",
-            startColor: "#00C49F",
-            endColor: "#00C49F"
-          }}
-        />
-        
-        {/* Revenue Over Time */}
-        <AreaChartCard
-          title="Revenue"
-          description="Daily platform revenue"
-          data={revenueData}
-          color="#8884d8"
-          gradient={{
-            id: "revenueColorFill",
-            startColor: "#8884d8",
-            endColor: "#8884d8"
-          }}
-          valueFormatter={formatCurrency}
-        />
-        
-        {/* Perks Redeemed Over Time */}
-        <BarChartCard
-          title="Perks Redeemed"
-          description="Daily perk redemption activity"
-          data={perksRedeemed}
-          color="#da7756"
-        />
-        
-        {/* Perks Redeemed by Category */}
-        <PieChartCard
-          title="Redemptions by Category"
-          description="Distribution of redeemed perks by category"
-          data={perksRedeemedByCategory}
-          colors={COLORS}
-        />
-        
-        {/* Redemptions by Company (Master Admin Only) */}
-        {isMasterAdmin && (
-          <BarChartCard
-            title="Top Companies by Redemptions"
-            description="Companies with the most perk redemptions"
-            data={redemptionsByCompany.slice(0, 10)}
-            color="#8884d8"
-            dataKey="value"
-            labelKey="name"
-            layout="vertical"
-          />
-        )}
-      </div>
+      <AnalyticsCharts 
+        dailyUsers={dailyUsers}
+        dailyOrgs={dailyOrgs}
+        perksRedeemed={perksRedeemed}
+        revenueData={revenueData}
+        perksRedeemedByCategory={perksRedeemedByCategory}
+        redemptionsByCompany={redemptionsByCompany}
+        isMasterAdmin={isMasterAdmin}
+        formatCurrency={formatCurrency}
+        COLORS={COLORS}
+      />
     </div>
   );
 };

@@ -3,12 +3,12 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { AnalyticsDataPoint } from '@/types/analytics';
+import { AnalyticsDataPoint, CompanyData } from '@/types/analytics';
 
 interface BarChartCardProps {
   title: string;
   description: string;
-  data: AnalyticsDataPoint[];
+  data: AnalyticsDataPoint[] | CompanyData[];
   color: string;
   dataKey?: string;
   valueFormatter?: (value: number) => string;
@@ -66,12 +66,13 @@ const BarChartCard = ({
               <ChartTooltip 
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
+                    const value = Number(payload[0].value);
                     return (
                       <ChartTooltipContent
                         className="bg-white p-2 border rounded-md shadow-md"
                       >
                         <p className="text-sm font-semibold">{`${labelKey === 'name' ? 'Name' : 'Date'}: ${payload[0].payload[labelKey]}`}</p>
-                        <p className="text-sm">{`${title}: ${valueFormatter(payload[0].value)}`}</p>
+                        <p className="text-sm">{`${title}: ${valueFormatter(value)}`}</p>
                       </ChartTooltipContent>
                     );
                   }

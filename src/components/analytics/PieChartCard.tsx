@@ -61,12 +61,13 @@ const PieChartCard = ({
               <ChartTooltip 
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
+                    const value = Number(payload[0].value);
                     return (
                       <ChartTooltipContent
                         className="bg-white p-2 border rounded-md shadow-md"
                       >
                         <p className="text-sm font-semibold">{`${nameKey}: ${payload[0].name}`}</p>
-                        <p className="text-sm">{`${title}: ${valueFormatter(payload[0].value)}`}</p>
+                        <p className="text-sm">{`${title}: ${valueFormatter(value)}`}</p>
                       </ChartTooltipContent>
                     );
                   }
