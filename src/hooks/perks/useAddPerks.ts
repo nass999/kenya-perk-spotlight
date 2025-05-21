@@ -30,8 +30,11 @@ export const useAddPerks = (onClose: () => void) => {
     try {
       setSaving(true);
       
-      // For each selected perk, create a copy with the company's ID
+      // Get the perks that were selected
       const perksToCopy = perksArray.filter(perk => selectedPerks.includes(perk.id));
+      console.log("Adding the following perks:", perksToCopy);
+      
+      // Create copies of these perks for the company
       const newPerks = perksToCopy.map(perk => ({
         name: perk.name,
         description: perk.description,
@@ -46,6 +49,7 @@ export const useAddPerks = (onClose: () => void) => {
         valid_through_date: perk.valid_through_date,
       }));
       
+      console.log("Inserting new perks:", newPerks);
       const { data, error } = await supabase
         .from('perks')
         .insert(newPerks)
@@ -53,6 +57,7 @@ export const useAddPerks = (onClose: () => void) => {
       
       if (error) throw error;
       
+      console.log("Successfully added perks:", data);
       toast({
         title: "Perks added successfully",
         description: `${selectedPerks.length} perks have been added to your company.`,

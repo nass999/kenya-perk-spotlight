@@ -22,12 +22,13 @@ export const useAvailablePerks = () => {
       setLoading(true);
       setError(null);
       
+      console.log("Fetching available perks for company:", authState.user.company_id);
+      
       // Get the current date for comparing with valid_through_date
       const today = new Date().toISOString().split('T')[0];
       
-      // Fetch all global perks (created by master admins, with no company_id)
-      // that are enabled and not deleted
-      const { data, error } = await supabase
+      // First, get all the global perks (created by master admins)
+      const { data: globalPerks, error: globalError } = await supabase
         .from('perks')
         .select('*')
         .is('company_id', null) // Only global perks with no company
@@ -36,23 +37,27 @@ export const useAvailablePerks = () => {
         .or(`valid_through_date.gt.${today},valid_through_date.is.null`) // Not expired
         .order('name');
       
-      if (error) throw error;
+      if (globalError) throw globalError;
       
-      // Filter out perks that this company already has associated
-      const { data: companyPerks, error: companyPerksError } = await supabase
+      console.log(`Found ${globalPerks?.length || 0} global perks`);
+      
+      // Then, get all perks already associated with the company
+      const { data: companyPerks, error: companyError } = await supabase
         .from('perks')
         .select('id')
         .eq('company_id', authState.user.company_id);
       
-      if (companyPerksError) throw companyPerksError;
+      if (companyError) throw companyError;
       
       // Get IDs of perks already associated with this company
-      const companyPerkIds = companyPerks.map(p => p.id);
+      const companyPerkIds = companyPerks?.map(p => p.id) || [];
+      
+      console.log(`Company already has ${companyPerkIds.length} perks`);
       
       // Filter out perks that are already associated with this company
-      const availablePerks = data.filter(p => !companyPerkIds.includes(p.id));
+      const availablePerks = globalPerks?.filter(p => !companyPerkIds.includes(p.id)) || [];
       
-      console.log(`Found ${availablePerks.length} available perks for company ${authState.user.company_id}`);
+      console.log(`Found ${availablePerks.length} available perks to add for company ${authState.user.company_id}`);
       setPerks(availablePerks as Perk[]);
     } catch (error: any) {
       console.error('Error fetching available perks:', error);
@@ -70,6 +75,8 @@ export const useAvailablePerks = () => {
   useEffect(() => {
     if (authState.user && authState.user.company_id) {
       fetchAvailablePerks();
+    } else {
+      setLoading(false);
     }
   }, [authState.user]);
 

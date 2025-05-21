@@ -83,7 +83,7 @@ export const PerkManagementHeader = ({
       {/* Select Perks Dialog */}
       {isCompanyAdmin && (
         <Dialog open={isPerkSelectDialogOpen} onOpenChange={setIsPerkSelectDialogOpen}>
-          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-[600px] max-h-[80vh]">
             <DialogHeader>
               <DialogTitle>Add Perks to Your Company</DialogTitle>
             </DialogHeader>

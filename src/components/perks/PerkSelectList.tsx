@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useAvailablePerks } from '@/hooks/perks/useAvailablePerks';
 import { useAddPerks } from '@/hooks/perks/useAddPerks';
 import PerkSelectItem from './PerkSelectItem';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface PerkSelectListProps {
   onClose: () => void;
@@ -16,7 +17,7 @@ const PerkSelectList = ({ onClose }: PerkSelectListProps) => {
     <div className="space-y-4">
       {loading ? (
         <div className="flex justify-center py-8">
-          <p>Loading available perks...</p>
+          <p className="text-gray-500">Loading available perks...</p>
         </div>
       ) : error ? (
         <div className="text-center py-6">
@@ -32,16 +33,18 @@ const PerkSelectList = ({ onClose }: PerkSelectListProps) => {
         </div>
       ) : (
         <div>
-          <div className="space-y-4">
-            {perks.map((perk) => (
-              <PerkSelectItem 
-                key={perk.id}
-                perk={perk}
-                isSelected={selectedPerks.includes(perk.id)}
-                onToggle={handleTogglePerk}
-              />
-            ))}
-          </div>
+          <ScrollArea className="max-h-[400px] pr-4">
+            <div className="space-y-4">
+              {perks.map((perk) => (
+                <PerkSelectItem 
+                  key={perk.id}
+                  perk={perk}
+                  isSelected={selectedPerks.includes(perk.id)}
+                  onToggle={handleTogglePerk}
+                />
+              ))}
+            </div>
+          </ScrollArea>
           
           <div className="flex justify-end mt-6 space-x-2">
             <Button variant="outline" onClick={onClose}>Cancel</Button>
