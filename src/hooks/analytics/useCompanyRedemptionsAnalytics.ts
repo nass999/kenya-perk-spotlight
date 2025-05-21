@@ -7,8 +7,12 @@ import { CompanyData, TimeRange } from '@/types/analytics';
 // Define a type for the redemption data returned from Supabase
 interface RedemptionWithCompany {
   perk_id: string;
-  perks: { company_id: string };
-  companies: { name: string };
+  perks: {
+    company_id: string;
+  }[];
+  companies: {
+    name: string;
+  }[];
 }
 
 export const useCompanyRedemptionsAnalytics = (timeRange: TimeRange) => {
@@ -47,10 +51,10 @@ export const useCompanyRedemptionsAnalytics = (timeRange: TimeRange) => {
         // Process redemptions by company
         const companyRedemptionsMap = new Map<string, number>();
         
-        // Type assert the data and access properties safely
-        (companyRedemptionsData as RedemptionWithCompany[])?.forEach(redemption => {
-          // Safely access the company name
-          const companyName = redemption.companies?.name || 'Unknown';
+        // Type assert the data and access properties safely - first convert to unknown
+        (companyRedemptionsData as unknown as RedemptionWithCompany[])?.forEach(redemption => {
+          // Safely access the company name from the first item in the array
+          const companyName = redemption.companies?.[0]?.name || 'Unknown';
           companyRedemptionsMap.set(companyName, (companyRedemptionsMap.get(companyName) || 0) + 1);
         });
 
