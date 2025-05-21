@@ -9,20 +9,27 @@ export const useFetchUserData = () => {
   const fetchUserData = async (userId: string) => {
     try {
       console.log("Fetching user data for:", userId);
-      // First, check if the user exists in the users table
-      const { data, error } = await supabase
+      
+      // First, check if the user exists in the users table - including deleted/inactive users
+      const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('*')
+        .select('*, is_active')
         .eq('id', userId)
         .maybeSingle();  // Use maybeSingle() to handle no rows gracefully
         
-      if (error) {
-        console.error('Error fetching user data:', error);
+      if (userError) {
+        console.error('Error fetching user data:', userError);
+        return null;
+      }
+      
+      // If user exists but is marked as inactive, return null (prevents sign-in)
+      if (userData && userData.is_active === false) {
+        console.log("User account is inactive/deleted:", userId);
         return null;
       }
       
       // If no user data found, we need to create the user record in our users table
-      if (!data) {
+      if (!userData) {
         console.log("User not found in users table, creating new user record");
         
         // Fetch user details from auth.users
@@ -91,7 +98,8 @@ export const useFetchUserData = () => {
             email: authUser.email || '',
             full_name: fullName,
             role: role,
-            company_id: finalCompanyId
+            company_id: finalCompanyId,
+            is_active: true // Explicitly set as active when creating
           })
           .select('*')
           .single();
@@ -109,22 +117,24 @@ export const useFetchUserData = () => {
           email: insertedUser.email,
           role: insertedUser.role as UserRole,
           full_name: insertedUser.full_name || '',
-          company_id: insertedUser.company_id
+          company_id: insertedUser.company_id,
+          is_active: insertedUser.is_active
         };
         
         return userData;
       } else {
         // User exists in the database, use that data
-        console.log("User data fetched:", data);
-        const userData: UserData = {
-          id: data.id,
-          email: data.email,
-          role: data.role as UserRole,
-          full_name: data.full_name || '',
-          company_id: data.company_id
+        console.log("User data fetched:", userData);
+        const returnUserData: UserData = {
+          id: userData.id,
+          email: userData.email,
+          role: userData.role as UserRole,
+          full_name: userData.full_name || '',
+          company_id: userData.company_id,
+          is_active: userData.is_active
         };
         
-        return userData;
+        return returnUserData;
       }
       
     } catch (error) {

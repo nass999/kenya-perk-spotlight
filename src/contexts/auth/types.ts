@@ -1,15 +1,27 @@
 
-import { UserData, AuthState } from '@/lib/supabase';
+import { Session } from '@supabase/supabase-js';
 
-export interface AuthContextProps {
-  authState: AuthState;
-  signIn: (email: string, password: string) => Promise<{data?: any, error?: any}>;
-  signUp: (email: string, password: string, full_name: string, role?: UserRole, company_id?: string | null, company_name?: string | null) => Promise<{data?: any, error?: any}>;
-  signOut: () => Promise<void>;
+export type UserRole = 'employee' | 'company_admin' | 'master_admin' | 'vendor';
+
+export interface UserData {
+  id: string;
+  email: string;
+  role: UserRole;
+  full_name: string;
+  company_id: string | null;
+  is_active?: boolean;
+}
+
+export interface AuthState {
+  user: UserData | null;
+  session: Session | null;
   loading: boolean;
 }
 
-export type UserRole = 'master_admin' | 'company_admin' | 'employee' | 'vendor';
-
-// Export AuthState with the correct syntax for isolatedModules
-export type { AuthState };
+export interface AuthContextProps {
+  authState: AuthState;
+  signIn: (email: string, password: string) => Promise<{ error?: Error }>;
+  signUp: (email: string, password: string, metadata?: any) => Promise<{ error?: Error }>;
+  signOut: () => Promise<void>;
+  loading: boolean;
+}

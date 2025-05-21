@@ -56,21 +56,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setTimeout(async () => {
             console.log("Fetching user data after auth state change");
             const userData = await fetchUserData(session.user.id);
-            if (userData) {
-              console.log("User data fetched, updating state and checking for redirect");
-              setAuthState(current => ({ ...current, user: userData, loading: false }));
+            
+            // If userData is null despite having a session, the user may be inactive/deleted
+            if (!userData) {
+              console.log("User authentication failed - user may be inactive or deleted");
+              // Show error message
+              toast({
+                variant: "destructive",
+                title: "Account unavailable",
+                description: "Your account has been deactivated or deleted. Please contact support."
+              });
               
-              // When logging in, redirect to dashboard if on login/register page
-              if (location.pathname === '/login' || location.pathname === '/register') {
-                console.log("Auth state change - redirecting to dashboard from", location.pathname);
-                toast({
-                  title: "Welcome!",
-                  description: "You've been successfully logged in.",
-                });
-                navigate('/dashboard', { replace: true });
-              }
-            } else {
-              setAuthState(current => ({ ...current, loading: false }));
+              // Sign out the user
+              await supabase.auth.signOut();
+              setAuthState({ user: null, session: null, loading: false });
+              
+              // Redirect to login
+              navigate('/login', { replace: true });
+              return;
+            }
+            
+            console.log("User data fetched, updating state and checking for redirect");
+            setAuthState(current => ({ ...current, user: userData, loading: false }));
+            
+            // When logging in, redirect to dashboard if on login/register page
+            if (location.pathname === '/login' || location.pathname === '/register') {
+              console.log("Auth state change - redirecting to dashboard from", location.pathname);
+              toast({
+                title: "Welcome!",
+                description: "You've been successfully logged in.",
+              });
+              navigate('/dashboard', { replace: true });
             }
           }, 0);
         } else {
@@ -101,17 +117,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setTimeout(async () => {
           console.log("Fetching user data for existing session");
           const userData = await fetchUserData(session.user.id);
-          if (userData) {
-            console.log("User data fetched for existing session, updating state");
-            setAuthState(current => ({ ...current, user: userData, loading: false }));
+          
+          // Handle inactive/deleted users with existing sessions
+          if (!userData) {
+            console.log("User inactive or deleted, forcing sign out");
+            await supabase.auth.signOut();
+            setAuthState({ user: null, session: null, loading: false });
             
-            // If on login/register page with existing session, redirect to dashboard
-            if (location.pathname === '/login' || location.pathname === '/register') {
-              console.log("Existing session - redirecting to dashboard from", location.pathname);
-              navigate('/dashboard', { replace: true });
-            }
-          } else {
-            setAuthState(current => ({ ...current, loading: false }));
+            // Show toast notification
+            toast({
+              variant: "destructive",
+              title: "Account unavailable",
+              description: "Your account has been deactivated or deleted. Please contact support."
+            });
+            
+            // Redirect to login
+            navigate('/login', { replace: true });
+            return;
+          }
+          
+          console.log("User data fetched for existing session, updating state");
+          setAuthState(current => ({ ...current, user: userData, loading: false }));
+          
+          // If on login/register page with existing session, redirect to dashboard
+          if (location.pathname === '/login' || location.pathname === '/register') {
+            console.log("Existing session - redirecting to dashboard from", location.pathname);
+            navigate('/dashboard', { replace: true });
           }
         }, 0);
       } else {
