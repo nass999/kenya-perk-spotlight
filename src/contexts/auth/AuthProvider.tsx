@@ -42,12 +42,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Use setTimeout to defer fetching user data to prevent Supabase auth deadlocks
         if (session?.user) {
           setTimeout(async () => {
+            console.log("Fetching user data after auth state change");
             const userData = await fetchUserData(session.user.id);
             if (userData) {
+              console.log("User data fetched, updating state and checking for redirect");
               setAuthState(current => ({ ...current, user: userData }));
               
               // When logging in, redirect to dashboard if on login/register page
               if (location.pathname === '/login' || location.pathname === '/register') {
+                console.log("Auth state change - redirecting to dashboard from", location.pathname);
                 navigate('/dashboard');
               }
             }
@@ -61,6 +64,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               location.pathname !== '/' && 
               location.pathname !== '/pricing' &&
               !location.pathname.startsWith('/auth/callback')) {
+            console.log("Not authenticated, redirecting to login from", location.pathname);
             navigate('/login');
           }
         }
@@ -77,9 +81,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         // Fetch user data in a deferred call
         setTimeout(async () => {
+          console.log("Fetching user data for existing session");
           const userData = await fetchUserData(session.user.id);
           if (userData) {
+            console.log("User data fetched for existing session, updating state");
             setAuthState(current => ({ ...current, user: userData, loading: false }));
+            
+            // If on login/register page with existing session, redirect to dashboard
+            if (location.pathname === '/login' || location.pathname === '/register') {
+              console.log("Existing session - redirecting to dashboard from", location.pathname);
+              navigate('/dashboard');
+            }
           } else {
             setAuthState(current => ({ ...current, loading: false }));
           }

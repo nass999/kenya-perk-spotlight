@@ -23,15 +23,12 @@ const Login = () => {
   const handleLoginSuccess = () => {
     setIsSuccess(true);
     
-    // Short delay to show success state before redirect
-    // Navigation will happen via auth state change in AuthContext
-    console.log("Setting timeout before manual redirect fallback");
+    // Force navigation to dashboard after a short delay
+    console.log("Setting immediate redirect to dashboard");
     setTimeout(() => {
-      if (document.location.pathname !== '/dashboard') {
-        console.log("Manual redirect fallback triggered");
-        navigate('/dashboard');
-      }
-    }, 1500);
+      console.log("Executing manual navigation to dashboard");
+      navigate('/dashboard');
+    }, 1000);
   };
   
   // Success UI shown briefly before redirection
