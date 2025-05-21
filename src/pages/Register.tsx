@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
@@ -19,7 +18,7 @@ import {
 import { toast } from '@/components/ui/use-toast';
 import { UserRole } from '@/lib/supabase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { InfoCircled } from 'lucide-react';
+import { Info } from 'lucide-react';
 
 const formSchema = z.object({
   fullName: z.string().min(2, {
@@ -125,7 +124,7 @@ export default function Register() {
         {/* Role alert notification */}
         {userRole && userRole !== 'employee' && (
           <Alert className="bg-blue-50 border-blue-200">
-            <InfoCircled className="h-4 w-4 text-blue-600" />
+            <Info className="h-4 w-4 text-blue-600" />
             <AlertTitle className="text-blue-800">You're signing up as a {getRoleDisplayName(userRole)}</AlertTitle>
             <AlertDescription className="text-blue-700">
               {userRole === 'company_admin' 
