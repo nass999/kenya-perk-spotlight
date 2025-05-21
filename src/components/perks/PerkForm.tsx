@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { PerkFormProps } from './PerkTypes';
 import { PerkFormDialog } from './PerkFormDialog';
 import { useState } from 'react';
-import { Perk } from './PerkTypes';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import PerkSelectList from './PerkSelectList';
@@ -16,23 +15,14 @@ export const PerkForm = (props: PerkFormProps) => {
   if (props.isCompanyAdmin) {
     return (
       <>
-        <Button className="bg-[#da7756]" onClick={() => setIsSelectDialogOpen(true)}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add Available Perks
+        <Button 
+          variant="ghost" 
+          className="opacity-0 cursor-default" 
+          tabIndex={-1}
+          aria-hidden="true"
+        >
+          <span className="sr-only">Hidden placeholder button</span>
         </Button>
-        
-        <Dialog open={isSelectDialogOpen} onOpenChange={setIsSelectDialogOpen}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Select Available Perks</DialogTitle>
-            </DialogHeader>
-            <ScrollArea className="max-h-[60vh]">
-              <PerkSelectList 
-                onClose={() => setIsSelectDialogOpen(false)}
-              />
-            </ScrollArea>
-          </DialogContent>
-        </Dialog>
       </>
     );
   }
@@ -42,7 +32,7 @@ export const PerkForm = (props: PerkFormProps) => {
     <PerkFormDialog {...props}>
       <Button className="bg-[#da7756]">
         <PlusCircle className="mr-2 h-4 w-4" />
-        Add New Perk
+        Create Perk
       </Button>
     </PerkFormDialog>
   );

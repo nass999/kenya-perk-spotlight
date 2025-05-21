@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import { toast } from '@/components/ui/use-toast';
 import { Perk } from '@/components/perks/PerkTypes';
 
