@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
@@ -16,6 +17,9 @@ import {
   FormMessage 
 } from '@/components/ui/form';
 import { toast } from '@/components/ui/use-toast';
+import { UserRole } from '@/lib/supabase';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { InfoCircled } from 'lucide-react';
 
 const formSchema = z.object({
   fullName: z.string().min(2, {
@@ -37,7 +41,13 @@ export default function Register() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const companyId = searchParams.get('company_id');
+  const roleParam = searchParams.get('role') as UserRole | null;
+  
+  // Default to 'employee' if no role is specified, or use the role from URL
+  const userRole = roleParam || 'employee';
+  
   const [isLoading, setIsLoading] = useState(false);
+  const [hasCompanyCreated, setHasCompanyCreated] = useState(!!companyId);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -61,7 +71,7 @@ export default function Register() {
           data: {
             full_name: values.fullName,
             company_id: companyId || null,
-            role: companyId ? 'employee' : null, // If company_id is provided, this is an employee
+            role: userRole, // Use the role from URL or default
           }
         }
       });
@@ -88,6 +98,17 @@ export default function Register() {
     }
   }
   
+  // Get role display name for UI
+  const getRoleDisplayName = (role: UserRole) => {
+    switch (role) {
+      case 'master_admin': return 'Platform Administrator';
+      case 'company_admin': return 'Company Administrator';
+      case 'employee': return 'Employee';
+      case 'vendor': return 'Vendor';
+      default: return 'User';
+    }
+  };
+  
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
       <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
@@ -95,11 +116,27 @@ export default function Register() {
           <h1 className="text-3xl font-bold">Create an account</h1>
           <p className="text-gray-500">
             {companyId 
-              ? "Sign up to join your company's rewards program" 
+              ? `Sign up to join your organization's rewards program` 
               : "Enter your information to create an account"
             }
           </p>
         </div>
+        
+        {/* Role alert notification */}
+        {userRole && userRole !== 'employee' && (
+          <Alert className="bg-blue-50 border-blue-200">
+            <InfoCircled className="h-4 w-4 text-blue-600" />
+            <AlertTitle className="text-blue-800">You're signing up as a {getRoleDisplayName(userRole)}</AlertTitle>
+            <AlertDescription className="text-blue-700">
+              {userRole === 'company_admin' 
+                ? "You'll have administrative permissions for your organization." 
+                : userRole === 'master_admin'
+                  ? "You'll have full platform administrative permissions."
+                  : "Your account will have specific permissions based on this role."
+              }
+            </AlertDescription>
+          </Alert>
+        )}
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

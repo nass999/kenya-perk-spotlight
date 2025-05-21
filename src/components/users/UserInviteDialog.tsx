@@ -15,6 +15,8 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { RegistrationLink } from './invite/RegistrationLink';
 import { EmailList } from './invite/EmailList';
+import { InviteByRole } from './invite/InviteByRole';
+import { UserRole } from '@/lib/supabase';
 
 interface UserInviteDialogProps {
   isOpen: boolean;
@@ -23,19 +25,26 @@ interface UserInviteDialogProps {
   companyName?: string;
 }
 
-export const UserInviteDialog = ({ isOpen, onOpenChange, companyId, companyName }: UserInviteDialogProps) => {
+export const UserInviteDialog = ({ isOpen, onOpenChange, companyId: propCompanyId, companyName: propCompanyName }: UserInviteDialogProps) => {
   const { authState } = useAuth();
   const [emails, setEmails] = useState<string[]>(['']);
   const [loading, setLoading] = useState(false);
   const [inviteLink, setInviteLink] = useState<string>('');
   const [sendingStatus, setSendingStatus] = useState<Record<string, 'idle' | 'sending' | 'success' | 'error'>>({});
   
+  // New state for role-based invites
+  const [selectedRole, setSelectedRole] = useState<UserRole>('employee');
+  const [newCompanyName, setNewCompanyName] = useState<string>('');
+  const [newCompanyId, setNewCompanyId] = useState<string | null>(null);
+  
   // Use the companyId from props if provided, otherwise fall back to the user's company_id
-  const effectiveCompanyId = companyId || authState.user?.company_id;
-  const organizationName = companyName || 'your organization';
+  const effectiveCompanyId = newCompanyId || propCompanyId || authState.user?.company_id;
+  const organizationName = newCompanyName || propCompanyName || 'your organization';
+  
+  const isMasterAdmin = authState.user?.role === 'master_admin';
   
   const baseUrl = window.location.origin;
-  const registrationLink = `${baseUrl}/register?company_id=${effectiveCompanyId}`;
+  const registrationLink = `${baseUrl}/register?company_id=${effectiveCompanyId}${selectedRole ? `&role=${selectedRole}` : ''}`;
 
   const handleAddEmail = () => {
     setEmails([...emails, '']);
@@ -52,6 +61,53 @@ export const UserInviteDialog = ({ isOpen, onOpenChange, companyId, companyName 
     const updatedEmails = [...emails];
     updatedEmails.splice(index, 1);
     setEmails(updatedEmails);
+  };
+  
+  // Handle role and company changes from InviteByRole component
+  const handleRoleChange = async (role: UserRole, companyName?: string) => {
+    setSelectedRole(role);
+    
+    // If company name is provided, create a new company
+    if (role === 'company_admin' && companyName && isMasterAdmin) {
+      setNewCompanyName(companyName);
+      
+      // Create company in database if it doesn't exist yet
+      if (!newCompanyId) {
+        try {
+          console.log('Creating new company:', companyName);
+          const { data, error } = await supabase
+            .from('companies')
+            .insert([{ name: companyName }])
+            .select('id')
+            .single();
+            
+          if (error) {
+            console.error('Error creating company:', error);
+            toast({
+              title: "Company creation failed",
+              description: error.message,
+              variant: "destructive"
+            });
+            return;
+          }
+          
+          if (data) {
+            setNewCompanyId(data.id);
+            console.log('New company created with ID:', data.id);
+            toast({
+              title: "Company created",
+              description: `Created company "${companyName}" successfully`,
+            });
+          }
+        } catch (err) {
+          console.error('Failed to create company:', err);
+        }
+      }
+    } else if (role !== 'company_admin') {
+      // Reset company data if not a company admin
+      setNewCompanyName('');
+      setNewCompanyId(null);
+    }
   };
   
   const handleSendInvites = async () => {
@@ -97,7 +153,8 @@ export const UserInviteDialog = ({ isOpen, onOpenChange, companyId, companyName 
               inviterName: authState.user?.full_name || 'Your colleague',
               companyId: effectiveCompanyId,
               companyName: organizationName,
-              registrationLink
+              registrationLink,
+              userRole: selectedRole
             }
           });
           
@@ -167,6 +224,14 @@ export const UserInviteDialog = ({ isOpen, onOpenChange, companyId, companyName 
         </DialogHeader>
         
         <div className="mt-4 space-y-6">
+          {/* Role selection for Master Admin */}
+          {isMasterAdmin && (
+            <InviteByRole
+              onChange={handleRoleChange}
+              isMasterAdmin={isMasterAdmin}
+            />
+          )}
+        
           <RegistrationLink 
             registrationLink={registrationLink}
             organizationName={organizationName}

@@ -13,6 +13,7 @@ interface InvitationRequest {
   companyId?: string;
   companyName?: string;
   registrationLink: string;
+  userRole?: string;
 }
 
 serve(async (req) => {
@@ -22,7 +23,7 @@ serve(async (req) => {
   }
 
   try {
-    const { email, inviterName, companyId, companyName, registrationLink } = await req.json() as InvitationRequest;
+    const { email, inviterName, companyId, companyName, registrationLink, userRole } = await req.json() as InvitationRequest;
     
     // Validate required fields
     if (!email) {
@@ -37,6 +38,7 @@ serve(async (req) => {
 
     console.log(`Processing invitation for ${email} from ${inviterName}`);
     console.log(`Company ID: ${companyId}, Company Name: ${companyName || 'Not specified'}`);
+    console.log(`User Role: ${userRole || 'employee'}`);
     console.log(`Registration link: ${registrationLink}`);
 
     // In development mode (local), log what would happen but don't send emails
@@ -44,6 +46,7 @@ serve(async (req) => {
       console.log(`Development mode: Would send invite to ${email} for company ${companyId}`);
       console.log(`Inviter: ${inviterName}`);
       console.log(`Company: ${companyName || 'Not specified'}`);
+      console.log(`Role: ${userRole || 'employee'}`);
       console.log(`Registration link: ${registrationLink}`);
       
       return new Response(
@@ -51,7 +54,8 @@ serve(async (req) => {
           message: "Development mode: Email would be sent in production", 
           email,
           inviter: inviterName,
-          company: companyName || 'organization' 
+          company: companyName || 'organization',
+          role: userRole || 'employee'
         }),
         { 
           status: 200,
@@ -68,6 +72,18 @@ serve(async (req) => {
     }
 
     const orgName = companyName || 'their organization';
+    const roleDisplay = userRole ? getRoleDisplayName(userRole) : 'team member';
+    
+    // Helper function to get a friendly role name
+    function getRoleDisplayName(role: string): string {
+      switch (role) {
+        case 'master_admin': return 'Platform Administrator';
+        case 'company_admin': return 'Company Administrator';
+        case 'employee': return 'Employee';
+        case 'vendor': return 'Vendor';
+        default: return 'User';
+      }
+    }
     
     console.log(`Sending email via Resend API for ${email}`);
     const res = await fetch("https://api.resend.com/emails", {
@@ -83,11 +99,11 @@ serve(async (req) => {
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
             <h2>You've been invited!</h2>
-            <p>${inviterName} has invited you to join ${orgName} on the Perks Platform.</p>
+            <p>${inviterName} has invited you to join ${orgName} on the Perks Platform as a <strong>${roleDisplay}</strong>.</p>
             <p>Click the button below to create your account and access your exclusive perks.</p>
             <div style="margin: 30px 0;">
               <a href="${registrationLink}" style="background-color: #da7756; color: white; padding: 12px 20px; border-radius: 4px; text-decoration: none; font-weight: bold;">
-                Join ${orgName}
+                Join as ${roleDisplay}
               </a>
             </div>
             <p>Or copy and paste this link into your browser:</p>
