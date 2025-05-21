@@ -47,8 +47,9 @@ export const usePerksManagement = () => {
   };
 
   const handleEdit = (perk: Perk) => {
-    // Don't allow employees to edit perks
-    if (!isEmployee) {
+    // Allow platform admins to edit perks
+    if (isMasterAdmin || isCompanyAdmin) {
+      console.log("Setting editing perk:", perk);
       setEditingPerk(perk);
     }
   };
@@ -65,6 +66,7 @@ export const usePerksManagement = () => {
     isCompanyAdmin,
     isEmployee,
     editingPerk,
+    setEditingPerk, // Make sure we expose this setter
     handleSubmit,
     handleToggleStatus,
     handleDelete,

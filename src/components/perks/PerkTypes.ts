@@ -76,4 +76,5 @@ export interface PerkFormProps {
   onSubmit: (values: PerkFormValues) => Promise<boolean>;
   editingPerk: Perk | null;
   isCompanyAdmin: boolean;
+  children?: React.ReactNode;
 }

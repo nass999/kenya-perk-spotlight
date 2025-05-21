@@ -69,6 +69,7 @@ export const PerkManagementHeader = ({
             </Button>
           )}
 
+          {/* PerkForm dialog for master admins */}
           <PerkForm
             isOpen={isDialogOpen}
             onOpenChange={setIsDialogOpen}

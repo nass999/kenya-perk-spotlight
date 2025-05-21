@@ -12,7 +12,7 @@ export const PerkForm = (props: PerkFormProps) => {
   const [isSelectDialogOpen, setIsSelectDialogOpen] = useState(false);
   
   // If isCompanyAdmin, show a different dialog for selecting from available perks
-  if (props.isCompanyAdmin) {
+  if (props.isCompanyAdmin && !props.editingPerk) {
     return (
       <>
         <Button 
@@ -27,13 +27,18 @@ export const PerkForm = (props: PerkFormProps) => {
     );
   }
   
-  // For master admins, show the regular perk creation form
+  // For master admins creating new perks or any admin editing perks
   return (
     <PerkFormDialog {...props}>
-      <Button className="bg-[#da7756]">
-        <PlusCircle className="mr-2 h-4 w-4" />
-        Create Perk
-      </Button>
+      {/* The button will only be rendered as a child if it's explicitly placed in ManagePerks.tsx */}
+      {props.children ? props.children : (
+        props.editingPerk && (
+          <Button className="bg-[#da7756]">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Edit Perk
+          </Button>
+        )
+      )}
     </PerkFormDialog>
   );
 };
