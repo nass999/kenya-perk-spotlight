@@ -1,12 +1,11 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { User, Loader2 } from 'lucide-react';
 import UserTable from '@/components/users/UserTable';
 import UserManagementHeader from '@/components/users/UserManagementHeader';
-import { supabase } from '@/lib/supabase';
 
 const ManageUsers = () => {
   const {
@@ -23,36 +22,10 @@ const ManageUsers = () => {
     companyId
   } = useUserManagement();
   
-  const [companyName, setCompanyName] = useState<string>('');
-  const [loadingCompany, setLoadingCompany] = useState<boolean>(false);
-
-  // Fetch company/organization name if applicable
-  useEffect(() => {
-    const fetchCompanyDetails = async () => {
-      if (companyId) {
-        try {
-          setLoadingCompany(true);
-          const { data, error } = await supabase
-            .from('companies')
-            .select('name')
-            .eq('id', companyId)
-            .single();
-            
-          if (error) {
-            console.error('Error fetching company details:', error);
-          } else if (data) {
-            setCompanyName(data.name);
-          }
-        } catch (err) {
-          console.error('Failed to fetch company details:', err);
-        } finally {
-          setLoadingCompany(false);
-        }
-      }
-    };
-    
-    fetchCompanyDetails();
-  }, [companyId]);
+  // Use company name from the first user that matches the current company ID
+  // This is more efficient than making an additional database query
+  const companyUser = users.find(user => user.company_id === companyId);
+  const companyName = companyUser?.company_name || '';
 
   useEffect(() => {
     console.log('ManageUsers component mounted, authorized:', isAuthorized);

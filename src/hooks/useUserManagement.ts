@@ -23,7 +23,7 @@ export const useUserManagement = () => {
       setError(null);
       console.log('Fetching users, role:', authState.user?.role, 'company_id:', companyId);
       
-      let query = supabase.from('users').select('*');
+      let query = supabase.from('users').select('*, companies:company_id(name)');
       
       // Company admins can only see users from their company
       if (authState.user?.role === 'company_admin') {
@@ -51,13 +51,19 @@ export const useUserManagement = () => {
       
       // For company admins, filter out master_admins from the results
       // This is an additional client-side filter in case there are any master admins in the company
-      let filteredUsers = data as UserData[];
+      let filteredUsers = data as any[];
       if (authState.user?.role === 'company_admin') {
         filteredUsers = filteredUsers.filter(user => user.role !== 'master_admin');
       }
       
-      console.log(`Fetched ${filteredUsers?.length || 0} users:`, filteredUsers);
-      setUsers(filteredUsers);
+      // Process users to include company_name
+      const processedUsers = filteredUsers.map(user => ({
+        ...user,
+        company_name: user.companies?.name || null
+      }));
+      
+      console.log(`Fetched ${processedUsers?.length || 0} users:`, processedUsers);
+      setUsers(processedUsers);
     } catch (error: any) {
       console.error('Error fetching users:', error);
       setError(error.message || 'Failed to load users');

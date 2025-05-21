@@ -96,6 +96,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "perks_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "perks_vendor_id_fkey"
             columns: ["vendor_id"]
             isOneToOne: false
@@ -132,7 +139,15 @@ export type Database = {
           is_active?: boolean | null
           role?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "users_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vendor_recommendations: {
         Row: {

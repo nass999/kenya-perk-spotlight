@@ -2,6 +2,7 @@
 import { supabase } from '@/lib/supabase';
 import { UserData, UserRole } from '@/lib/supabase';
 import { createCompany } from '@/lib/supabase-admin';
+import { toast } from '@/components/ui/use-toast';
 
 export const useFetchUserData = () => {
   const fetchUserData = async (userId: string) => {
@@ -11,7 +12,7 @@ export const useFetchUserData = () => {
       // First, check if the user exists in the users table - including deleted/inactive users
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('*, is_active')
+        .select('*, companies:company_id(name)')
         .eq('id', userId)
         .maybeSingle();  // Use maybeSingle() to handle no rows gracefully
         
@@ -62,9 +63,18 @@ export const useFetchUserData = () => {
             
             if (companyError) {
               console.error('Error creating company:', companyError);
+              toast({
+                variant: "destructive",
+                title: "Error creating company",
+                description: companyError.message || "Failed to create company. Please try again."
+              });
             } else if (companyData) {
               console.log("Created company with ID:", companyData.id);
               finalCompanyId = companyData.id;
+              toast({
+                title: "Company created",
+                description: `Created company: ${companyName}`
+              });
             }
           } catch (companyErr) {
             console.error('Error in company creation process:', companyErr);
@@ -100,7 +110,7 @@ export const useFetchUserData = () => {
             company_id: finalCompanyId,
             is_active: true // Explicitly set as active when creating
           })
-          .select('*')
+          .select('*, companies:company_id(name)')
           .single();
         
         if (insertError) {
@@ -117,6 +127,7 @@ export const useFetchUserData = () => {
           role: insertedUser.role as UserRole,
           full_name: insertedUser.full_name || '',
           company_id: insertedUser.company_id,
+          company_name: insertedUser.companies?.name || null,
           is_active: insertedUser.is_active
         };
         
@@ -130,6 +141,7 @@ export const useFetchUserData = () => {
           role: userData.role as UserRole,
           full_name: userData.full_name || '',
           company_id: userData.company_id,
+          company_name: userData.companies?.name || null,
           is_active: userData.is_active
         };
         

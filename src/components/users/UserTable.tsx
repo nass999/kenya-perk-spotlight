@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { UserData, UserRole } from '@/lib/supabase';
-import { Shield, Loader2, Check, X } from 'lucide-react';
+import { Shield, Loader2, Check, X, Building } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -20,6 +20,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface UserTableProps {
   users: UserData[];
@@ -45,6 +46,7 @@ const UserTable: React.FC<UserTableProps> = ({
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
+            <TableHead>Company</TableHead>
             <TableHead>Current Role</TableHead>
             <TableHead>Change Role</TableHead>
             <TableHead>Status</TableHead>
@@ -58,6 +60,29 @@ const UserTable: React.FC<UserTableProps> = ({
                 {user.full_name || 'Not specified'}
               </TableCell>
               <TableCell>{user.email}</TableCell>
+              <TableCell>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center">
+                        {user.company_name ? (
+                          <>
+                            <Building className="mr-2 h-4 w-4 text-blue-500" />
+                            <span className="truncate max-w-[120px]">{user.company_name}</span>
+                          </>
+                        ) : (
+                          <span className="text-gray-400 italic">None</span>
+                        )}
+                      </div>
+                    </TooltipTrigger>
+                    {user.company_name && (
+                      <TooltipContent>
+                        <p>{user.company_name}</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
+              </TableCell>
               <TableCell>
                 <div className="flex items-center">
                   <Shield className={`mr-2 h-4 w-4 ${
@@ -94,6 +119,9 @@ const UserTable: React.FC<UserTableProps> = ({
                       {/* Only master admins can assign master admin role */}
                       {isMasterAdmin && (
                         <SelectItem value="master_admin">Master Admin</SelectItem>
+                      )}
+                      {isMasterAdmin && (
+                        <SelectItem value="vendor">Vendor</SelectItem>
                       )}
                     </SelectContent>
                   </Select>

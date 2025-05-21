@@ -9,6 +9,7 @@ export interface UserData {
   role: UserRole;
   full_name: string;
   company_id: string | null;
+  company_name?: string | null;
   is_active?: boolean;
 }
 
