@@ -105,6 +105,40 @@ export const useUserManagement = () => {
     }
   };
 
+  // Add function to toggle user active status
+  const toggleUserStatus = async (userId: string, isActive: boolean) => {
+    try {
+      setUpdating(userId);
+      
+      // Update the user's status in the 'users' table
+      const { error } = await supabase
+        .from('users')
+        .update({ is_active: isActive })
+        .eq('id', userId);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setUsers(users.map(user => 
+        user.id === userId ? { ...user, is_active: isActive } : user
+      ));
+      
+      toast({
+        title: isActive ? "User activated" : "User deactivated",
+        description: `User has been ${isActive ? 'activated' : 'deactivated'} successfully`,
+      });
+    } catch (error: any) {
+      console.error('Error updating user status:', error);
+      toast({
+        variant: "destructive",
+        title: "Error updating user status",
+        description: error.message || 'Something went wrong. Please try again.'
+      });
+    } finally {
+      setUpdating(null);
+    }
+  };
+
   return {
     users,
     loading,
@@ -114,6 +148,7 @@ export const useUserManagement = () => {
     isAuthorized,
     fetchUsers,
     updateUserRole,
+    toggleUserStatus,
     currentUserId
   };
 };

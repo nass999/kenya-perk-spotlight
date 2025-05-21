@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { UserData, UserRole } from '@/lib/supabase';
-import { Shield, Loader2 } from 'lucide-react';
+import { Shield, Loader2, Check, X } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -17,6 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface UserTableProps {
   users: UserData[];
@@ -24,6 +27,7 @@ interface UserTableProps {
   isMasterAdmin: boolean;
   currentUserId: string;
   onUpdateUserRole: (userId: string, newRole: UserRole) => Promise<void>;
+  onToggleUserStatus: (userId: string, isActive: boolean) => Promise<void>;
 }
 
 const UserTable: React.FC<UserTableProps> = ({
@@ -32,6 +36,7 @@ const UserTable: React.FC<UserTableProps> = ({
   isMasterAdmin,
   currentUserId,
   onUpdateUserRole,
+  onToggleUserStatus,
 }) => {
   return (
     <div className="overflow-x-auto">
@@ -42,6 +47,8 @@ const UserTable: React.FC<UserTableProps> = ({
             <TableHead>Email</TableHead>
             <TableHead>Current Role</TableHead>
             <TableHead>Change Role</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -90,6 +97,35 @@ const UserTable: React.FC<UserTableProps> = ({
                       )}
                     </SelectContent>
                   </Select>
+                )}
+              </TableCell>
+              <TableCell>
+                <Badge variant={user.is_active === false ? "destructive" : "outline"}>
+                  {user.is_active === false ? "Inactive" : "Active"}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                {updating === user.id ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onToggleUserStatus(user.id, !user.is_active)}
+                      disabled={user.id === currentUserId}
+                      className="h-8 w-8 p-0"
+                    >
+                      {user.is_active === false ? (
+                        <Check className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <X className="h-4 w-4 text-red-500" />
+                      )}
+                      <span className="sr-only">
+                        {user.is_active === false ? "Activate" : "Deactivate"} user
+                      </span>
+                    </Button>
+                  </div>
                 )}
               </TableCell>
             </TableRow>

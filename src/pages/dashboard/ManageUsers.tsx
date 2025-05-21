@@ -17,6 +17,7 @@ const ManageUsers = () => {
     isAuthorized,
     fetchUsers,
     updateUserRole,
+    toggleUserStatus,
     currentUserId
   } = useUserManagement();
 
@@ -83,6 +84,7 @@ const ManageUsers = () => {
               isMasterAdmin={isMasterAdmin}
               currentUserId={currentUserId}
               onUpdateUserRole={updateUserRole}
+              onToggleUserStatus={toggleUserStatus}
             />
           )}
         </CardContent>
