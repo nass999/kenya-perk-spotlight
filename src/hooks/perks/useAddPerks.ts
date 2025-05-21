@@ -22,7 +22,7 @@ export const useAddPerks = (onClose: () => void) => {
     if (selectedPerks.length === 0) {
       toast({
         title: "No perks selected",
-        description: "Please select at least one perk to add.",
+        description: "Please select at least one perk to enable for your organization.",
       });
       return;
     }
@@ -32,7 +32,7 @@ export const useAddPerks = (onClose: () => void) => {
       
       // Get the perks that were selected
       const perksToCopy = perksArray.filter(perk => selectedPerks.includes(perk.id));
-      console.log("Adding the following perks:", perksToCopy);
+      console.log("Enabling the following perks for the company:", perksToCopy);
       
       // Create copies of these perks for the company
       const newPerks = perksToCopy.map(perk => ({
@@ -49,7 +49,7 @@ export const useAddPerks = (onClose: () => void) => {
         valid_through_date: perk.valid_through_date,
       }));
       
-      console.log("Inserting new perks:", newPerks);
+      console.log("Inserting new perks for company:", newPerks);
       
       if (!authState.user?.company_id) {
         throw new Error("No company ID available for this user");
@@ -65,10 +65,10 @@ export const useAddPerks = (onClose: () => void) => {
         throw error;
       }
       
-      console.log("Successfully added perks:", data);
+      console.log("Successfully enabled perks for company:", data);
       toast({
-        title: "Perks added successfully",
-        description: `${selectedPerks.length} perks have been added to your company.`,
+        title: "Perks enabled successfully",
+        description: `${selectedPerks.length} perks have been enabled for your organization.`,
       });
       
       onClose();
@@ -77,11 +77,11 @@ export const useAddPerks = (onClose: () => void) => {
       window.dispatchEvent(new CustomEvent('refreshPerks'));
       
     } catch (error: any) {
-      console.error('Error adding perks:', error);
+      console.error('Error enabling perks:', error);
       toast({
         variant: "destructive",
-        title: "Error adding perks",
-        description: error.message || "There was a problem adding the selected perks.",
+        title: "Error enabling perks",
+        description: error.message || "There was a problem enabling the selected perks.",
       });
     } finally {
       setSaving(false);

@@ -63,7 +63,7 @@ const PerkSelectList = ({ onClose }: PerkSelectListProps) => {
               disabled={saving || selectedPerks.length === 0}
               className="bg-[#da7756]"
             >
-              {saving ? 'Adding Perks...' : `Add Selected Perks (${selectedPerks.length})`}
+              {saving ? 'Enabling Perks...' : `Enable Selected Perks (${selectedPerks.length})`}
             </Button>
           </div>
         </div>

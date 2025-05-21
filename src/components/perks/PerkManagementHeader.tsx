@@ -29,8 +29,8 @@ export const PerkManagementHeader = ({
         <h1 className="text-3xl font-bold">Manage Perks</h1>
         <p className="text-gray-500 mt-1">
           {isCompanyAdmin 
-            ? "Add and manage perks for your organization" 
-            : "Create, edit, and manage perks for your organization"}
+            ? "Enable and manage perks for your organization's users" 
+            : "Create, edit, and manage perks for the platform"}
         </p>
       </div>
       <div className="flex items-center gap-3">
@@ -49,7 +49,7 @@ export const PerkManagementHeader = ({
               className="flex items-center gap-2 bg-[#da7756]"
             >
               <Plus className="h-4 w-4" />
-              Add Perks
+              Enable Perks
             </Button>
           </>
         )}
@@ -85,7 +85,7 @@ export const PerkManagementHeader = ({
         <Dialog open={isPerkSelectDialogOpen} onOpenChange={setIsPerkSelectDialogOpen}>
           <DialogContent className="sm:max-w-[600px] max-h-[80vh]">
             <DialogHeader>
-              <DialogTitle>Add Perks to Your Company</DialogTitle>
+              <DialogTitle>Enable Perks For Your Organization</DialogTitle>
             </DialogHeader>
             <PerkSelectList onClose={() => setIsPerkSelectDialogOpen(false)} />
           </DialogContent>
