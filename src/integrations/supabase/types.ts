@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      companies: {
+        Row: {
+          created_at: string | null
+          employee_count: number | null
+          id: string
+          industry: string | null
+          logo_url: string | null
+          name: string
+          website: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          employee_count?: number | null
+          id?: string
+          industry?: string | null
+          logo_url?: string | null
+          name: string
+          website?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          employee_count?: number | null
+          id?: string
+          industry?: string | null
+          logo_url?: string | null
+          name?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       perks: {
         Row: {
           category: string | null
@@ -81,6 +111,7 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          is_active: boolean | null
           role: string | null
         }
         Insert: {
@@ -89,6 +120,7 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          is_active?: boolean | null
           role?: string | null
         }
         Update: {
@@ -97,6 +129,7 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          is_active?: boolean | null
           role?: string | null
         }
         Relationships: []
