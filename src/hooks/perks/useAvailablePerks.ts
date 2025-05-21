@@ -22,22 +22,23 @@ export const useAvailablePerks = () => {
       setLoading(true);
       setError(null);
       
-      // Fetch global perks (no company_id) created by master admins
-      // that aren't already associated with this company
+      // Get the current date for comparing with valid_through_date
       const today = new Date().toISOString().split('T')[0];
       
+      // Fetch all global perks (created by master admins, with no company_id)
+      // that are enabled and not deleted
       const { data, error } = await supabase
         .from('perks')
         .select('*')
         .is('company_id', null) // Only global perks with no company
         .eq('is_enabled', true) // Only enabled perks
-        .eq('is_deleted', false) // Not deleted - now using the column
+        .eq('is_deleted', false) // Not deleted
         .or(`valid_through_date.gt.${today},valid_through_date.is.null`) // Not expired
         .order('name');
       
       if (error) throw error;
       
-      // Filter out perks that are already associated with this company
+      // Filter out perks that this company already has associated
       const { data: companyPerks, error: companyPerksError } = await supabase
         .from('perks')
         .select('id')
@@ -45,9 +46,13 @@ export const useAvailablePerks = () => {
       
       if (companyPerksError) throw companyPerksError;
       
+      // Get IDs of perks already associated with this company
       const companyPerkIds = companyPerks.map(p => p.id);
+      
+      // Filter out perks that are already associated with this company
       const availablePerks = data.filter(p => !companyPerkIds.includes(p.id));
       
+      console.log(`Found ${availablePerks.length} available perks for company ${authState.user.company_id}`);
       setPerks(availablePerks as Perk[]);
     } catch (error: any) {
       console.error('Error fetching available perks:', error);

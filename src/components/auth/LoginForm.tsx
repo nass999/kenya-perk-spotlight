@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/auth';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -23,9 +23,10 @@ interface LoginFormProps {
 }
 
 const LoginForm = ({ onSuccess }: LoginFormProps) => {
-  const { signIn, loading } = useAuth();
+  const { signIn, authState } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const navigate = useNavigate();
   
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -34,6 +35,13 @@ const LoginForm = ({ onSuccess }: LoginFormProps) => {
       password: '',
     },
   });
+  
+  // Redirect to dashboard if already logged in
+  React.useEffect(() => {
+    if (authState.user && !authState.loading) {
+      navigate('/dashboard');
+    }
+  }, [authState.user, authState.loading, navigate]);
   
   const onSubmit = async (values: LoginFormValues) => {
     try {
@@ -115,7 +123,7 @@ const LoginForm = ({ onSuccess }: LoginFormProps) => {
           <Button 
             type="submit" 
             className="w-full bg-[#da7756]" 
-            disabled={loading || isSubmitting}
+            disabled={authState.loading || isSubmitting}
           >
             {isSubmitting ? 'Signing in...' : 'Sign In'}
           </Button>

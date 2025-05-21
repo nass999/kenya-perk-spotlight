@@ -1,115 +1,98 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, createContext } from 'react';
 import { supabase } from '@/lib/supabase';
-import { AuthState } from '@/lib/supabase';
-import AuthContext from './AuthContext';
 import { useAuthMethods } from './useAuthMethods';
 import { useFetchUserData } from './useFetchUserData';
+import { AuthState } from './types';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface AuthContextType {
+  authState: AuthState;
+  signIn: (email: string, password: string) => Promise<any>;
+  signOut: () => Promise<void>;
+  updateProfile: (data: any) => Promise<any>;
+}
+
+export const AuthContext = createContext<AuthContextType>({
+  authState: { user: null, session: null, loading: true },
+  signIn: async () => ({ error: new Error('Not implemented') }),
+  signOut: async () => {},
+  updateProfile: async () => ({ error: new Error('Not implemented') }),
+});
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
     session: null,
     loading: true,
   });
   
-  const { signIn, signUp, signOut, loading } = useAuthMethods();
-  const { fetchUserData } = useFetchUserData();
+  const { getUserData } = useFetchUserData();
+  const { signIn, signOut, updateProfile } = useAuthMethods(setAuthState, getUserData);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    // Check for active session on load
-    const checkSession = async () => {
-      try {
-        console.log("Checking initial session...");
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Error fetching session:', error);
-          setAuthState(prev => ({ ...prev, loading: false }));
-          return;
-        }
-        
-        if (session) {
-          console.log("Initial session found, fetching user data...");
-          const userData = await fetchUserData(session.user.id);
-          if (userData) {
-            setAuthState({
-              user: userData,
-              session,
-              loading: false
-            });
-          } else {
-            setAuthState(prev => ({ ...prev, loading: false }));
-          }
-        } else {
-          console.log("No initial session found");
-          setAuthState(prev => ({ ...prev, loading: false }));
-        }
-      } catch (error) {
-        console.error('Session check error:', error);
-        setAuthState(prev => ({ ...prev, loading: false }));
-      }
-    };
-    
-    checkSession();
-    
-    // Listen for auth changes
+    // Set up auth state listener FIRST before checking for existing sessions
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log("Auth state change:", event, session?.user?.id);
+        console.log('Auth state changed:', event, session?.user?.email);
         
-        if (session && (event === 'SIGNED_IN' || event === 'USER_UPDATED')) {
-          console.log("User signed in or updated, fetching user data...");
-          const userData = await fetchUserData(session.user.id);
+        // First synchronously update session to prevent UI flicker
+        setAuthState(current => ({ ...current, session, loading: false }));
+        
+        // Use setTimeout to defer fetching user data to prevent Supabase auth deadlocks
+        if (session?.user) {
+          setTimeout(async () => {
+            const userData = await getUserData(session.user.id);
+            if (userData) {
+              setAuthState(current => ({ ...current, user: userData }));
+            }
+          }, 0);
+        } else {
+          setAuthState(current => ({ ...current, user: null, loading: false }));
           
-          if (userData) {
-            setAuthState({
-              user: userData,
-              session,
-              loading: false
-            });
-          }
-          
-          // Navigate to dashboard on sign in - Fixed: move this outside of async function
-          if (event === 'SIGNED_IN') {
-            console.log("Navigating to dashboard after sign in");
-            // Use setTimeout to avoid React state update conflicts
-            setTimeout(() => {
-              navigate('/dashboard');
-            }, 0);
-          }
-        } else if (event === 'SIGNED_OUT') {
-          console.log("User signed out, clearing auth state");
-          setAuthState({ user: null, session: null, loading: false });
-          navigate('/login');
-        } else if (event === 'TOKEN_REFRESHED') {
-          console.log("Token refreshed, updating session");
-          if (session) {
-            setAuthState(prevState => ({
-              ...prevState,
-              session,
-              loading: false
-            }));
+          // If not logged in and on a protected route, redirect to login
+          if (location.pathname !== '/login' && 
+              location.pathname !== '/register' && 
+              location.pathname !== '/' && 
+              location.pathname !== '/pricing' &&
+              !location.pathname.startsWith('/auth/callback')) {
+            navigate('/login');
           }
         }
       }
     );
+
+    // Check for existing session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log('Retrieved session:', session?.user?.email);
+      
+      if (session) {
+        // Set the session synchronously first
+        setAuthState(current => ({ ...current, session }));
+        
+        // Fetch user data in a deferred call
+        setTimeout(async () => {
+          const userData = await getUserData(session.user.id);
+          if (userData) {
+            setAuthState(current => ({ ...current, user: userData, loading: false }));
+          } else {
+            setAuthState(current => ({ ...current, loading: false }));
+          }
+        }, 0);
+      } else {
+        setAuthState(current => ({ ...current, loading: false }));
+      }
+    });
     
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate]);
-  
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ 
-      authState, 
-      signIn, 
-      signUp, 
-      signOut, 
-      loading 
-    }}>
+    <AuthContext.Provider value={{ authState, signIn, signOut, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

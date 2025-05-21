@@ -29,7 +29,7 @@ export const PerkManagementHeader = ({
         <h1 className="text-3xl font-bold">Manage Perks</h1>
         <p className="text-gray-500 mt-1">
           {isCompanyAdmin 
-            ? "Select and manage perks for your organization" 
+            ? "Add and manage perks for your organization" 
             : "Create, edit, and manage perks for your organization"}
         </p>
       </div>
