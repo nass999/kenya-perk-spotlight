@@ -20,6 +20,7 @@ import { DiscountFields } from './form-fields/DiscountFields';
 import { CategoryDateFields } from './form-fields/CategoryDateFields';
 import { AvailabilityFields } from './form-fields/AvailabilityFields';
 import { AdditionalInfoFields } from './form-fields/AdditionalInfoFields';
+import { VendorField } from './form-fields/VendorField';
 
 export const PerkFormDialog = ({
   isOpen,
@@ -42,6 +43,7 @@ export const PerkFormDialog = ({
       image_url: null,
       is_enabled: true,
       valid_through_date: null,
+      vendor_id: null,
     }
   });
 
@@ -66,6 +68,7 @@ export const PerkFormDialog = ({
         image_url: editingPerk.image_url,
         is_enabled: editingPerk.is_enabled,
         valid_through_date: editingPerk.valid_through_date ? new Date(editingPerk.valid_through_date).toISOString().split('T')[0] : null,
+        vendor_id: editingPerk.vendor_id || null,
       });
     }
   }, [editingPerk, form]);
@@ -95,6 +98,7 @@ export const PerkFormDialog = ({
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <BasicInfoFields form={form} />
             <DiscountFields form={form} />
+            <VendorField form={form} />
             <CategoryDateFields form={form} />
             <AvailabilityFields form={form} isCompanyAdmin={isCompanyAdmin} />
             <AdditionalInfoFields form={form} />

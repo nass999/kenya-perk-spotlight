@@ -36,7 +36,8 @@ export const useSubmitPerk = ({
       const perkData = {
         ...values,
         is_deleted: false, // Explicitly set is_deleted to false
-        is_enabled: values.is_enabled !== undefined ? values.is_enabled : true
+        is_enabled: values.is_enabled !== undefined ? values.is_enabled : true,
+        vendor_id: values.vendor_id || null // Ensure vendor_id is null if empty string
       };
       
       if (editingPerk) {
