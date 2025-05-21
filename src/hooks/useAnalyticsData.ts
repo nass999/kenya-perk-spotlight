@@ -2,24 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { format, subDays } from 'date-fns';
-
-export type TimeRange = '7days' | '30days' | '90days';
-
-export interface AnalyticsDataPoint {
-  date: string;
-  displayDate: string;
-  count: number;
-}
-
-export interface CategoryData {
-  name: string;
-  value: number;
-}
-
-export interface CompanyData {
-  name: string;
-  value: number;
-}
+import { AnalyticsDataPoint, CategoryData, CompanyData, TimeRange } from '@/types/analytics';
 
 export interface AnalyticsData {
   dailyUsers: AnalyticsDataPoint[];
@@ -90,30 +73,30 @@ export const useAnalyticsData = (initialTimeRange: TimeRange = '30days') => {
       if (redemptionsError) throw new Error(`Error fetching redemption data: ${redemptionsError.message}`);
 
       // Process users data by day
-      const usersByDay = dateLabels.map(({ date, displayDate }) => {
+      const usersByDay: AnalyticsDataPoint[] = dateLabels.map(({ date, displayDate }) => {
         const count = newUsersData ? 
           newUsersData.filter(user => 
             format(new Date(user.created_at), 'yyyy-MM-dd') === date
           ).length : 0;
-        return { date: displayDate, count };
+        return { date, displayDate, count };
       });
 
       // Process companies data by day
-      const companiesByDay = dateLabels.map(({ date, displayDate }) => {
+      const companiesByDay: AnalyticsDataPoint[] = dateLabels.map(({ date, displayDate }) => {
         const count = companyData ? 
           companyData.filter(company => 
             format(new Date(company.created_at), 'yyyy-MM-dd') === date
           ).length : 0;
-        return { date: displayDate, count };
+        return { date, displayDate, count };
       });
 
       // Process redemptions by day
-      const redemptionsByDay = dateLabels.map(({ date, displayDate }) => {
+      const redemptionsByDay: AnalyticsDataPoint[] = dateLabels.map(({ date, displayDate }) => {
         const count = redemptionsData ? 
           redemptionsData.filter(redemption => 
             format(new Date(redemption.created_at), 'yyyy-MM-dd') === date
           ).length : 0;
-        return { date: displayDate, count };
+        return { date, displayDate, count };
       });
 
       // Fetch perks by category
