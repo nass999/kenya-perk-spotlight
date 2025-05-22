@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { DashboardStats, VendorWithPerks, Activity, CompanyUsers, UserDetail } from '@/types/dashboard';
@@ -77,23 +78,57 @@ export const useMasterAdminDashboardData = () => {
             }))
           : [];
         
-        // Count users per company
-        const userCountByCompany: Record<string, number> = {};
+        // Count users by company_name instead of company_id
+        const userCountByCompany: Record<string, { id: string, count: number }> = {};
         
         if (users && users.length > 0) {
           users.forEach(user => {
-            if (user.company_id) {
-              userCountByCompany[user.company_id] = (userCountByCompany[user.company_id] || 0) + 1;
+            if (user.company_name) {
+              // Initialize if this company name hasn't been seen yet
+              if (!userCountByCompany[user.company_name]) {
+                userCountByCompany[user.company_name] = { 
+                  id: user.company_id || 'unknown', 
+                  count: 0 
+                };
+              }
+              // Increment user count for this company
+              userCountByCompany[user.company_name].count += 1;
             }
           });
         }
         
+        console.log('User count by company:', userCountByCompany);
+        
         // Create company users array with user counts
-        const companyUsers: CompanyUsers[] = companies ? companies.map(company => ({
-          companyId: company.id,
-          companyName: company.name,
-          userCount: userCountByCompany[company.id] || 0
-        })) : [];
+        const companyUsers: CompanyUsers[] = [];
+        
+        // First add companies from the companies table
+        if (companies) {
+          companies.forEach(company => {
+            companyUsers.push({
+              companyId: company.id,
+              companyName: company.name,
+              userCount: 0 // Will be updated below if users exist
+            });
+          });
+        }
+        
+        // Then update counts or add entries for companies that only exist in the users table
+        Object.entries(userCountByCompany).forEach(([companyName, data]) => {
+          const existingCompanyIndex = companyUsers.findIndex(c => c.companyName === companyName);
+          
+          if (existingCompanyIndex >= 0) {
+            // Update count for existing company
+            companyUsers[existingCompanyIndex].userCount = data.count;
+          } else {
+            // Add company from users table that's not in companies table
+            companyUsers.push({
+              companyId: data.id,
+              companyName: companyName,
+              userCount: data.count
+            });
+          }
+        });
         
         const recentActivities = await fetchRecentActivities();
         

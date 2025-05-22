@@ -62,20 +62,24 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
           {stats.companyUsers && stats.companyUsers.length > 0 ? (
             <Accordion type="single" collapsible className="w-full">
               {stats.companyUsers.map((company) => (
-                <AccordionItem key={company.companyId} value={company.companyId}>
+                <AccordionItem key={company.companyId || company.companyName} value={company.companyId || company.companyName}>
                   <AccordionTrigger className="hover:bg-gray-50 px-4 rounded-md">
                     <div className="flex items-center justify-between w-full">
                       <div className="flex items-center gap-2">
                         <Building2 className="h-4 w-4 text-blue-500" />
                         <span className="font-medium">{company.companyName}</span>
                       </div>
-                      <Badge variant="outline" className="ml-2">
+                      <Badge variant="outline" className={`ml-2 ${company.userCount > 0 ? 'bg-green-50 text-green-700 border-green-200' : ''}`}>
                         {company.userCount} {company.userCount === 1 ? 'employee' : 'employees'}
                       </Badge>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-4">
-                    {stats.userDetails && stats.userDetails.filter(user => user.companyId === company.companyId).length > 0 ? (
+                    {stats.userDetails && stats.userDetails.filter(user => 
+                        // Match by company name (primary) or id (fallback)
+                        user.companyName === company.companyName || 
+                        (user.companyId && user.companyId === company.companyId)
+                      ).length > 0 ? (
                       <Table>
                         <TableHeader>
                           <TableRow>
@@ -86,7 +90,10 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
                         </TableHeader>
                         <TableBody>
                           {stats.userDetails
-                            .filter(user => user.companyId === company.companyId)
+                            .filter(user => 
+                              user.companyName === company.companyName || 
+                              (user.companyId && user.companyId === company.companyId)
+                            )
                             .map((user) => (
                               <TableRow key={user.id}>
                                 <TableCell className="font-medium">{user.name}</TableCell>
