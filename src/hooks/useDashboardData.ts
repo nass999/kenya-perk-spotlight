@@ -48,26 +48,46 @@ export const useDashboardData = () => {
           // Create a proper array to store company users count
           const companyUsers = [];
           
-          // For each company, fetch the associated users directly with a more reliable query
+          // For each company, fetch the associated users directly with a more efficient query
           if (companies && companies.length > 0) {
-            for (const company of companies) {
-              // Get a direct count of users for this company
-              const { count: userCount, error } = await supabase
-                .from('users')
-                .select('*', { count: 'exact', head: true })
-                .eq('company_id', company.id);
+            // Fetch all users in one query instead of multiple queries
+            const { data: allUsers, error: usersError } = await supabase
+              .from('users')
+              .select('company_id');
               
-              if (error) {
-                console.error(`Error fetching user count for ${company.name}:`, error);
+            if (usersError) {
+              console.error('Error fetching all users:', usersError);
+            } else {
+              console.log('All users fetched:', allUsers?.length || 0);
+              
+              // Count users for each company
+              const countsByCompany: Record<string, number> = {};
+              
+              // Initialize counts for each company
+              companies.forEach(company => {
+                countsByCompany[company.id] = 0;
+              });
+              
+              // Count users per company
+              if (allUsers && allUsers.length > 0) {
+                allUsers.forEach(user => {
+                  if (user.company_id) {
+                    countsByCompany[user.company_id] = (countsByCompany[user.company_id] || 0) + 1;
+                  }
+                });
               }
               
-              console.log(`Company ${company.name} has ${userCount || 0} users`);
-              
-              companyUsers.push({
-                companyId: company.id,
-                companyName: company.name,
-                userCount: userCount || 0
-              });
+              // Build the companyUsers array with counts
+              for (const company of companies) {
+                const userCount = countsByCompany[company.id] || 0;
+                console.log(`Company ${company.name} has ${userCount} users`);
+                
+                companyUsers.push({
+                  companyId: company.id,
+                  companyName: company.name,
+                  userCount: userCount
+                });
+              }
             }
           }
           
@@ -190,7 +210,7 @@ export const useDashboardData = () => {
             totalRedemptions: 0,
             pendingRedemptions: 0,
             companies: companiesResult.count || 0,
-            users: totalUserCount || 0, // All users count
+            users: totalUserCount || 0,
             totalSavings: 0,
             recentActivities: recentActivities,
             companyUsers: companyUsers
