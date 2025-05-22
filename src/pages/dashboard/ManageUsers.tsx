@@ -29,7 +29,6 @@ const ManageUsers = () => {
     
     return users.reduce((acc: Record<string, any[]>, user) => {
       const companyId = user.company_id || 'no-company';
-      const companyName = user.company_name || 'No Company';
       
       if (!acc[companyId]) {
         acc[companyId] = [];
