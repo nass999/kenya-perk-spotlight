@@ -28,18 +28,28 @@ export const useUserManagement = () => {
         .from('users')
         .select('*, companies:company_id(name)');
       
-      // Company admins can only see users from their company
-      if (authState.user?.role === 'company_admin' && companyId) {
-        console.log('Filtering by company_id:', companyId);
-        query = query.eq('company_id', companyId);
-      } else if (authState.user?.role === 'company_admin') {
-        // If the company admin doesn't have a company_id, they should only see themselves
-        console.log('Company admin without company_id, showing only self');
-        query = query.eq('id', currentUserId);
+      if (authState.user?.role === 'company_admin') {
+        // Company admins should only see users from their company
+        if (companyId) {
+          console.log('Filtering by company_id:', companyId);
+          query = query.eq('company_id', companyId);
+        } else {
+          // If the company admin doesn't have a company_id (which should be rare),
+          // they should only see themselves for security reasons
+          console.log('Company admin without company_id, showing only self');
+          query = query.eq('id', currentUserId);
+          
+          // Also show a warning to the user
+          toast({
+            variant: "warning",
+            title: "No company assigned",
+            description: "You don't have a company assigned. Please contact an administrator."
+          });
+        }
       }
       // Master admins see all users, so no filter is applied
       
-      // Order users by created_at date
+      // Order users by created_at date (newest first)
       query = query.order('created_at', { ascending: false });
       
       const { data, error } = await query;
@@ -95,7 +105,7 @@ export const useUserManagement = () => {
       // Company admins can only update users in their company
       if (authState.user?.role === 'company_admin') {
         const userToUpdate = users.find(user => user.id === userId);
-        if (userToUpdate?.company_id !== companyId || userToUpdate?.role === 'master_admin') {
+        if (!userToUpdate || userToUpdate.company_id !== companyId || userToUpdate.role === 'master_admin') {
           toast({
             variant: "destructive",
             title: "Permission denied",
@@ -142,7 +152,7 @@ export const useUserManagement = () => {
       // Company admins can only update users in their company
       if (authState.user?.role === 'company_admin') {
         const userToUpdate = users.find(user => user.id === userId);
-        if (userToUpdate?.company_id !== companyId || userToUpdate?.role === 'master_admin') {
+        if (!userToUpdate || userToUpdate.company_id !== companyId || userToUpdate.role === 'master_admin') {
           toast({
             variant: "destructive",
             title: "Permission denied",

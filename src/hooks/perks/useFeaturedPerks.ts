@@ -14,6 +14,7 @@ export interface FeaturedPerk {
   category: string | null;
   redemption_code: string | null;
   image_url: string | null;
+  vendor_name?: string;
 }
 
 export const useFeaturedPerks = () => {
@@ -41,18 +42,34 @@ export const useFeaturedPerks = () => {
         // 4. Either has no expiry date OR hasn't expired yet
         const { data, error } = await supabase
           .from('perks')
-          .select('*')
+          .select(`
+            *,
+            vendors:vendor_id (
+              id,
+              name
+            )
+          `)
           .eq('is_enabled', true)
           .eq('is_deleted', false)
           .or(`company_id.eq.${authState.user.company_id},company_id.is.null`)
-          .or(`valid_through_date.gt.${today},valid_through_date.is.null`);
+          .or(`valid_through_date.gt.${today},valid_through_date.is.null,expiry_date.gt.${today},expiry_date.is.null`);
 
         if (error) {
           throw error;
         }
 
         console.log("Fetched featured perks:", data?.length, data);
-        setFeaturedPerks(data || []);
+        
+        // Process the data to include vendor name
+        const processedPerks = data?.map(item => {
+          const { vendors, ...perk } = item;
+          return {
+            ...perk,
+            vendor_name: vendors?.name || 'Unknown Vendor'
+          };
+        }) as FeaturedPerk[] || [];
+        
+        setFeaturedPerks(processedPerks);
       } catch (err) {
         console.error('Error fetching featured perks:', err);
         toast({

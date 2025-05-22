@@ -72,16 +72,6 @@ const ManageUsers = () => {
         </Alert>
       )}
 
-      {/* Debug info card */}
-      <Alert className="mb-6">
-        <AlertTitle>Debug Information</AlertTitle>
-        <AlertDescription className="text-xs">
-          <div><strong>Your Role:</strong> {isMasterAdmin ? 'Master Admin' : 'Company Admin'}</div>
-          <div><strong>Company ID:</strong> {companyId || 'None'}</div>
-          <div><strong>Users Loaded:</strong> {users.length}</div>
-        </AlertDescription>
-      </Alert>
-
       <Card>
         <CardHeader>
           <CardTitle>User Management</CardTitle>

@@ -46,7 +46,7 @@ const UserTable: React.FC<UserTableProps> = ({
       {onRefreshUsers && (
         <div className="mb-4 flex justify-end">
           <Button 
-            variant="default" 
+            variant="outline" 
             size="sm" 
             onClick={onRefreshUsers}
             className="flex items-center"
@@ -122,6 +122,7 @@ const UserTable: React.FC<UserTableProps> = ({
                     <Shield className={`mr-2 h-4 w-4 ${
                       user.role === 'master_admin' ? 'text-red-500' : 
                       user.role === 'company_admin' ? 'text-amber-500' : 
+                      user.role === 'vendor' ? 'text-purple-500' :
                       'text-green-500'
                     }`} />
                     <span>{user.role}</span>

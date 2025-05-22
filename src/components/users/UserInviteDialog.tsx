@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +12,7 @@ import {
 import { toast } from '@/components/ui/use-toast';
 import { SendHorizontal, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import { RegistrationLink } from './invite/RegistrationLink';
 import { EmailList } from './invite/EmailList';
 import { InviteByRole } from './invite/InviteByRole';
@@ -36,17 +37,20 @@ export const UserInviteDialog = ({ isOpen, onOpenChange, companyId: propCompanyI
   const [newCompanyName, setNewCompanyName] = useState<string>('');
   
   // Use the companyId from props if provided, otherwise fall back to the user's company_id
+  // This ensures that company admins always invite users to their own company
   const effectiveCompanyId = propCompanyId || authState.user?.company_id;
-  const organizationName = newCompanyName || propCompanyName || 'your organization';
+  const organizationName = propCompanyName || newCompanyName || 'your organization';
   
   const isMasterAdmin = authState.user?.role === 'master_admin';
   
   const baseUrl = window.location.origin;
+  
   // Ensure the role is properly included in the registration link
   let registrationLink = `${baseUrl}/register?role=${selectedRole}`;
   
   if (effectiveCompanyId) {
     // If we have an existing company ID, include it in the link
+    // This is crucial for company admins inviting users to their company
     registrationLink += `&company_id=${effectiveCompanyId}`;
   } else if (newCompanyName && selectedRole === 'company_admin') {
     // For new company admins, pass the company name as a parameter instead
@@ -114,7 +118,7 @@ export const UserInviteDialog = ({ isOpen, onOpenChange, companyId: propCompanyI
       // Send invitations in parallel
       await Promise.all(validEmails.map(async (email) => {
         try {
-          console.log(`Sending invitation to ${email} with role ${selectedRole}`);
+          console.log(`Sending invitation to ${email} with role ${selectedRole}, company: ${effectiveCompanyId || newCompanyName}`);
           
           // Use Supabase function to send email
           const { data, error } = await supabase.functions.invoke('send-invitation', {
@@ -124,7 +128,7 @@ export const UserInviteDialog = ({ isOpen, onOpenChange, companyId: propCompanyI
               companyId: effectiveCompanyId,
               companyName: organizationName,
               registrationLink,
-              userRole: selectedRole  // Make sure this is passed correctly
+              userRole: selectedRole
             }
           });
           

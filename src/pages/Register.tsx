@@ -16,7 +16,7 @@ const Register = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
-  // Parse query parameters
+  // Parse query parameters - these are critical for associating users with their company
   const companyId = searchParams.get('company_id');
   const companyName = searchParams.get('company_name');
   const roleParam = searchParams.get('role');
@@ -87,7 +87,8 @@ const Register = () => {
             <Alert className="mb-6 bg-blue-50">
               <Info className="h-4 w-4 text-blue-500" />
               <AlertDescription className="text-blue-700">
-                You've been invited to join{companyId || companyName ? ' a company' : ''} 
+                You've been invited to join
+                {companyId || companyName ? ` ${companyName || 'a company'}` : ''} 
                 {role ? ` as ${role.replace('_', ' ')}` : ''}.
               </AlertDescription>
             </Alert>
