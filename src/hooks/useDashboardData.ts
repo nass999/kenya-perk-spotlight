@@ -48,79 +48,32 @@ export const useDashboardData = () => {
           // Create a proper array to store company users count
           const companyUsers = [];
           
-          // For each company, fetch the associated users directly
+          // For each company, fetch the associated users directly with a more reliable query
           if (companies && companies.length > 0) {
             for (const company of companies) {
-              // First, get all users for this company directly
-              const { data: companyUsersList, error } = await supabase
+              // Get a direct count of users for this company
+              const { count: userCount, error } = await supabase
                 .from('users')
-                .select('*')
+                .select('*', { count: 'exact', head: true })
                 .eq('company_id', company.id);
               
-              const userCount = companyUsersList ? companyUsersList.length : 0;
-              
-              // Special debugging for TechVision
-              if (company.name.toLowerCase().includes('techvision')) {
-                console.log(`Direct query for TechVision users:`, companyUsersList);
-                
-                // Add a specific query to debug TechVision users
-                const { data: techVisionUsers } = await supabase
-                  .from('users')
-                  .select('id, email, full_name')
-                  .eq('company_id', company.id);
-                
-                console.log(`TechVision users debug: ${techVisionUsers?.length || 0} users found`);
-                if (techVisionUsers && techVisionUsers.length > 0) {
-                  console.log('TechVision users details:', techVisionUsers);
-                }
-                
-                // If still zero, try a broader query
-                if (!techVisionUsers || techVisionUsers.length === 0) {
-                  console.log('Trying broader query for TechVision users...');
-                  const { data: allUsers } = await supabase
-                    .from('users')
-                    .select('*');
-                  
-                  console.log(`Total users in database: ${allUsers?.length || 0}`);
-                  if (allUsers && allUsers.length > 0) {
-                    const techUsers = allUsers.filter(u => u.company_id === company.id);
-                    console.log(`Filtered users for TechVision: ${techUsers.length}`);
-                    if (techUsers.length > 0) {
-                      // If we find users this way, use that count instead
-                      companyUsers.push({
-                        companyId: company.id,
-                        companyName: company.name,
-                        userCount: techUsers.length
-                      });
-                      // Skip the default push below
-                      continue;
-                    }
-                  }
-                }
+              if (error) {
+                console.error(`Error fetching user count for ${company.name}:`, error);
               }
+              
+              console.log(`Company ${company.name} has ${userCount || 0} users`);
               
               companyUsers.push({
                 companyId: company.id,
                 companyName: company.name,
-                userCount: userCount
+                userCount: userCount || 0
               });
             }
           }
           
           console.log('Companies with user counts:', companyUsers);
           
-          // Ensure TechVision has at least one user if it exists and shows zero
-          const techVisionCompany = companyUsers.find(c => 
-            c.companyName.toLowerCase().includes('techvision')
-          );
-          
-          if (techVisionCompany && techVisionCompany.userCount === 0) {
-            console.log('Overriding TechVision user count to at least 1');
-            techVisionCompany.userCount = 1;
-          }
-          
           // Fetch active vendors with perks
-          
           const { data: activePerks } = await supabase
             .from('perks')
             .select('*, vendors:vendor_id(name)')
@@ -243,7 +196,6 @@ export const useDashboardData = () => {
             companyUsers: companyUsers
           });
         } else if (authState.user?.role === 'company_admin') {
-          
           const [companyPerksResult, companyUsersResult, redeemedPerksResult] = await Promise.all([
             supabase
               .from('perks')
@@ -271,7 +223,6 @@ export const useDashboardData = () => {
             totalSavings: 0,
           });
         } else if (authState.user?.role === 'vendor') {
-          
           const [vendorPerksResult, activePerksResult, redemptionsResult] = await Promise.all([
             supabase.from('perks').select('*', { count: 'exact' }).eq('vendor_id', authState.user.id),
             supabase.from('perks').select('*', { count: 'exact' }).eq('vendor_id', authState.user.id).eq('is_enabled', true),
@@ -293,7 +244,6 @@ export const useDashboardData = () => {
             totalSavings: 0,
           });
         } else {
-          
           // Get today's date for comparing with valid_through_date
           const today = new Date().toISOString().split('T')[0];
           
