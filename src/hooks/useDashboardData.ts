@@ -45,51 +45,26 @@ export const useDashboardData = () => {
             
           console.log('All companies:', companies);
           
-          // Create a proper array to store company users count
-          const companyUsers = [];
+          // For more accurate user count by company_id, query users table directly
+          const { data: users } = await supabase.from('users').select('id, company_id');
           
-          // For each company, fetch the associated users directly with a more efficient query
-          if (companies && companies.length > 0) {
-            // Fetch all users in one query instead of multiple queries
-            const { data: allUsers, error: usersError } = await supabase
-              .from('users')
-              .select('company_id');
-              
-            if (usersError) {
-              console.error('Error fetching all users:', usersError);
-            } else {
-              console.log('All users fetched:', allUsers?.length || 0);
-              
-              // Count users for each company
-              const countsByCompany: Record<string, number> = {};
-              
-              // Initialize counts for each company
-              companies.forEach(company => {
-                countsByCompany[company.id] = 0;
-              });
-              
-              // Count users per company
-              if (allUsers && allUsers.length > 0) {
-                allUsers.forEach(user => {
-                  if (user.company_id) {
-                    countsByCompany[user.company_id] = (countsByCompany[user.company_id] || 0) + 1;
-                  }
-                });
+          // Group users by company_id and count them
+          const usersByCompany: Record<string, number> = {};
+          
+          if (users && users.length > 0) {
+            users.forEach(user => {
+              if (user.company_id) {
+                usersByCompany[user.company_id] = (usersByCompany[user.company_id] || 0) + 1;
               }
-              
-              // Build the companyUsers array with counts
-              for (const company of companies) {
-                const userCount = countsByCompany[company.id] || 0;
-                console.log(`Company ${company.name} has ${userCount} users`);
-                
-                companyUsers.push({
-                  companyId: company.id,
-                  companyName: company.name,
-                  userCount: userCount
-                });
-              }
-            }
+            });
           }
+          
+          // Build company users array with company IDs and exact counts
+          const companyUsers = Object.entries(usersByCompany).map(([companyId, userCount]) => ({
+            companyId,
+            companyName: '', // Not showing company name as requested
+            userCount
+          }));
           
           console.log('Companies with user counts:', companyUsers);
           
