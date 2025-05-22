@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,62 +33,51 @@ export const useDashboardData = () => {
         // Fetch different stats based on user role
         if (authState.user.role === 'master_admin') {
           // Platform admin sees global stats
-          const [totalPerksResult, companiesResult, usersResult] = await Promise.all([
+          const [totalPerksResult, companiesResult] = await Promise.all([
             supabase.from('perks').select('*', { count: 'exact' }),
             supabase.from('companies').select('*', { count: 'exact' }),
-            supabase.from('users').select('*', { count: 'exact', head: true }),
           ]);
 
-          // Fetch all companies
+          // Directly fetch companies with their names
           const { data: companies } = await supabase
             .from('companies')
             .select('id, name');
             
           console.log('All companies:', companies);
-
-          // Debug: Log all users to verify data
-          const { data: allUsers } = await supabase
-            .from('users')
-            .select('id, company_id, email, full_name');
-          
-          console.log('All users in system:', allUsers);
           
           // Create a proper array to store company users count
           const companyUsers = [];
           
-          // First check if we have TechVision Solutions
-          const techVisionCompany = companies?.find(company => 
-            company.name.toLowerCase().includes('techvision')
-          );
-          
-          if (techVisionCompany) {
-            console.log('Found TechVision company:', techVisionCompany);
-            
-            // Count users for TechVision explicitly
-            const techVisionUsers = allUsers?.filter(user => 
-              user.company_id === techVisionCompany.id
-            );
-            
-            console.log('TechVision users:', techVisionUsers);
-          }
-          
           if (companies && companies.length > 0) {
-            // For each company, count associated users from our allUsers array
+            // For each company, fetch and count associated users directly
             for (const company of companies) {
-              // Count users that have this company_id
-              const usersForCompany = allUsers?.filter(user => 
-                user.company_id === company.id
-              ) || [];
+              // Direct count query for users with this company_id
+              const { count: userCount, error } = await supabase
+                .from('users')
+                .select('*', { count: 'exact', head: true })
+                .eq('company_id', company.id);
               
-              const userCount = usersForCompany.length;
+              if (error) {
+                console.error(`Error counting users for company ${company.name}:`, error);
+              }
               
-              console.log(`User count for company ${company.name} (ID: ${company.id}): ${userCount}`);
-              console.log(`Users for company ${company.name}:`, usersForCompany.map(u => u.email || u.full_name));
+              // Special debugging for TechVision
+              if (company.name.toLowerCase().includes('techvision')) {
+                console.log(`Direct count for TechVision: ${userCount}`);
+                
+                // Double check with a direct fetch to verify the count
+                const { data: techUsers } = await supabase
+                  .from('users')
+                  .select('*')
+                  .eq('company_id', company.id);
+                
+                console.log(`TechVision users direct fetch:`, techUsers);
+              }
               
               companyUsers.push({
                 companyId: company.id,
                 companyName: company.name,
-                userCount: userCount
+                userCount: userCount || 0
               });
             }
           }

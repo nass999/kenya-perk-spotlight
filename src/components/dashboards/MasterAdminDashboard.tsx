@@ -58,12 +58,7 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
                 Organizations on platform
               </p>
             </div>
-            <div>
-              <div className="text-3xl font-bold">{stats.users}</div>
-              <p className="text-xs text-gray-500">
-                Total users across all companies
-              </p>
-            </div>
+            {/* Removed the total users count display */}
           </div>
           
           {/* Companies Table */}
@@ -78,7 +73,7 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
               {stats.companyUsers && stats.companyUsers.length > 0 ? (
                 stats.companyUsers.map((company) => (
                   <TableRow key={company.companyId}>
-                    <TableCell className="font-medium">{company.companyName} </TableCell>
+                    <TableCell className="font-medium">{company.companyName}</TableCell>
                     <TableCell className="text-right">{company.userCount}</TableCell>
                   </TableRow>
                 ))
