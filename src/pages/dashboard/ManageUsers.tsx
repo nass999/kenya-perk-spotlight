@@ -1,11 +1,12 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { User, Loader2 } from 'lucide-react';
+import { User, Loader2, Building } from 'lucide-react';
 import UserTable from '@/components/users/UserTable';
 import UserManagementHeader from '@/components/users/UserManagementHeader';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ManageUsers = () => {
   const {
@@ -22,12 +23,46 @@ const ManageUsers = () => {
     companyId
   } = useUserManagement();
   
-  // Use company name from the first user that matches the current company ID
-  // This is more efficient than making an additional database query
-  const companyUser = companyId 
-    ? users.find(user => user.company_id === companyId) 
-    : undefined;
-  const companyName = companyUser?.company_name || '';
+  // Group users by company
+  const groupedUsers = React.useMemo(() => {
+    if (!users.length) return {};
+    
+    return users.reduce((acc: Record<string, any[]>, user) => {
+      const companyId = user.company_id || 'no-company';
+      const companyName = user.company_name || 'No Company';
+      
+      if (!acc[companyId]) {
+        acc[companyId] = [];
+      }
+      
+      acc[companyId].push(user);
+      return acc;
+    }, {});
+  }, [users]);
+  
+  // Get company names for tabs
+  const companies = React.useMemo(() => {
+    if (!users.length) return [];
+    
+    const companiesMap = new Map();
+    users.forEach(user => {
+      if (user.company_id) {
+        companiesMap.set(user.company_id, user.company_name || 'Unknown Company');
+      }
+    });
+    
+    // Add "No Company" if there are users without a company
+    if (users.some(user => !user.company_id)) {
+      companiesMap.set('no-company', 'No Company');
+    }
+    
+    return Array.from(companiesMap).map(([id, name]) => ({
+      id,
+      name
+    }));
+  }, [users]);
+  
+  const [activeCompany, setActiveCompany] = useState<string>('all');
 
   useEffect(() => {
     console.log('ManageUsers component mounted, authorized:', isAuthorized);
@@ -55,6 +90,11 @@ const ManageUsers = () => {
     fetchUsers();
   };
 
+  // Filter users based on selected company
+  const displayUsers = activeCompany === 'all'
+    ? users
+    : (groupedUsers[activeCompany] || []);
+
   return (
     <div className="container mx-auto py-10">
       <UserManagementHeader
@@ -62,7 +102,7 @@ const ManageUsers = () => {
         onRefreshUsers={handleRefreshUsers}
         loading={loading}
         companyId={companyId}
-        companyName={companyName}
+        companyName={activeCompany !== 'all' ? companies.find(c => c.id === activeCompany)?.name : 'All Companies'}
       />
 
       {error && (
@@ -77,12 +117,33 @@ const ManageUsers = () => {
           <CardTitle>User Management</CardTitle>
           <CardDescription>
             {isMasterAdmin 
-              ? "View and modify all users across the platform. Role changes take effect immediately."
-              : `View and modify users in ${companyName || 'your organization'}. Role changes take effect immediately.`
+              ? "View and modify all users across the platform. Filter by company using the tabs below."
+              : `View and modify users in your organization. Role changes take effect immediately.`
             }
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {isMasterAdmin && companies.length > 0 && (
+            <Tabs defaultValue="all" value={activeCompany} onValueChange={setActiveCompany} className="mb-6">
+              <TabsList className="flex overflow-x-auto pb-1 mb-2">
+                <TabsTrigger value="all" className="flex items-center">
+                  <Building className="mr-2 h-4 w-4" />
+                  All Companies ({users.length})
+                </TabsTrigger>
+                {companies.map(company => (
+                  <TabsTrigger 
+                    key={company.id} 
+                    value={company.id}
+                    className="flex items-center"
+                  >
+                    <Building className="mr-2 h-4 w-4" />
+                    {company.name} ({(groupedUsers[company.id] || []).length})
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          )}
+          
           {loading ? (
             <div className="text-center py-8 flex flex-col items-center">
               <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
@@ -90,7 +151,7 @@ const ManageUsers = () => {
             </div>
           ) : (
             <UserTable 
-              users={users}
+              users={displayUsers}
               updating={updating}
               isMasterAdmin={isMasterAdmin}
               currentUserId={currentUserId}
