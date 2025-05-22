@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { UserData, UserRole } from '@/lib/supabase';
@@ -22,25 +23,24 @@ export const useUserManagement = () => {
       setError(null);
       console.log('Fetching users, role:', authState.user?.role, 'company_id:', companyId);
       
-      // Use a simpler query structure to get all users
+      // Use a simpler query structure to get all users with their company info
       let query = supabase
         .from('users')
-        .select('*, companies:company_id(name)')
-        .order('created_at', { ascending: false });
+        .select('*, companies:company_id(name)');
       
       // Company admins can only see users from their company
-      if (authState.user?.role === 'company_admin') {
-        // If the company admin has a company_id, filter by it
-        if (companyId) {
-          console.log('Filtering by company_id:', companyId);
-          query = query.eq('company_id', companyId);
-        } else {
-          // If the company admin doesn't have a company_id, they should only see themselves
-          console.log('Company admin without company_id, showing only self');
-          query = query.eq('id', currentUserId);
-        }
+      if (authState.user?.role === 'company_admin' && companyId) {
+        console.log('Filtering by company_id:', companyId);
+        query = query.eq('company_id', companyId);
+      } else if (authState.user?.role === 'company_admin') {
+        // If the company admin doesn't have a company_id, they should only see themselves
+        console.log('Company admin without company_id, showing only self');
+        query = query.eq('id', currentUserId);
       }
       // For master_admin, we don't add any filters, so they can see all users
+      
+      // Order users by created_at date
+      query = query.order('created_at', { ascending: false });
       
       const { data, error } = await query;
       
@@ -50,12 +50,7 @@ export const useUserManagement = () => {
       }
       
       let processedUsers = data as any[];
-      
-      // For company admins, filter out master_admins from the results
-      // This is an additional client-side filter in case there are any master admins in the company
-      if (authState.user?.role === 'company_admin') {
-        processedUsers = processedUsers.filter(user => user.role !== 'master_admin');
-      }
+      console.log('Raw users data:', processedUsers);
       
       // Process users to include company_name
       const finalUsers = processedUsers.map(user => ({

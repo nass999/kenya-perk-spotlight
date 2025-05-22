@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { UserData, UserRole } from '@/lib/supabase';
 import { Shield, Loader2, Check, X, Building, RefreshCw } from 'lucide-react';
@@ -43,9 +44,9 @@ const UserTable: React.FC<UserTableProps> = ({
   return (
     <div className="overflow-x-auto">
       {onRefreshUsers && (
-        <div className="mb-4 text-right">
+        <div className="mb-4 flex justify-end">
           <Button 
-            variant="outline" 
+            variant="default" 
             size="sm" 
             onClick={onRefreshUsers}
             className="flex items-center"
