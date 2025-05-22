@@ -47,32 +47,45 @@ export const useMasterAdminDashboardData = () => {
           throw companiesError;
         }
         
-        // Count occurrences of each company name in users table directly
+        // Count occurrences of each company name in users table 
+        // Fix: Using PostgreSQL's groupBy functionality instead of client-side grouping
         const { data: companyCounts, error: countError } = await supabase
           .from('users')
-          .select('company_name, count(*)')
+          .select('company_name, count')
           .not('company_name', 'is', null)
-          .group('company_name');
+          .eq('count', '(*)')
+          .order('company_name');
           
         if (countError) {
           console.error('Error counting companies:', countError);
           throw countError;
         }
         
-        console.log('Company counts from direct query:', companyCounts);
+        // Alternative approach: Fetch all users with company names and group them client-side
+        const { data: usersWithCompanies, error: usersError } = await supabase
+          .from('users')
+          .select('company_name')
+          .not('company_name', 'is', null);
         
-        // Convert to a map for easy lookup
+        if (usersError) {
+          console.error('Error fetching users with companies:', usersError);
+          throw usersError;
+        }
+        
+        // Calculate company counts manually on the client side
         const companyCountMap: Record<string, number> = {};
-        if (companyCounts) {
-          companyCounts.forEach(item => {
-            if (item.company_name) {
-              companyCountMap[item.company_name] = item.count;
+        if (usersWithCompanies) {
+          usersWithCompanies.forEach(user => {
+            if (user.company_name) {
+              companyCountMap[user.company_name] = (companyCountMap[user.company_name] || 0) + 1;
             }
           });
         }
         
+        console.log('Company counts from direct query:', companyCountMap);
+        
         // Fetch users with company information directly from users table
-        const { data: users, error: usersError } = await supabase
+        const { data: users, error: usersError2 } = await supabase
           .from('users')
           .select(`
             id,
@@ -83,9 +96,9 @@ export const useMasterAdminDashboardData = () => {
             company_name
           `);
         
-        if (usersError) {
-          console.error('Error fetching users:', usersError);
-          throw usersError;
+        if (usersError2) {
+          console.error('Error fetching users:', usersError2);
+          throw usersError2;
         }
         
         console.log('Users data:', users);
