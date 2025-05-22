@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -39,25 +40,33 @@ export const useDashboardData = () => {
             supabase.from('users').select('*', { count: 'exact' }),
           ]);
 
-          // Fetch companies with user counts
-          const { data: companyUsersData } = await supabase
+          // Fetch companies with user counts - FIXED QUERY to correctly count users
+          const { data: companies } = await supabase
             .from('companies')
-            .select(`
-              id,
-              name,
-              users:users(id)
-            `);
+            .select('id, name');
           
-          const companyUsers = companyUsersData?.map(company => ({
-            companyId: company.id,
-            companyName: company.name,
-            userCount: Array.isArray(company.users) ? company.users.length : 0
-          })) || [];
+          const companyUsers = [];
           
-          console.log('Companies with users:', companyUsers);
+          if (companies && companies.length > 0) {
+            // For each company, fetch the actual user count
+            for (const company of companies) {
+              const { count } = await supabase
+                .from('users')
+                .select('*', { count: 'exact', head: true })
+                .eq('company_id', company.id);
+              
+              companyUsers.push({
+                companyId: company.id,
+                companyName: company.name,
+                userCount: count || 0
+              });
+            }
+          }
+          
+          console.log('Companies with users (fixed count):', companyUsers);
           
           // Fetch active vendors with perks
-          const activePerksResult = await supabase
+          const { data: activePerks } = await supabase
             .from('perks')
             .select('*, vendors:vendor_id(name)')
             .eq('is_enabled', true)
@@ -66,8 +75,8 @@ export const useDashboardData = () => {
           // Process vendor data
           const vendorsMap = new Map<string, number>();
           
-          if (activePerksResult.data && activePerksResult.data.length > 0) {
-            activePerksResult.data.forEach(perk => {
+          if (activePerks && activePerks.length > 0) {
+            activePerks.forEach(perk => {
               if (perk.vendors && perk.vendors.name) {
                 const vendorName = perk.vendors.name;
                 vendorsMap.set(vendorName, (vendorsMap.get(vendorName) || 0) + 1);
