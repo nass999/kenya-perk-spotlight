@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -37,7 +36,7 @@ export const useDashboardData = () => {
           const [totalPerksResult, companiesResult, usersResult] = await Promise.all([
             supabase.from('perks').select('*', { count: 'exact' }),
             supabase.from('companies').select('*', { count: 'exact' }),
-            supabase.from('users').select('*', { count: 'exact', head: true }).eq('role', 'employee'),
+            supabase.from('users').select('*', { count: 'exact', head: true }),
           ]);
 
           // Fetch all companies
@@ -55,24 +54,16 @@ export const useDashboardData = () => {
           const companyUsers = [];
           
           if (companies && companies.length > 0) {
-            // For each company, fetch and count employees
+            // For each company, fetch and count all users
             for (const company of companies) {
-              // Get all users for this company to check data
-              const { data: companyAllUsers } = await supabase
+              // Get all users for this company
+              const { data: companyAllUsers, count } = await supabase
                 .from('users')
-                .select('*')
+                .select('*', { count: 'exact' })
                 .eq('company_id', company.id);
               
               console.log(`All users for company ${company.name} (ID: ${company.id}):`, companyAllUsers);
-              
-              // Get employee count specific for this company (role='employee')
-              const { data: companyEmployees, count } = await supabase
-                .from('users')
-                .select('*', { count: 'exact' })
-                .eq('company_id', company.id)
-                .eq('role', 'employee');
-              
-              console.log(`Employees for company ${company.name}:`, companyEmployees);
+              console.log(`Total user count for company ${company.name}: ${count}`);
               
               companyUsers.push({
                 companyId: company.id,
@@ -82,7 +73,7 @@ export const useDashboardData = () => {
             }
           }
           
-          console.log('Companies with employee counts:', companyUsers);
+          console.log('Companies with user counts:', companyUsers);
           
           // Fetch active vendors with perks
           const { data: activePerks } = await supabase
@@ -187,11 +178,10 @@ export const useDashboardData = () => {
 
           const recentActivities = await fetchRecentActivities();
           
-          // Get the total employee count across all companies
-          const { count: employeeCount } = await supabase
+          // Get the total user count across all companies
+          const { count: totalUserCount } = await supabase
             .from('users')
-            .select('*', { count: 'exact', head: true })
-            .eq('role', 'employee');
+            .select('*', { count: 'exact', head: true });
             
           setStats({
             totalPerks: totalPerksResult.count || 0,
@@ -201,7 +191,7 @@ export const useDashboardData = () => {
             totalRedemptions: 0,
             pendingRedemptions: 0,
             companies: companiesResult.count || 0,
-            users: employeeCount || 0, // Only employee count
+            users: totalUserCount || 0, // All users count
             totalSavings: 0,
             recentActivities: recentActivities,
             companyUsers: companyUsers

@@ -42,12 +42,12 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
         </p>
       </div>
       
-      {/* Companies & Employees Card */}
+      {/* Companies & Users Card */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
             <Building2 className="h-4 w-4 text-blue-500" />
-            Companies & Employees
+            Companies & Users
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -61,7 +61,7 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
             <div>
               <div className="text-3xl font-bold">{stats.users}</div>
               <p className="text-xs text-gray-500">
-                Total employees across all companies
+                Total users across all companies
               </p>
             </div>
           </div>
@@ -71,7 +71,7 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
             <TableHeader>
               <TableRow>
                 <TableHead>Company Name</TableHead>
-                <TableHead className="text-right">Employee Count</TableHead>
+                <TableHead className="text-right">User Count</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -127,6 +127,7 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
         </Card>
       </div>
       
+      {/* Platform Health */}
       <div>
         <h2 className="text-xl font-semibold mb-4">Platform Health</h2>
         <Card>
@@ -152,6 +153,7 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
         </Card>
       </div>
       
+      {/* Recent Activity */}
       <div>
         <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
         <Card>
