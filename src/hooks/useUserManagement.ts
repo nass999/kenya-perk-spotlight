@@ -22,32 +22,37 @@ export const useUserManagement = () => {
       setError(null);
       console.log('Fetching users, role:', authState.user?.role, 'company_id:', companyId);
       
-      // For master admins, we need to make sure we're getting ALL users without filtering
-      let { data: allUsers, error } = await supabase
-        .from('users')
-        .select('*, companies:company_id(name)')
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error('Error from Supabase:', error);
-        throw error;
+      // For debugging purposes, let's add more logging
+      if (isMasterAdmin) {
+        console.log('Master admin is fetching ALL users');
       }
-
-      // If not a master admin, filter the results client-side
-      // This ensures we get all users first, then filter if needed
+      
+      // For master admins, fetch ALL users without filtering
+      // We'll use a simpler query to avoid any potential issues
+      let query = supabase.from('users').select('*, companies:company_id(name)');
+      
+      // Don't filter by company_id for master admins
       if (authState.user?.role === 'company_admin' && companyId) {
         console.log('Filtering by company_id for company admin:', companyId);
-        allUsers = allUsers?.filter(user => user.company_id === companyId) || [];
+        query = query.eq('company_id', companyId);
       } else if (authState.user?.role === 'company_admin' && !companyId) {
         // Company admin without company_id - should only see themselves
         console.log('Company admin without company_id, showing only self');
-        allUsers = allUsers?.filter(user => user.id === currentUserId) || [];
+        query = query.eq('id', currentUserId);
         
         toast({
           variant: "destructive",
           title: "No company assigned",
           description: "You don't have a company assigned. Please contact an administrator."
         });
+      }
+      
+      // Execute the query
+      const { data: allUsers, error } = await query.order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error from Supabase:', error);
+        throw error;
       }
       
       // Process users to include company_name
@@ -69,7 +74,7 @@ export const useUserManagement = () => {
     } finally {
       setLoading(false);
     }
-  }, [authState.user?.role, companyId, currentUserId]);
+  }, [authState.user?.role, companyId, currentUserId, isMasterAdmin]);
 
   useEffect(() => {
     // Fetch users when component mounts or when user role/company changes

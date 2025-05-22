@@ -37,7 +37,10 @@ const CreateTestUser = () => {
         password,
       });
       
-      if (authError) throw authError;
+      if (authError) {
+        console.error('Auth error:', authError);
+        throw authError;
+      }
       
       if (!authData.user) {
         throw new Error('Failed to create auth user');
@@ -45,23 +48,56 @@ const CreateTestUser = () => {
       
       console.log('Created auth user:', authData.user);
       
-      // Step 2: Insert into the users table instead of updating
-      const { error: insertError } = await supabase
+      // Step 2: Insert into the users table manually using a direct query
+      const userId = authData.user.id;
+      
+      // First, check if the user already exists in the users table
+      const { data: existingUser } = await supabase
         .from('users')
-        .insert({
-          id: authData.user.id,
-          email: email,
-          full_name: fullName,
-          role: 'employee',
-          is_active: true
-        });
-      
-      if (insertError) {
-        console.error('Error inserting user record:', insertError);
-        throw insertError;
+        .select('id')
+        .eq('id', userId)
+        .single();
+        
+      if (existingUser) {
+        console.log('User already exists in users table, updating instead of inserting');
+        
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({
+            email: email,
+            full_name: fullName,
+            role: 'employee',
+            is_active: true
+          })
+          .eq('id', userId);
+          
+        if (updateError) {
+          console.error('Error updating user record:', updateError);
+          throw updateError;
+        }
+        
+        console.log('Successfully updated user in users table');
+      } else {
+        console.log('User does not exist in users table, inserting new record');
+        
+        // Attempt to insert with a direct query (no RLS interference)
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert({
+            id: userId,
+            email: email,
+            full_name: fullName,
+            role: 'employee',
+            is_active: true
+          });
+        
+        if (insertError) {
+          console.error('Error inserting user record:', insertError);
+          throw insertError;
+        }
+        
+        console.log('Successfully inserted user into users table');
       }
-      
-      console.log('Successfully inserted user into users table');
       
       toast({
         title: "Test user created",
@@ -99,7 +135,7 @@ const CreateTestUser = () => {
               type="email" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="testuser@example.com"
+              placeholder="testuser2@example.com"
               required
             />
           </div>
@@ -110,7 +146,7 @@ const CreateTestUser = () => {
               id="fullName" 
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="Test User"
+              placeholder="Test User 2"
               required
             />
           </div>

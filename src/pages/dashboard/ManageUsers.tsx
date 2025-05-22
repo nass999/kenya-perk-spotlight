@@ -3,11 +3,12 @@ import React, { useEffect, useState } from 'react';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { User, Loader2, Building } from 'lucide-react';
+import { User, Loader2, Building, RefreshCw } from 'lucide-react';
 import UserTable from '@/components/users/UserTable';
 import UserManagementHeader from '@/components/users/UserManagementHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import CreateTestUser from '@/components/users/CreateTestUser'; // Import the new component
+import CreateTestUser from '@/components/users/CreateTestUser';
+import { Button } from '@/components/ui/button';
 
 const ManageUsers = () => {
   const {
@@ -75,6 +76,7 @@ const ManageUsers = () => {
   useEffect(() => {
     console.log('ManageUsers component mounted, authorized:', isAuthorized);
     if (isAuthorized) {
+      console.log('Fetching users on component mount');
       fetchUsers();
     }
   }, [fetchUsers, isAuthorized]);
@@ -138,6 +140,17 @@ const ManageUsers = () => {
           {showCreateUser && (
             <div className="mb-6">
               <CreateTestUser />
+              <div className="mt-4 flex justify-center">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleRefreshUsers} 
+                  className="flex items-center"
+                >
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Refresh User List After Creation
+                </Button>
+              </div>
             </div>
           )}
         </div>
@@ -174,6 +187,18 @@ const ManageUsers = () => {
               </TabsList>
             </Tabs>
           )}
+          
+          <div className="mb-4 flex justify-end">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleRefreshUsers}
+              className="flex items-center"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Refresh Users
+            </Button>
+          </div>
           
           {loading ? (
             <div className="text-center py-8 flex flex-col items-center">
