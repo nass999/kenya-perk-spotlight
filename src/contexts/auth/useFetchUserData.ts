@@ -54,12 +54,15 @@ export const useFetchUserData = () => {
         // For company_admin with company_name but no company_id, create the company first
         let finalCompanyId = companyId;
         
-        if (role === 'company_admin' && companyName && !companyId) {
+        if (role === 'company_admin' && !companyId) {
           console.log("Creating company for new company admin");
+          
+          // Use default company name if none was provided
+          const actualCompanyName = companyName || `${fullName}'s Company`;
           
           try {
             // Use admin functions to create company
-            const { data: companyData, error: companyError } = await createCompany(companyName);
+            const { data: companyData, error: companyError } = await createCompany(actualCompanyName);
             
             if (companyError) {
               console.error('Error creating company:', companyError);
@@ -73,7 +76,7 @@ export const useFetchUserData = () => {
               finalCompanyId = companyData.id;
               toast({
                 title: "Company created",
-                description: `Created company: ${companyName}`
+                description: `Created company: ${actualCompanyName}`
               });
             }
           } catch (companyErr) {
@@ -83,7 +86,7 @@ export const useFetchUserData = () => {
             try {
               const { data: companyData, error: companyError } = await supabase
                 .from('companies')
-                .insert({ name: companyName })
+                .insert({ name: actualCompanyName })
                 .select('id')
                 .single();
                 
