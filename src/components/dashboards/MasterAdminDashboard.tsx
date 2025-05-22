@@ -56,7 +56,7 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
             <TableHeader>
               <TableRow>
                 <TableHead>Company Name</TableHead>
-                <TableHead className="text-right">User Count</TableHead>
+                <TableHead className="text-right">User Count (Exact)</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
