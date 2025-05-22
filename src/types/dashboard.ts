@@ -44,3 +44,8 @@ export interface VendorWithPerks {
   perkCount: number;
   category?: string;
 }
+
+export interface CompanyUserCount {
+  company_name: string;
+  count: number;
+}

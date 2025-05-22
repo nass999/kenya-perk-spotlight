@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { DashboardStats, VendorWithPerks, Activity, CompanyUsers, UserDetail } from '@/types/dashboard';
+import { DashboardStats, VendorWithPerks, Activity, CompanyUsers, UserDetail, CompanyUserCount } from '@/types/dashboard';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const useMasterAdminDashboardData = () => {
@@ -20,6 +21,7 @@ export const useMasterAdminDashboardData = () => {
     userDetails: []
   });
   const [activeVendors, setActiveVendors] = useState<VendorWithPerks[]>([]);
+  const [companyUserCounts, setCompanyUserCounts] = useState<CompanyUserCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,6 +46,20 @@ export const useMasterAdminDashboardData = () => {
         if (companiesError) {
           console.error('Error fetching companies:', companiesError);
           throw companiesError;
+        }
+        
+        // Fetch company user counts for the new section
+        const { data: companyUserCountsData, error: companyUserCountsError } = await supabase
+          .from('users')
+          .select('company_name, count')
+          .not('company_name', 'is', null)
+          .order('count', { ascending: false });
+          
+        if (companyUserCountsError) {
+          console.error('Error fetching company user counts:', companyUserCountsError);
+        } else {
+          console.log('Company user counts:', companyUserCountsData);
+          setCompanyUserCounts(companyUserCountsData || []);
         }
         
         // Fetch users with company information directly from users table
@@ -260,5 +276,5 @@ export const useMasterAdminDashboardData = () => {
     fetchMasterAdminDashboardData();
   }, [authState.user]);
 
-  return { stats, activeVendors, loading, error };
+  return { stats, activeVendors, companyUserCounts, loading, error };
 };

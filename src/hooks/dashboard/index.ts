@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { DashboardStats, VendorWithPerks } from '@/types/dashboard';
+import { DashboardStats, VendorWithPerks, CompanyUserCount } from '@/types/dashboard';
 import { useMasterAdminDashboardData } from './useMasterAdminDashboardData';
 import { useCompanyAdminDashboardData } from './useCompanyAdminDashboardData';
 import { useVendorDashboardData } from './useVendorDashboardData';
@@ -24,6 +24,7 @@ export const useDashboardData = () => {
     userDetails: []
   });
   const [activeVendors, setActiveVendors] = useState<VendorWithPerks[]>([]);
+  const [companyUserCounts, setCompanyUserCounts] = useState<CompanyUserCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -41,6 +42,7 @@ export const useDashboardData = () => {
       case 'master_admin':
         setStats(masterAdmin.stats);
         setActiveVendors(masterAdmin.activeVendors);
+        setCompanyUserCounts(masterAdmin.companyUserCounts || []);
         setLoading(masterAdmin.loading);
         setError(masterAdmin.error);
         break;
@@ -65,13 +67,13 @@ export const useDashboardData = () => {
     }
   }, [
     authState.user, 
-    masterAdmin.stats, masterAdmin.activeVendors, masterAdmin.loading, masterAdmin.error,
+    masterAdmin.stats, masterAdmin.activeVendors, masterAdmin.companyUserCounts, masterAdmin.loading, masterAdmin.error,
     companyAdmin.stats, companyAdmin.loading, companyAdmin.error,
     vendor.stats, vendor.loading, vendor.error,
     employee.stats, employee.loading, employee.error
   ]);
   
-  return { stats, activeVendors, loading, error };
+  return { stats, activeVendors, companyUserCounts, loading, error };
 };
 
 // Export all dashboard data hooks for direct use if needed

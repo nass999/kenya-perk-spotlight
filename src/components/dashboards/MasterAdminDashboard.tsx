@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -10,9 +11,11 @@ import {
   Activity,
   Shield,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  UserCircle,
+  Building
 } from 'lucide-react';
-import { DashboardStats, VendorWithPerks } from '@/types/dashboard';
+import { DashboardStats, VendorWithPerks, CompanyUserCount } from '@/types/dashboard';
 import {
   Table,
   TableBody,
@@ -34,9 +37,15 @@ interface MasterAdminDashboardProps {
   stats: DashboardStats;
   welcomeMessage: string;
   activeVendors?: VendorWithPerks[];
+  companyUserCounts?: CompanyUserCount[];
 }
 
-const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welcomeMessage, activeVendors = [] }) => {
+const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ 
+  stats, 
+  welcomeMessage, 
+  activeVendors = [], 
+  companyUserCounts = [] 
+}) => {
   return (
     <div className="space-y-8">
       <div>
@@ -44,6 +53,56 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
         <p className="mt-2 text-gray-500">
           Master Admin Dashboard - Platform Overview
         </p>
+      </div>
+      
+      {/* Customers and Users Section - NEW */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold flex items-center">
+            <UserCircle className="mr-2 h-5 w-5 text-blue-500" />
+            Customers and Users
+          </h2>
+        </div>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-medium">Company User Distribution</CardTitle>
+            <CardDescription>
+              User distribution across different companies
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {companyUserCounts && companyUserCounts.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Company</TableHead>
+                    <TableHead className="text-right">Users</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {companyUserCounts.map((company, index) => (
+                    <TableRow key={`${company.company_name}-${index}`}>
+                      <TableCell className="font-medium flex items-center">
+                        <Building className="h-4 w-4 text-blue-500 mr-2" />
+                        {company.company_name || 'No Company'}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          {company.count} {company.count === 1 ? 'user' : 'users'}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <Users className="mx-auto h-8 w-8 opacity-30 mb-2" />
+                <p>No company user data available</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
       
       {/* Companies with Employees Section */}
