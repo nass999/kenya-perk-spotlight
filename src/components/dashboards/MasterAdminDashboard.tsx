@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -29,6 +30,7 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import TotalUsersView from './TotalUsersView';
 
 interface MasterAdminDashboardProps {
   stats: DashboardStats;
@@ -45,6 +47,9 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
           Master Admin Dashboard - Platform Overview
         </p>
       </div>
+      
+      {/* Total Users View */}
+      <TotalUsersView companyUserCounts={stats.companyUserCounts} />
       
       {/* Companies with Employees Section */}
       <Card>

@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { DashboardStats, VendorWithPerks, Activity, CompanyUsers, UserDetail } from '@/types/dashboard';
+import { DashboardStats, VendorWithPerks, Activity, CompanyUsers, UserDetail, CompanyUserCount } from '@/types/dashboard';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const useMasterAdminDashboardData = () => {
@@ -17,7 +18,8 @@ export const useMasterAdminDashboardData = () => {
     totalSavings: 0,
     recentActivities: [],
     companyUsers: [],
-    userDetails: []
+    userDetails: [],
+    companyUserCounts: []
   });
   const [activeVendors, setActiveVendors] = useState<VendorWithPerks[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,6 +47,21 @@ export const useMasterAdminDashboardData = () => {
           console.error('Error fetching companies:', companiesError);
           throw companiesError;
         }
+        
+        // Fetch company user counts directly
+        const { data: companyUserCounts, error: companyUserCountsError } = await supabase
+          .from('users')
+          .select('company_name, count')
+          .not('company_name', 'is', null)
+          .group('company_name')
+          .order('count', { ascending: false });
+        
+        if (companyUserCountsError) {
+          console.error('Error fetching company user counts:', companyUserCountsError);
+          throw companyUserCountsError;
+        }
+        
+        console.log('Company user counts:', companyUserCounts);
         
         // Fetch users with company information directly from users table
         const { data: users, error: usersError } = await supabase
@@ -127,6 +144,20 @@ export const useMasterAdminDashboardData = () => {
         const { count: totalUserCount } = await supabase
           .from('users')
           .select('*', { count: 'exact', head: true });
+
+        // Execute the custom SQL query for company user counts
+        const { data: rawCompanyUserCounts, error: rawCompanyUserCountsError } = await supabase
+          .rpc('get_company_user_counts');
+
+        if (rawCompanyUserCountsError) {
+          console.error('Error fetching raw company user counts:', rawCompanyUserCountsError);
+          throw rawCompanyUserCountsError;
+        }
+
+        // Process the raw company user counts into the expected format
+        const processedCompanyUserCounts: CompanyUserCount[] = rawCompanyUserCounts || [];
+        
+        console.log('Processed company user counts:', processedCompanyUserCounts);
           
         setStats({
           totalPerks: totalPerksResult.count || 0,
@@ -140,7 +171,8 @@ export const useMasterAdminDashboardData = () => {
           totalSavings: 0,
           recentActivities: recentActivities,
           companyUsers: companyUsers,
-          userDetails: userDetails
+          userDetails: userDetails,
+          companyUserCounts: processedCompanyUserCounts
         });
       } catch (err) {
         console.error("Error fetching master admin dashboard data:", err);

@@ -12,6 +12,7 @@ export interface DashboardStats {
   recentActivities?: Activity[];
   companyUsers?: CompanyUsers[];
   userDetails?: UserDetail[];
+  companyUserCounts?: CompanyUserCount[];
 }
 
 export interface CompanyUsers {
@@ -43,4 +44,9 @@ export interface VendorWithPerks {
   name: string;
   perkCount: number;
   category?: string;
+}
+
+export interface CompanyUserCount {
+  company_name: string;
+  count: number;
 }
