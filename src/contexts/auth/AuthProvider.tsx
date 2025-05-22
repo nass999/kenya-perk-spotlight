@@ -3,7 +3,7 @@ import { useState, useEffect, createContext } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthMethods } from './useAuthMethods';
 import { useFetchUserData } from './useFetchUserData';
-import type { AuthState, AuthContextProps, UserRole } from './types';
+import type { AuthState, AuthContextProps } from './types';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 
@@ -24,9 +24,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   });
   
   const { fetchUserData } = useFetchUserData();
-  const { signIn, signUp, signOut } = useAuthMethods();
+  const { signIn, signUp, signOut: authMethodsSignOut } = useAuthMethods();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Wrapper for signOut that handles navigation after signout
+  const signOut = async () => {
+    try {
+      await authMethodsSignOut();
+      // Navigation will be handled by the auth state change listener
+    } catch (error) {
+      console.error('Error in signOut wrapper:', error);
+      throw error;
+    }
+  };
 
   useEffect(() => {
     console.log("Setting up auth state listener");

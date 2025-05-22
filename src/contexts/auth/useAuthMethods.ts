@@ -1,13 +1,10 @@
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/components/ui/use-toast';
-import { UserRole } from '@/lib/supabase';
 
 export const useAuthMethods = () => {
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   const signIn = async (email: string, password: string) => {
     try {
