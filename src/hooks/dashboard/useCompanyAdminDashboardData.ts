@@ -15,7 +15,8 @@ export const useCompanyAdminDashboardData = () => {
     pendingRedemptions: 0,
     companies: 0,
     users: 0,
-    totalSavings: 0
+    totalSavings: 0,
+    recentActivities: []
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +53,7 @@ export const useCompanyAdminDashboardData = () => {
           companies: 1,
           users: companyUsersResult.count || 0,
           totalSavings: 0,
+          recentActivities: []
         });
       } catch (err) {
         console.error("Error fetching company admin dashboard data:", err);

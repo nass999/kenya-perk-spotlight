@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { DashboardStats, VendorWithPerks, Activity, CompanyUsers, UserDetail, CompanyUserCount } from '@/types/dashboard';
@@ -37,26 +38,17 @@ export const useMasterAdminDashboardData = () => {
           supabase.from('companies').select('*', { count: 'exact' }),
         ]);
 
-        // Fetch all companies
-        const { data: companies, error: companiesError } = await supabase
-          .from('companies')
-          .select('id, name');
+        // Fetch company user counts using the specified query
+        const { data: companyUserCounts, error: companyCountsError } = await supabase
+          .from('users')
+          .select('company_name, count(*)')
+          .not('company_name', 'is', null)
+          .order('count', { ascending: false });
           
-        if (companiesError) {
-          console.error('Error fetching companies:', companiesError);
-          throw companiesError;
+        if (companyCountsError) {
+          console.error('Error fetching company user counts:', companyCountsError);
+          throw companyCountsError;
         }
-        
-        // Instead of using group which doesn't exist, use the RPC function
-        const { data: companyUserCounts, error: companyUserCountsError } = await supabase
-          .rpc('get_company_user_counts');
-        
-        if (companyUserCountsError) {
-          console.error('Error fetching company user counts:', companyUserCountsError);
-          throw companyUserCountsError;
-        }
-        
-        console.log('Company user counts:', companyUserCounts);
         
         // Fetch users with company information directly from users table
         const { data: users, error: usersError } = await supabase
@@ -89,62 +81,16 @@ export const useMasterAdminDashboardData = () => {
             }))
           : [];
         
-        // Count users by company_name
-        const companyNameCounts: Record<string, number> = {};
-        
-        if (users && users.length > 0) {
-          users.forEach(user => {
-            const companyName = user.company_name || 'No Company';
-            companyNameCounts[companyName] = (companyNameCounts[companyName] || 0) + 1;
-          });
-        }
-        
-        console.log('User count by company name:', companyNameCounts);
-        
-        // Create company users array with user counts
-        const companyUsers: CompanyUsers[] = [];
-        
-        // First add companies from the companies table
-        if (companies) {
-          companies.forEach(company => {
-            companyUsers.push({
-              companyId: company.id,
-              companyName: company.name,
-              userCount: companyNameCounts[company.name] || 0 // Get count from our tally
-            });
-          });
-        }
-        
-        // Then add entries for companies that only exist in the users table
-        Object.entries(companyNameCounts).forEach(([companyName, count]) => {
-          // Skip if this company name already exists in our company users array
-          const existingCompany = companyUsers.find(c => c.companyName === companyName);
+        // Get the total user count directly from the users table
+        const { count: totalUserCount } = await supabase
+          .from('users')
+          .select('*', { count: 'exact', head: true });
           
-          if (!existingCompany && companyName !== 'No Company') {
-            // Add company from users table that's not in companies table
-            companyUsers.push({
-              companyId: 'unknown', // We don't have the ID for companies that only exist in users table
-              companyName: companyName,
-              userCount: count
-            });
-          }
-        });
-        
         const recentActivities = await fetchRecentActivities();
         
         // Process vendor data
         await fetchActiveVendors();
         
-        // Get the total user count directly from the users table
-        const { count: totalUserCount } = await supabase
-          .from('users')
-          .select('*', { count: 'exact', head: true });
-
-        // Process the raw company user counts into the expected format
-        const processedCompanyUserCounts: CompanyUserCount[] = companyUserCounts || [];
-        
-        console.log('Processed company user counts:', processedCompanyUserCounts);
-          
         setStats({
           totalPerks: totalPerksResult.count || 0,
           availablePerks: totalPerksResult.count || 0,
@@ -156,9 +102,8 @@ export const useMasterAdminDashboardData = () => {
           users: totalUserCount || 0,
           totalSavings: 0,
           recentActivities: recentActivities,
-          companyUsers: companyUsers,
-          userDetails: userDetails,
-          companyUserCounts: processedCompanyUserCounts
+          companyUserCounts: companyUserCounts as CompanyUserCount[],
+          userDetails: userDetails
         });
       } catch (err) {
         console.error("Error fetching master admin dashboard data:", err);

@@ -9,7 +9,7 @@ export interface DashboardStats {
   companies: number;
   users: number;
   totalSavings: number;
-  recentActivities?: Activity[];
+  recentActivities: Activity[];
   companyUsers?: CompanyUsers[];
   userDetails?: UserDetail[];
   companyUserCounts?: CompanyUserCount[];
@@ -48,5 +48,5 @@ export interface VendorWithPerks {
 
 export interface CompanyUserCount {
   company_name: string;
-  count: number;
+  count: string;
 }
