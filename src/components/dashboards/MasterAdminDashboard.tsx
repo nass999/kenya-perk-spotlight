@@ -46,7 +46,7 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
             <Building2 className="h-4 w-4 text-blue-500" />
-            Companies & Users
+            Companies & Employees
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -60,7 +60,7 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
             <div>
               <div className="text-3xl font-bold">{stats.users}</div>
               <p className="text-xs text-gray-500">
-                Total users across all companies
+                Total employees across all companies
               </p>
             </div>
           </div>
@@ -72,7 +72,7 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
                   <AccordionTrigger className="hover:no-underline">
                     <div className="flex justify-between w-full pr-4">
                       <span>{company.companyName}</span>
-                      <span className="font-semibold">{company.userCount} users</span>
+                      <span className="font-semibold">{company.userCount} employees</span>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent>

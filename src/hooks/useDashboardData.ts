@@ -40,7 +40,7 @@ export const useDashboardData = () => {
             supabase.from('users').select('*', { count: 'exact' }),
           ]);
 
-          // Fetch companies with user counts - FIXED QUERY to correctly count users
+          // Fetch companies with employee counts - MODIFIED to count only employees
           const { data: companies } = await supabase
             .from('companies')
             .select('id, name');
@@ -48,12 +48,13 @@ export const useDashboardData = () => {
           const companyUsers = [];
           
           if (companies && companies.length > 0) {
-            // For each company, fetch the actual user count
+            // For each company, fetch the employee count (only role='employee')
             for (const company of companies) {
               const { count } = await supabase
                 .from('users')
                 .select('*', { count: 'exact', head: true })
-                .eq('company_id', company.id);
+                .eq('company_id', company.id)
+                .eq('role', 'employee');
               
               companyUsers.push({
                 companyId: company.id,
@@ -63,7 +64,7 @@ export const useDashboardData = () => {
             }
           }
           
-          console.log('Companies with users (fixed count):', companyUsers);
+          console.log('Companies with employees count:', companyUsers);
           
           // Fetch active vendors with perks
           const { data: activePerks } = await supabase
@@ -168,6 +169,12 @@ export const useDashboardData = () => {
 
           const recentActivities = await fetchRecentActivities();
           
+          // Get the total employee count across all companies
+          const { count: employeeCount } = await supabase
+            .from('users')
+            .select('*', { count: 'exact', head: true })
+            .eq('role', 'employee');
+            
           setStats({
             totalPerks: totalPerksResult.count || 0,
             availablePerks: totalPerksResult.count || 0,
@@ -176,7 +183,7 @@ export const useDashboardData = () => {
             totalRedemptions: 0,
             pendingRedemptions: 0,
             companies: companiesResult.count || 0,
-            users: usersResult.count || 0,
+            users: employeeCount || 0, // Now specifically employee count
             totalSavings: 0,
             recentActivities: recentActivities,
             companyUsers: companyUsers
