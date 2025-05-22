@@ -12,7 +12,7 @@ export const useFetchUserData = () => {
       // First, check if the user exists in the users table - including deleted/inactive users
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('*, companies:company_id(name)')
+        .select('*')
         .eq('id', userId)
         .maybeSingle();  // Use maybeSingle() to handle no rows gracefully
         
@@ -53,6 +53,7 @@ export const useFetchUserData = () => {
         
         // For company_admin with company_name but no company_id, create the company first
         let finalCompanyId = companyId;
+        let finalCompanyName = companyName;
         
         if (role === 'company_admin' && !companyId) {
           console.log("Creating company for new company admin");
@@ -74,6 +75,7 @@ export const useFetchUserData = () => {
             } else if (companyData) {
               console.log("Created company with ID:", companyData.id);
               finalCompanyId = companyData.id;
+              finalCompanyName = actualCompanyName;
               toast({
                 title: "Company created",
                 description: `Created company: ${actualCompanyName}`
@@ -95,6 +97,7 @@ export const useFetchUserData = () => {
               } else if (companyData) {
                 console.log("Created company with ID (fallback):", companyData.id);
                 finalCompanyId = companyData.id;
+                finalCompanyName = actualCompanyName;
               }
             } catch (fallbackErr) {
               console.error('Error in fallback company creation process:', fallbackErr);
@@ -111,9 +114,10 @@ export const useFetchUserData = () => {
             full_name: fullName,
             role: role,
             company_id: finalCompanyId,
+            company_name: finalCompanyName,
             is_active: true // Explicitly set as active when creating
           })
-          .select('*, companies:company_id(name)')
+          .select('*')
           .single();
         
         if (insertError) {
@@ -130,7 +134,7 @@ export const useFetchUserData = () => {
           role: insertedUser.role as UserRole,
           full_name: insertedUser.full_name || '',
           company_id: insertedUser.company_id,
-          company_name: insertedUser.companies?.name || null,
+          company_name: insertedUser.company_name,
           is_active: insertedUser.is_active
         };
         
@@ -144,7 +148,7 @@ export const useFetchUserData = () => {
           role: userData.role as UserRole,
           full_name: userData.full_name || '',
           company_id: userData.company_id,
-          company_name: userData.companies?.name || null,
+          company_name: userData.company_name,
           is_active: userData.is_active
         };
         

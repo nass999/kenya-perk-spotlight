@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { DashboardStats, VendorWithPerks, Activity, CompanyUsers, UserDetail } from '@/types/dashboard';
@@ -47,8 +46,8 @@ export const useMasterAdminDashboardData = () => {
           throw companiesError;
         }
         
-        // Fetch users with company information
-        const { data: usersWithCompanies, error: usersError } = await supabase
+        // Fetch users with company information directly from users table
+        const { data: users, error: usersError } = await supabase
           .from('users')
           .select(`
             id,
@@ -56,38 +55,33 @@ export const useMasterAdminDashboardData = () => {
             full_name,
             role,
             company_id,
-            companies (
-              name
-            )
+            company_name
           `);
         
         if (usersError) {
-          console.error('Error fetching users with companies:', usersError);
+          console.error('Error fetching users:', usersError);
           throw usersError;
         }
         
-        console.log('Users with companies data:', usersWithCompanies);
+        console.log('Users data:', users);
         
         // Format users with their company names
-        const userDetails: UserDetail[] = usersWithCompanies 
-          ? usersWithCompanies.map(user => ({
+        const userDetails: UserDetail[] = users 
+          ? users.map(user => ({
               id: user.id,
               name: user.full_name || user.email,
               email: user.email,
               role: user.role,
               companyId: user.company_id,
-              // Fix: Check if companies exists and has a name property
-              companyName: user.companies && typeof user.companies === 'object' && 'name' in user.companies
-                ? user.companies.name as string
-                : 'No Company'
+              companyName: user.company_name || 'No Company'
             }))
           : [];
         
         // Count users per company
         const userCountByCompany: Record<string, number> = {};
         
-        if (usersWithCompanies && usersWithCompanies.length > 0) {
-          usersWithCompanies.forEach(user => {
+        if (users && users.length > 0) {
+          users.forEach(user => {
             if (user.company_id) {
               userCountByCompany[user.company_id] = (userCountByCompany[user.company_id] || 0) + 1;
             }

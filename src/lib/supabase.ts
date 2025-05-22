@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 import { supabase as supabaseClient } from '@/integrations/supabase/client';
 import { Database as ImportedDatabase } from '@/integrations/supabase/types';
@@ -14,6 +15,7 @@ export type Database = {
           role: 'master_admin' | 'company_admin' | 'employee' | 'vendor';
           full_name: string;
           company_id: string | null;
+          company_name: string | null;
           is_active: boolean;
         };
         Insert: {
@@ -21,6 +23,7 @@ export type Database = {
           role?: 'master_admin' | 'company_admin' | 'employee' | 'vendor';
           full_name?: string;
           company_id?: string | null;
+          company_name?: string | null;
           is_active?: boolean;
         };
         Update: {
@@ -28,6 +31,7 @@ export type Database = {
           role?: 'master_admin' | 'company_admin' | 'employee' | 'vendor';
           full_name?: string;
           company_id?: string | null;
+          company_name?: string | null;
           is_active?: boolean;
         };
       };
@@ -184,7 +188,7 @@ export interface UserData {
   role: UserRole;
   full_name: string;
   company_id: string | null;
-  company_name?: string | null;
+  company_name: string | null;
   is_active?: boolean;
 }
 
