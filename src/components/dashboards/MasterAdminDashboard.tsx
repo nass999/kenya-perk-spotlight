@@ -68,6 +68,9 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
                       <div className="flex items-center gap-2">
                         <Building2 className="h-4 w-4 text-blue-500" />
                         <span className="font-medium">{company.companyName}</span>
+                        <Badge className="ml-2 bg-blue-100 text-blue-700 border-blue-200">
+                          {company.userCount} users
+                        </Badge>
                       </div>
                       <Badge variant="outline" className={`ml-2 ${company.userCount > 0 ? 'bg-green-50 text-green-700 border-green-200' : ''}`}>
                         {company.userCount} {company.userCount === 1 ? 'employee' : 'employees'}
