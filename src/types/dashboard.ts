@@ -1,3 +1,4 @@
+
 export interface DashboardStats {
   totalPerks: number;
   availablePerks: number;

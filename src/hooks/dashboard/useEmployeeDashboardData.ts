@@ -15,7 +15,8 @@ export const useEmployeeDashboardData = () => {
     pendingRedemptions: 0,
     companies: 0,
     users: 0,
-    totalSavings: 0
+    totalSavings: 0,
+    recentActivities: []
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +70,7 @@ export const useEmployeeDashboardData = () => {
           companies: 0,
           users: 0,
           totalSavings: estimatedSavings,
+          recentActivities: []
         });
       } catch (err) {
         console.error("Error fetching employee dashboard data:", err);

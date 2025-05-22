@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { DashboardStats, VendorWithPerks, Activity, CompanyUsers, UserDetail, CompanyUserCount } from '@/types/dashboard';
@@ -40,9 +41,8 @@ export const useMasterAdminDashboardData = () => {
         // Fetch company user counts using the specified query
         const { data: companyUserCounts, error: companyCountsError } = await supabase
           .from('users')
-          .select('company_name, count')
+          .select('company_name, count(*)')
           .not('company_name', 'is', null)
-          .group('company_name')
           .order('count', { ascending: false });
           
         if (companyCountsError) {

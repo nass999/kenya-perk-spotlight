@@ -15,7 +15,8 @@ export const useVendorDashboardData = () => {
     pendingRedemptions: 0,
     companies: 0,
     users: 0,
-    totalSavings: 0
+    totalSavings: 0,
+    recentActivities: []
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +47,7 @@ export const useVendorDashboardData = () => {
           companies: 0,
           users: 0,
           totalSavings: 0,
+          recentActivities: []
         });
       } catch (err) {
         console.error("Error fetching vendor dashboard data:", err);
