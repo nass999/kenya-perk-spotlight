@@ -1,3 +1,4 @@
+
 export interface DashboardStats {
   totalPerks: number;
   availablePerks: number;
@@ -8,10 +9,9 @@ export interface DashboardStats {
   companies: number;
   users: number;
   totalSavings: number;
-  recentActivities: Activity[];
+  recentActivities?: Activity[];
   companyUsers?: CompanyUsers[];
   userDetails?: UserDetail[];
-  companyUserCounts?: CompanyUserCount[];
 }
 
 export interface CompanyUsers {
@@ -43,9 +43,4 @@ export interface VendorWithPerks {
   name: string;
   perkCount: number;
   category?: string;
-}
-
-export interface CompanyUserCount {
-  company_name: string;
-  count: string;
 }
