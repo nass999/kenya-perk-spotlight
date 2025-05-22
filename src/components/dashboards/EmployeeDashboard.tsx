@@ -20,15 +20,15 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ stats, welcomeMes
   console.log("Stats in EmployeeDashboard:", stats);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div className="space-y-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
         <div>
-          <h1 className="text-3xl font-bold">{welcomeMessage}</h1>
-          <p className="mt-2 text-gray-500">
+          <h1 className="text-2xl font-bold">{welcomeMessage}</h1>
+          <p className="text-sm text-gray-500">
             {authState.user?.company_name || 'Your Company'} - Discover and redeem exclusive perks
           </p>
         </div>
-        <Button className="bg-[#da7756] hover:bg-[#c96a4c]" asChild>
+        <Button className="bg-[#da7756] hover:bg-[#c96a4c] text-sm" asChild>
           <Link to="/dashboard/vendor-recommendations">
             <UserPlus className="mr-2 h-4 w-4" />
             Vendor Recommendations
@@ -37,7 +37,7 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ stats, welcomeMes
       </div>
       
       <div>
-        <h2 className="text-xl font-semibold mb-4">Available Perks ({stats.availablePerks})</h2>
+        <h2 className="text-lg font-semibold mb-3">Available Perks ({stats.availablePerks})</h2>
         <PerkTiles perks={featuredPerks} loading={loading} />
       </div>
     </div>
@@ -45,3 +45,4 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ stats, welcomeMes
 };
 
 export default EmployeeDashboard;
+
