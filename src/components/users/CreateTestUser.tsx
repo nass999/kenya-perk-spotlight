@@ -29,6 +29,8 @@ const CreateTestUser = () => {
     setIsLoading(true);
     
     try {
+      console.log('Starting test user creation process...');
+      
       // Step 1: Sign up the user through auth API
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
@@ -43,16 +45,23 @@ const CreateTestUser = () => {
       
       console.log('Created auth user:', authData.user);
       
-      // Step 2: Update the user table with additional information
-      const { error: updateError } = await supabase
+      // Step 2: Insert into the users table instead of updating
+      const { error: insertError } = await supabase
         .from('users')
-        .update({
+        .insert({
+          id: authData.user.id,
+          email: email,
           full_name: fullName,
           role: 'employee',
-        })
-        .eq('id', authData.user.id);
+          is_active: true
+        });
       
-      if (updateError) throw updateError;
+      if (insertError) {
+        console.error('Error inserting user record:', insertError);
+        throw insertError;
+      }
+      
+      console.log('Successfully inserted user into users table');
       
       toast({
         title: "Test user created",
