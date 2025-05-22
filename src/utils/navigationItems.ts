@@ -26,8 +26,7 @@ export const getNavigationByRole = (role: UserRole | undefined): NavigationItem[
       { name: 'Manage Perks', href: '/dashboard/manage-perks', icon: ShoppingBag },
       { name: 'Manage Users', href: '/dashboard/manage-users', icon: Users },
       { name: 'Manage Vendors', href: '/dashboard/manage-vendors', icon: BarChart },
-      { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart },
-      { name: 'Settings', href: '/dashboard/settings', icon: Settings }
+      { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart }
     );
   } else if (role === 'company_admin') {
     navigation.push(

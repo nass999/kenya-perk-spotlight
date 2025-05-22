@@ -33,6 +33,7 @@ const Analytics = () => {
   const {
     dailyUsers,
     activeUsersCount,
+    currentActiveUsers,
     isLoading: loadingUserData,
     error: userError
   } = useUserAnalytics(timeRange);
@@ -48,6 +49,7 @@ const Analytics = () => {
     perksRedeemed,
     perksRedeemedByCategory,
     totalPerksCount,
+    weeklyNewPerksCount,
     redemptionRate,
     isLoading: loadingPerkData,
     error: perkError
@@ -102,6 +104,8 @@ const Analytics = () => {
         totalCompanies={totalCompaniesCount}
         totalPerks={totalPerksCount}
         redemptionRate={redemptionRate}
+        currentActiveUsers={currentActiveUsers}
+        weeklyNewPerksCount={weeklyNewPerksCount}
       />
 
       <AnalyticsCharts 

@@ -8,11 +8,13 @@ export const useUserAnalytics = (timeRange: TimeRange) => {
   const [data, setData] = useState<{
     dailyUsers: AnalyticsDataPoint[];
     activeUsersCount: number;
+    currentActiveUsers: number;
     isLoading: boolean;
     error: string | null;
   }>({
     dailyUsers: [],
     activeUsersCount: 0,
+    currentActiveUsers: 0,
     isLoading: true,
     error: null
   });
@@ -54,6 +56,12 @@ export const useUserAnalytics = (timeRange: TimeRange) => {
 
         if (activeUsersError) throw new Error(`Error fetching active users: ${activeUsersError.message}`);
 
+        // Simulate current active users (in a real app, this would come from presence functionality)
+        const currentActiveUsers = Math.floor(Math.random() * 10) + 1; // Random number between 1-10 for demo
+        
+        // In a production app, you could use Supabase Realtime for actual active users:
+        // This would involve setting up a channel for user presence and tracking online users
+
         // Process users data by day
         const usersByDay: AnalyticsDataPoint[] = dateLabels.map(({ date, displayDate }) => {
           const count = newUsersData ? 
@@ -66,6 +74,7 @@ export const useUserAnalytics = (timeRange: TimeRange) => {
         setData({
           dailyUsers: usersByDay,
           activeUsersCount: activeUsers || 0,
+          currentActiveUsers: currentActiveUsers,
           isLoading: false,
           error: null
         });

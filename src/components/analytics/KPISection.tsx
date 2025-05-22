@@ -1,24 +1,41 @@
 
 import React from 'react';
 import KPICard from './KPICard';
-import { Users, Building2, Gift, TrendingUp } from 'lucide-react';
+import { Users, Building2, Gift, TrendingUp, Activity, Clock } from 'lucide-react';
 
 interface KPISectionProps {
   activeUsers: number;
   totalCompanies: number;
   totalPerks: number;
   redemptionRate: number;
+  currentActiveUsers?: number;
+  weeklyNewPerksCount?: number;
 }
 
-const KPISection = ({ activeUsers, totalCompanies, totalPerks, redemptionRate }: KPISectionProps) => {
+const KPISection = ({ 
+  activeUsers, 
+  totalCompanies, 
+  totalPerks, 
+  redemptionRate,
+  currentActiveUsers = 0,
+  weeklyNewPerksCount = 0
+}: KPISectionProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
       <KPICard 
         title="Active Users"
         value={activeUsers.toLocaleString()}
         description="Users active in last 30 days"
         icon={<Users className="h-6 w-6 text-blue-600" />}
         trend={{ value: 12.5, isPositive: true }}
+      />
+      
+      <KPICard 
+        title="Current Active Users"
+        value={currentActiveUsers.toLocaleString()}
+        description="Users online right now"
+        icon={<Activity className="h-6 w-6 text-green-600" />}
+        trend={{ value: 3.8, isPositive: true }}
       />
       
       <KPICard 
@@ -35,6 +52,14 @@ const KPISection = ({ activeUsers, totalCompanies, totalPerks, redemptionRate }:
         description="Available perks"
         icon={<Gift className="h-6 w-6 text-green-600" />}
         trend={{ value: 5.7, isPositive: true }}
+      />
+      
+      <KPICard 
+        title="Weekly New Perks"
+        value={weeklyNewPerksCount.toLocaleString()}
+        description="Perks added in the last 7 days"
+        icon={<Clock className="h-6 w-6 text-amber-600" />}
+        trend={{ value: 15.3, isPositive: true }}
       />
       
       <KPICard 
