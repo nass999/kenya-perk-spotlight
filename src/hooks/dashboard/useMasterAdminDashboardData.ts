@@ -69,7 +69,7 @@ export const useMasterAdminDashboardData = () => {
         console.log('Users with companies data:', usersWithCompanies);
         
         // Format users with their company names
-        const userDetails = usersWithCompanies 
+        const userDetails: UserDetail[] = usersWithCompanies 
           ? usersWithCompanies.map(user => ({
               id: user.id,
               name: user.full_name || user.email,
@@ -78,7 +78,7 @@ export const useMasterAdminDashboardData = () => {
               companyId: user.company_id,
               // Fix: Check if companies exists and has a name property
               companyName: user.companies && typeof user.companies === 'object' && 'name' in user.companies
-                ? user.companies.name 
+                ? user.companies.name as string
                 : 'No Company'
             }))
           : [];
@@ -95,7 +95,7 @@ export const useMasterAdminDashboardData = () => {
         }
         
         // Create company users array with user counts
-        const companyUsers = companies ? companies.map(company => ({
+        const companyUsers: CompanyUsers[] = companies ? companies.map(company => ({
           companyId: company.id,
           companyName: company.name,
           userCount: userCountByCompany[company.id] || 0
