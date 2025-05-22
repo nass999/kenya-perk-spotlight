@@ -24,7 +24,9 @@ const ManageUsers = () => {
   
   // Use company name from the first user that matches the current company ID
   // This is more efficient than making an additional database query
-  const companyUser = users.find(user => user.company_id === companyId);
+  const companyUser = companyId 
+    ? users.find(user => user.company_id === companyId) 
+    : undefined;
   const companyName = companyUser?.company_name || '';
 
   useEffect(() => {
@@ -34,6 +36,7 @@ const ManageUsers = () => {
     }
   }, [fetchUsers, isAuthorized]);
 
+  // Check authorization
   if (!isAuthorized) {
     return (
       <div className="container mx-auto py-10">
@@ -69,7 +72,7 @@ const ManageUsers = () => {
           <CardTitle>User Management</CardTitle>
           <CardDescription>
             {isMasterAdmin 
-              ? "View and modify user roles. Role changes take effect immediately."
+              ? "View and modify all users across the platform. Role changes take effect immediately."
               : `View and modify users in ${companyName || 'your organization'}. Role changes take effect immediately.`
             }
           </CardDescription>

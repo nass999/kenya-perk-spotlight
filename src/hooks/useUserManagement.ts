@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { UserData, UserRole } from '@/lib/supabase';
@@ -23,7 +22,11 @@ export const useUserManagement = () => {
       setError(null);
       console.log('Fetching users, role:', authState.user?.role, 'company_id:', companyId);
       
-      let query = supabase.from('users').select('*, companies:company_id(name)');
+      // Use a simpler query structure to get all users
+      let query = supabase
+        .from('users')
+        .select('*, companies:company_id(name)')
+        .order('created_at', { ascending: false });
       
       // Company admins can only see users from their company
       if (authState.user?.role === 'company_admin') {
@@ -36,34 +39,32 @@ export const useUserManagement = () => {
           console.log('Company admin without company_id, showing only self');
           query = query.eq('id', currentUserId);
         }
-      } else if (isMasterAdmin) {
-        console.log('Master admin fetching all users - including inactive');
-        // Master admin can see all users - no additional filter needed
-        // No is_active filter - we want to show all users including inactive ones
       }
+      // For master_admin, we don't add any filters, so they can see all users
       
-      const { data, error } = await query.order('created_at', { ascending: false });
+      const { data, error } = await query;
       
       if (error) {
         console.error('Error from Supabase:', error);
         throw error;
       }
       
+      let processedUsers = data as any[];
+      
       // For company admins, filter out master_admins from the results
       // This is an additional client-side filter in case there are any master admins in the company
-      let filteredUsers = data as any[];
       if (authState.user?.role === 'company_admin') {
-        filteredUsers = filteredUsers.filter(user => user.role !== 'master_admin');
+        processedUsers = processedUsers.filter(user => user.role !== 'master_admin');
       }
       
       // Process users to include company_name
-      const processedUsers = filteredUsers.map(user => ({
+      const finalUsers = processedUsers.map(user => ({
         ...user,
         company_name: user.companies?.name || null
       }));
       
-      console.log(`Fetched ${processedUsers?.length || 0} users:`, processedUsers);
-      setUsers(processedUsers);
+      console.log(`Fetched ${finalUsers?.length || 0} users:`, finalUsers);
+      setUsers(finalUsers);
     } catch (error: any) {
       console.error('Error fetching users:', error);
       setError(error.message || 'Failed to load users');
@@ -75,7 +76,7 @@ export const useUserManagement = () => {
     } finally {
       setLoading(false);
     }
-  }, [authState.user?.role, companyId, isMasterAdmin, currentUserId]);
+  }, [authState.user?.role, companyId, currentUserId]);
 
   useEffect(() => {
     // Fetch users when component mounts or when user role/company changes
