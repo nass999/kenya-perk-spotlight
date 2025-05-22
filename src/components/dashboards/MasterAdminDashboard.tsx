@@ -13,7 +13,8 @@ import {
   ChevronDown,
   ChevronRight,
   UserCircle,
-  Building
+  Building,
+  Database
 } from 'lucide-react';
 import { DashboardStats, VendorWithPerks, CompanyUserCount } from '@/types/dashboard';
 import {
@@ -55,7 +56,50 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({
         </p>
       </div>
       
-      {/* Customers and Users Section - NEW */}
+      {/* SQL Query Results */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold flex items-center">
+            <Database className="mr-2 h-5 w-5 text-purple-500" />
+            SQL Query Results
+          </h2>
+        </div>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-medium">Query Results</CardTitle>
+            <CardDescription>
+              SELECT company_name, COUNT(*) AS count FROM users WHERE company_name IS NOT NULL GROUP BY company_name ORDER BY count DESC;
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {companyUserCounts && companyUserCounts.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>company_name</TableHead>
+                    <TableHead className="text-right">count</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {companyUserCounts.map((row, index) => (
+                    <TableRow key={`${row.company_name}-${index}`}>
+                      <TableCell className="font-medium">{row.company_name}</TableCell>
+                      <TableCell className="text-right">{row.count}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <Database className="mx-auto h-8 w-8 opacity-30 mb-2" />
+                <p>No results found</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Customers and Users Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold flex items-center">
