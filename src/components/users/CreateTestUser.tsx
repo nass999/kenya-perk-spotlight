@@ -48,56 +48,23 @@ const CreateTestUser = () => {
       
       console.log('Created auth user:', authData.user);
       
-      // Step 2: Insert into the users table manually using a direct query
-      const userId = authData.user.id;
+      // Step 2: Use a service function to insert user data (bypassing RLS)
+      // We'll use the REST API directly to call a service function that will handle the insert
+      const { data: serviceData, error: serviceError } = await supabase.functions.invoke('admin-create-user', {
+        body: {
+          userId: authData.user.id,
+          email: email,
+          fullName: fullName,
+          role: 'employee'
+        }
+      });
       
-      // First, check if the user already exists in the users table
-      const { data: existingUser } = await supabase
-        .from('users')
-        .select('id')
-        .eq('id', userId)
-        .single();
-        
-      if (existingUser) {
-        console.log('User already exists in users table, updating instead of inserting');
-        
-        const { error: updateError } = await supabase
-          .from('users')
-          .update({
-            email: email,
-            full_name: fullName,
-            role: 'employee',
-            is_active: true
-          })
-          .eq('id', userId);
-          
-        if (updateError) {
-          console.error('Error updating user record:', updateError);
-          throw updateError;
-        }
-        
-        console.log('Successfully updated user in users table');
-      } else {
-        console.log('User does not exist in users table, inserting new record');
-        
-        // Attempt to insert with a direct query (no RLS interference)
-        const { error: insertError } = await supabase
-          .from('users')
-          .insert({
-            id: userId,
-            email: email,
-            full_name: fullName,
-            role: 'employee',
-            is_active: true
-          });
-        
-        if (insertError) {
-          console.error('Error inserting user record:', insertError);
-          throw insertError;
-        }
-        
-        console.log('Successfully inserted user into users table');
+      if (serviceError) {
+        console.error('Service error:', serviceError);
+        throw serviceError;
       }
+      
+      console.log('Service response:', serviceData);
       
       toast({
         title: "Test user created",
