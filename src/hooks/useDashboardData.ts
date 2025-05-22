@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -50,6 +51,20 @@ export const useDashboardData = () => {
             .select('id, email, company_id, role, full_name');
             
           console.log('All users in system:', allUsers);
+          
+          // Specifically log users for the requested company ID
+          const targetCompanyId = '466eb8f4-2409-4547-9a24-18ecc2474518';
+          const usersForTargetCompany = allUsers?.filter(user => user.company_id === targetCompanyId);
+          console.log(`Users specifically for company ID ${targetCompanyId}:`, usersForTargetCompany);
+          console.log(`Total user count for company ID ${targetCompanyId}: ${usersForTargetCompany?.length || 0}`);
+          
+          // Get company name for the target company
+          const targetCompany = companies?.find(company => company.id === targetCompanyId);
+          if (targetCompany) {
+            console.log(`Company name for ID ${targetCompanyId}: ${targetCompany.name}`);
+          } else {
+            console.log(`No company found with ID ${targetCompanyId}`);
+          }
           
           const companyUsers = [];
           
