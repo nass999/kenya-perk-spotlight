@@ -50,31 +50,41 @@ export const useDashboardData = () => {
           // Debug: Log all users to verify data
           const { data: allUsers } = await supabase
             .from('users')
-            .select('id, company_id, email');
+            .select('id, company_id, email, full_name');
           
           console.log('All users in system:', allUsers);
           
           // Create a proper array to store company users count
           const companyUsers = [];
           
+          // First check if we have TechVision Solutions
+          const techVisionCompany = companies?.find(company => 
+            company.name.toLowerCase().includes('techvision')
+          );
+          
+          if (techVisionCompany) {
+            console.log('Found TechVision company:', techVisionCompany);
+            
+            // Count users for TechVision explicitly
+            const techVisionUsers = allUsers?.filter(user => 
+              user.company_id === techVisionCompany.id
+            );
+            
+            console.log('TechVision users:', techVisionUsers);
+          }
+          
           if (companies && companies.length > 0) {
-            // For each company, fetch all associated users
+            // For each company, count associated users from our allUsers array
             for (const company of companies) {
-              // Get all users for this company to ensure accurate counting
-              const { data: companyUsersList, error } = await supabase
-                .from('users')
-                .select('id')
-                .eq('company_id', company.id);
+              // Count users that have this company_id
+              const usersForCompany = allUsers?.filter(user => 
+                user.company_id === company.id
+              ) || [];
               
-              // Calculate the user count based on returned data array length
-              const userCount = companyUsersList ? companyUsersList.length : 0;
+              const userCount = usersForCompany.length;
               
               console.log(`User count for company ${company.name} (ID: ${company.id}): ${userCount}`);
-              console.log(`Users for company ${company.name}:`, companyUsersList);
-              
-              if (error) {
-                console.error(`Error fetching users for company ${company.id}:`, error);
-              }
+              console.log(`Users for company ${company.name}:`, usersForCompany.map(u => u.email || u.full_name));
               
               companyUsers.push({
                 companyId: company.id,
