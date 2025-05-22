@@ -3,7 +3,7 @@ import React from 'react';
 import { DashboardStats } from '@/types/dashboard';
 import { useFeaturedPerks } from '@/hooks/perks/useFeaturedPerks';
 import { Button } from '@/components/ui/button';
-import { ShoppingBag, UserPlus } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PerkTiles from './employee/PerkTiles';
 
@@ -34,16 +34,8 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ stats, welcomeMes
         </Button>
       </div>
       
-      <div className="bg-gradient-to-r from-[#f8ece7] to-[#f0eee5] rounded-lg p-6 flex items-center justify-between">
-        <div>
-          <p className="text-sm text-gray-700">Total Perks Available</p>
-          <h2 className="text-3xl font-bold text-[#3d3929]">{stats.availablePerks}</h2>
-        </div>
-        <ShoppingBag className="h-12 w-12 text-[#da7756] opacity-80" />
-      </div>
-      
       <div>
-        <h2 className="text-xl font-semibold mb-4">Available Perks</h2>
+        <h2 className="text-xl font-semibold mb-4">Available Perks ({stats.availablePerks})</h2>
         <PerkTiles perks={featuredPerks} loading={loading} />
       </div>
     </div>

@@ -26,15 +26,25 @@ export const useFeaturedPerks = () => {
       try {
         setLoading(true);
         
+        if (!authState.user) {
+          console.log("No authenticated user");
+          return;
+        }
+        
         // Get today's date for comparing with valid_through_date
         const today = new Date().toISOString().split('T')[0];
         
-        // For employees, fetch perks available to them (company-specific or global)
+        // For employees, fetch perks available to them with the correct filters:
+        // 1. Is enabled
+        // 2. Not deleted
+        // 3. Either belongs to their company OR is a global perk (company_id is null)
+        // 4. Either has no expiry date OR hasn't expired yet
         const { data, error } = await supabase
           .from('perks')
           .select('*')
           .eq('is_enabled', true)
           .eq('is_deleted', false)
+          .or(`company_id.eq.${authState.user.company_id},company_id.is.null`)
           .or(`valid_through_date.gt.${today},valid_through_date.is.null`);
 
         if (error) {

@@ -127,14 +127,29 @@ export const useDashboardData = () => {
           // Get today's date for comparing with valid_through_date
           const today = new Date().toISOString().split('T')[0];
           
-          // For employees, directly query the perks that should be available to them
-          const availablePerksResult = await supabase
+          // For employees, query perks available to them with the correct filters:
+          // 1. Is enabled
+          // 2. Not deleted
+          // 3. Either belongs to their company OR is a global perk (company_id is null)
+          // 4. Either has no expiry date OR hasn't expired yet
+          const { data: availablePerks, count: availablePerksCount, error: perksError } = await supabase
             .from('perks')
             .select('*', { count: 'exact' })
             .eq('is_enabled', true)
             .eq('is_deleted', false)
             .or(`company_id.eq.${authState.user.company_id},company_id.is.null`)
             .or(`valid_through_date.gt.${today},valid_through_date.is.null`);
+          
+          if (perksError) {
+            console.error("Error fetching employee perks:", perksError);
+            throw perksError;
+          }
+          
+          console.log("Employee perks data:", {
+            count: availablePerksCount,
+            perksLength: availablePerks?.length,
+            perks: availablePerks
+          });
           
           // Query for redemptions made by this user
           const userRedemptionsResult = await supabase
@@ -145,13 +160,11 @@ export const useDashboardData = () => {
           // Calculate estimated savings (placeholder calculation - in a real app you'd use actual redemption values)
           // For now we'll just use 100 as a base value per redemption
           const estimatedSavings = (userRedemptionsResult.count || 0) * 100;
-
-          console.log("Employee perks count:", availablePerksResult.count, "Data:", availablePerksResult.data?.length);
           
           setStats({
-            totalPerks: availablePerksResult.count || 0,
-            availablePerks: availablePerksResult.count || 0,
-            activePerks: availablePerksResult.count || 0,
+            totalPerks: availablePerksCount || availablePerks?.length || 0,
+            availablePerks: availablePerksCount || availablePerks?.length || 0,
+            activePerks: availablePerksCount || availablePerks?.length || 0,
             redeemedPerks: userRedemptionsResult.count || 0,
             totalRedemptions: userRedemptionsResult.count || 0,
             pendingRedemptions: 0,
