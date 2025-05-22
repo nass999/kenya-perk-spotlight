@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { DashboardStats, VendorWithPerks } from '@/types/dashboard';
+import { formatDate } from '@/utils/formatters';
 
 export const useDashboardData = () => {
   const { authState } = useAuth();
@@ -70,13 +71,84 @@ export const useDashboardData = () => {
           
           setActiveVendors(vendorsList);
 
-          // Get some recent activities (mocked for now)
-          const recentActivities = [
-            { action: 'New company registered', user: 'TechCorp', time: '2 hours ago' },
-            { action: 'New perk added', user: 'Amazon', time: '5 hours ago' },
-            { action: 'User role updated', user: 'John Smith', time: '1 day ago' },
-            { action: 'Vendor approved', user: 'Netflix', time: '2 days ago' },
-          ];
+          // Fetch real activities from various tables
+          // For a real implementation, we would have an audit_log table
+          // For now, we'll gather recent activities from existing tables
+          const fetchRecentActivities = async () => {
+            try {
+              // Fetch recent user additions
+              const { data: recentUsers } = await supabase
+                .from('users')
+                .select('*, companies:company_id(name)')
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+              // Fetch recent perks
+              const { data: recentPerks } = await supabase
+                .from('perks')
+                .select('*, companies:company_id(name), vendors:vendor_id(name)')
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+              // Fetch recent vendors
+              const { data: recentVendors } = await supabase
+                .from('vendors')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(3);
+
+              // Combine and format activities
+              let activities = [];
+              
+              if (recentUsers && recentUsers.length > 0) {
+                const userActivities = recentUsers.map(user => ({
+                  action: 'User registered',
+                  user: user.full_name || user.email,
+                  time: new Date(user.created_at).toLocaleString(),
+                  details: `${user.role} added to ${user.companies?.name || 'platform'}`,
+                  entityType: 'user',
+                  entityId: user.id,
+                  companyName: user.companies?.name
+                }));
+                activities = [...activities, ...userActivities];
+              }
+              
+              if (recentPerks && recentPerks.length > 0) {
+                const perkActivities = recentPerks.map(perk => ({
+                  action: 'Perk added',
+                  user: perk.vendors?.name || 'Unknown vendor',
+                  time: new Date(perk.created_at).toLocaleString(),
+                  details: `${perk.name} for ${perk.companies?.name || 'all companies'}`,
+                  entityType: 'perk',
+                  entityId: perk.id,
+                  companyName: perk.companies?.name
+                }));
+                activities = [...activities, ...perkActivities];
+              }
+              
+              if (recentVendors && recentVendors.length > 0) {
+                const vendorActivities = recentVendors.map(vendor => ({
+                  action: 'Vendor registered',
+                  user: vendor.name,
+                  time: new Date(vendor.created_at).toLocaleString(),
+                  details: `New vendor with ${vendor.discount_percentage || 0}% discount added`,
+                  entityType: 'vendor',
+                  entityId: vendor.id
+                }));
+                activities = [...activities, ...vendorActivities];
+              }
+              
+              // Sort all activities by time (most recent first)
+              return activities.sort((a, b) => 
+                new Date(b.time).getTime() - new Date(a.time).getTime()
+              ).slice(0, 10); // Return the 10 most recent activities
+            } catch (error) {
+              console.error('Error fetching activities:', error);
+              return [];
+            }
+          };
+
+          const recentActivities = await fetchRecentActivities();
           
           setStats({
             totalPerks: totalPerksResult.count || 0,

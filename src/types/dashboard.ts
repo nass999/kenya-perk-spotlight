@@ -16,6 +16,10 @@ export interface Activity {
   action: string;
   user: string;
   time: string;
+  details?: string;
+  entityType?: string;
+  entityId?: string;
+  companyName?: string;
 }
 
 export interface VendorWithPerks {

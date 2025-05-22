@@ -9,7 +9,8 @@ import {
   CheckCircle,
   TrendingUp,
   Award,
-  Clock
+  Clock,
+  Activity
 } from 'lucide-react';
 import { DashboardStats, VendorWithPerks } from '@/types/dashboard';
 import {
@@ -37,7 +38,7 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
         </p>
       </div>
       
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
@@ -64,21 +65,6 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
             <div className="text-3xl font-bold">{stats.users}</div>
             <p className="mt-2 text-xs text-gray-500">
               Total registered users
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
-              <CreditCard className="h-4 w-4 text-purple-500" />
-              Redemptions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats.redeemedPerks}</div>
-            <p className="mt-2 text-xs text-gray-500">
-              Total perk redemptions
             </p>
           </CardContent>
         </Card>
@@ -133,7 +119,7 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
               </div>
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-blue-500" />
-                <span>User growth: +12% this month</span>
+                <span>User growth: +{Math.round(stats.users * 0.12)}% this month</span>
               </div>
               <div className="flex items-center gap-2">
                 <Award className="h-5 w-5 text-yellow-500" />
@@ -152,13 +138,22 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
               {stats.recentActivities && stats.recentActivities.length > 0 ? (
                 stats.recentActivities.map((activity, index) => (
                   <li key={index} className="py-4 px-6 flex items-start gap-3">
-                    <Clock className="h-5 w-5 text-gray-400 mt-0.5" />
+                    <Activity className="h-5 w-5 text-gray-400 mt-0.5" />
                     <div>
                       <p className="font-medium">{activity.action}</p>
+                      <div className="text-sm text-gray-700 mt-1">
+                        {activity.details}
+                      </div>
                       <div className="text-sm text-gray-500 flex gap-2 mt-1">
                         <span>{activity.user}</span>
                         <span>•</span>
                         <span>{activity.time}</span>
+                        {activity.companyName && (
+                          <>
+                            <span>•</span>
+                            <span>{activity.companyName}</span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </li>
