@@ -8,7 +8,8 @@ import {
   CheckCircle,
   TrendingUp,
   Award,
-  Activity
+  Activity,
+  Shield
 } from 'lucide-react';
 import { DashboardStats, VendorWithPerks } from '@/types/dashboard';
 import {
@@ -25,6 +26,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Badge } from '@/components/ui/badge';
 
 interface MasterAdminDashboardProps {
   stats: DashboardStats;
@@ -33,8 +35,6 @@ interface MasterAdminDashboardProps {
 }
 
 const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welcomeMessage, activeVendors = [] }) => {
-  console.log("Dashboard companies data:", stats.companyUsers);
-  
   return (
     <div className="space-y-8">
       <div>
@@ -44,34 +44,48 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
         </p>
       </div>
       
-      {/* Companies Card */}
+      {/* Users Card */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
-            <Building2 className="h-4 w-4 text-blue-500" />
-            Companies
+            <Users className="h-4 w-4 text-blue-500" />
+            Platform Users
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Companies Table */}
+          {/* Users Table */}
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Company Name</TableHead>
-                <TableHead>Users</TableHead>
+                <TableHead>User</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Company</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {stats.companyUsers && stats.companyUsers.length > 0 ? (
-                stats.companyUsers.map((company, index) => (
-                  <TableRow key={company.companyId || index}>
-                    <TableCell className="font-medium">{company.companyName || 'Unknown Company'}</TableCell>
-                    <TableCell>{company.userCount}</TableCell>
+              {stats.userDetails && stats.userDetails.length > 0 ? (
+                stats.userDetails.map((user, index) => (
+                  <TableRow key={user.id || index}>
+                    <TableCell className="font-medium">{user.name}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={
+                        user.role === 'master_admin' ? 'bg-red-50 text-red-700 border-red-200' :
+                        user.role === 'company_admin' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                        user.role === 'vendor' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                        'bg-green-50 text-green-700 border-green-200'
+                      }>
+                        <Shield className="h-3 w-3 mr-1" />
+                        {user.role}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{user.companyName}</TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={2} className="text-center py-4 text-gray-500">No companies found</TableCell>
+                  <TableCell colSpan={4} className="text-center py-4 text-gray-500">No users found</TableCell>
                 </TableRow>
               )}
             </TableBody>

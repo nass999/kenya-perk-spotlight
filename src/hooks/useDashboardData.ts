@@ -18,7 +18,8 @@ export const useDashboardData = () => {
     users: 0,
     totalSavings: 0,
     recentActivities: [],
-    companyUsers: []
+    companyUsers: [],
+    userDetails: []
   });
   const [activeVendors, setActiveVendors] = useState<VendorWithPerks[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,25 +50,42 @@ export const useDashboardData = () => {
             throw companiesError;
           }
           
-          console.log('All companies fetched:', companies);
-          
-          // Fetch users to count by company ID
-          const { data: users, error: usersError } = await supabase
+          // Fetch users with company information
+          const { data: usersWithCompanies, error: usersError } = await supabase
             .from('users')
-            .select('company_id');
+            .select(`
+              id,
+              email,
+              full_name,
+              role,
+              company_id,
+              companies:company_id (name)
+            `);
           
           if (usersError) {
-            console.error('Error fetching users:', usersError);
+            console.error('Error fetching users with companies:', usersError);
             throw usersError;
           }
           
-          console.log('Users data fetched:', users);
+          console.log('Users with companies data:', usersWithCompanies);
+          
+          // Format users with their company names
+          const userDetails = usersWithCompanies 
+            ? usersWithCompanies.map(user => ({
+                id: user.id,
+                name: user.full_name || user.email,
+                email: user.email,
+                role: user.role,
+                companyId: user.company_id,
+                companyName: user.companies?.name || 'No Company'
+              }))
+            : [];
           
           // Count users per company
           const userCountByCompany: Record<string, number> = {};
           
-          if (users && users.length > 0) {
-            users.forEach(user => {
+          if (usersWithCompanies && usersWithCompanies.length > 0) {
+            usersWithCompanies.forEach(user => {
               if (user.company_id) {
                 userCountByCompany[user.company_id] = (userCountByCompany[user.company_id] || 0) + 1;
               }
@@ -80,8 +98,6 @@ export const useDashboardData = () => {
             companyName: company.name,
             userCount: userCountByCompany[company.id] || 0
           })) : [];
-          
-          console.log('Final company users array with counts:', companyUsers);
           
           // Fetch active vendors with perks
           const { data: activePerks } = await supabase
@@ -203,7 +219,8 @@ export const useDashboardData = () => {
             users: totalUserCount || 0,
             totalSavings: 0,
             recentActivities: recentActivities,
-            companyUsers: companyUsers
+            companyUsers: companyUsers,
+            userDetails: userDetails
           });
         } else if (authState.user?.role === 'company_admin') {
           const [companyPerksResult, companyUsersResult, redeemedPerksResult] = await Promise.all([

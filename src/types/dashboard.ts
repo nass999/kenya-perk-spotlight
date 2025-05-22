@@ -11,12 +11,22 @@ export interface DashboardStats {
   totalSavings: number;
   recentActivities?: Activity[];
   companyUsers?: CompanyUsers[];
+  userDetails?: UserDetail[];
 }
 
 export interface CompanyUsers {
   companyId: string;
   companyName: string;
   userCount: number;
+}
+
+export interface UserDetail {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  companyId: string | null;
+  companyName: string;
 }
 
 export interface Activity {
