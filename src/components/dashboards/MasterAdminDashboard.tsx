@@ -51,16 +51,6 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex justify-between mb-4">
-            <div>
-              <div className="text-3xl font-bold">{stats.companies}</div>
-              <p className="text-xs text-gray-500">
-                Organizations on platform
-              </p>
-            </div>
-            {/* Removed the total users count display */}
-          </div>
-          
           {/* Companies Table */}
           <Table>
             <TableHeader>
