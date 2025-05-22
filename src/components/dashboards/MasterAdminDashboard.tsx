@@ -2,19 +2,15 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  BarChart, 
-  ShoppingBag, 
+  Building2, 
   Users, 
   CreditCard, 
-  Building2, 
-  Zap, 
+  Store,
+  CheckCircle,
   TrendingUp,
   Award,
-  CheckCircle,
-  Store
+  Clock
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
 import { DashboardStats, VendorWithPerks } from '@/types/dashboard';
 import {
   Table,
@@ -41,7 +37,7 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
         </p>
       </div>
       
-      <div className="grid gap-6 md:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
@@ -61,28 +57,13 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
               <Users className="h-4 w-4 text-indigo-500" />
-              Teams
+              End Users
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{stats.users}</div>
             <p className="mt-2 text-xs text-gray-500">
-              Total registered teams
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
-              <ShoppingBag className="h-4 w-4 text-green-500" />
-              Total Perks
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats.totalPerks}</div>
-            <p className="mt-2 text-xs text-gray-500">
-              Available perks platform-wide
+              Total registered users
             </p>
           </CardContent>
         </Card>
@@ -107,17 +88,11 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Vendors with Active Perks</h2>
-          <Link to="/dashboard/manage-vendors">
-            <Button variant="outline" size="sm">
-              <Store className="mr-2 h-4 w-4" />
-              Manage All Vendors
-            </Button>
-          </Link>
         </div>
         
         <Card>
           <CardContent className="pt-6">
-            {activeVendors.length > 0 ? (
+            {activeVendors && activeVendors.length > 0 ? (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -127,7 +102,7 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
                 </TableHeader>
                 <TableBody>
                   {activeVendors.map((vendor, index) => (
-                    <TableRow key={index}>
+                    <TableRow key={vendor.name + index}>
                       <TableCell className="font-medium">{vendor.name}</TableCell>
                       <TableCell className="text-right">{vendor.perkCount}</TableCell>
                     </TableRow>
@@ -144,44 +119,11 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
         </Card>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Platform Health</h2>
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-medium">Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-4">
-              <Link to="/dashboard/manage-users">
-                <Button className="w-full justify-start" variant="outline">
-                  <Users className="mr-2 h-4 w-4" />
-                  Manage Organizations
-                </Button>
-              </Link>
-              <Link to="/dashboard/manage-perks">
-                <Button className="w-full justify-start" variant="outline">
-                  <ShoppingBag className="mr-2 h-4 w-4" />
-                  Manage Platform Perks
-                </Button>
-              </Link>
-              <Link to="/dashboard/manage-vendors">
-                <Button className="w-full justify-start" variant="outline">
-                  <Store className="mr-2 h-4 w-4" />
-                  Manage Vendors
-                </Button>
-              </Link>
-              <Link to="/dashboard">
-                <Button className="w-full justify-start" variant="outline">
-                  <BarChart className="mr-2 h-4 w-4" />
-                  View Analytics
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-medium">Platform Health</CardTitle>
+            <CardTitle className="text-lg font-medium">System Status</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -204,12 +146,32 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
       
       <div>
         <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-        <div className="rounded-lg border bg-white p-6">
-          <div className="text-center text-gray-500 py-10">
-            <p>No recent activity to display.</p>
-            <p className="mt-2">System activity will be shown here</p>
-          </div>
-        </div>
+        <Card>
+          <CardContent className="p-0">
+            <ul className="divide-y">
+              {stats.recentActivities && stats.recentActivities.length > 0 ? (
+                stats.recentActivities.map((activity, index) => (
+                  <li key={index} className="py-4 px-6 flex items-start gap-3">
+                    <Clock className="h-5 w-5 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="font-medium">{activity.action}</p>
+                      <div className="text-sm text-gray-500 flex gap-2 mt-1">
+                        <span>{activity.user}</span>
+                        <span>•</span>
+                        <span>{activity.time}</span>
+                      </div>
+                    </div>
+                  </li>
+                ))
+              ) : (
+                <li className="text-center text-gray-500 py-10">
+                  <p>No recent activity to display.</p>
+                  <p className="mt-2">System activity will be shown here</p>
+                </li>
+              )}
+            </ul>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

@@ -10,7 +10,7 @@ import { getGreeting } from '@/utils/greeting';
 
 const Dashboard = () => {
   const { authState } = useAuth();
-  const { stats, loading } = useDashboardData();
+  const { stats, activeVendors, loading } = useDashboardData();
   
   if (loading || authState.loading) {
     return (
@@ -26,7 +26,7 @@ const Dashboard = () => {
   
   // Render the appropriate dashboard based on the user's role
   if (authState.user?.role === 'master_admin') {
-    return <MasterAdminDashboard stats={stats} welcomeMessage={welcomeMessage} />;
+    return <MasterAdminDashboard stats={stats} welcomeMessage={welcomeMessage} activeVendors={activeVendors} />;
   }
   
   if (authState.user?.role === 'company_admin') {

@@ -9,6 +9,13 @@ export interface DashboardStats {
   companies: number;
   users: number;
   totalSavings: number;
+  recentActivities?: Activity[];
+}
+
+export interface Activity {
+  action: string;
+  user: string;
+  time: string;
 }
 
 export interface VendorWithPerks {

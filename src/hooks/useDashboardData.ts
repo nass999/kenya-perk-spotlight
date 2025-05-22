@@ -16,6 +16,7 @@ export const useDashboardData = () => {
     companies: 0,
     users: 0,
     totalSavings: 0,
+    recentActivities: []
   });
   const [activeVendors, setActiveVendors] = useState<VendorWithPerks[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,22 +34,28 @@ export const useDashboardData = () => {
           // Platform admin sees global stats
           const [totalPerksResult, companiesResult, usersResult] = await Promise.all([
             supabase.from('perks').select('*', { count: 'exact' }),
-            supabase.from('users').select('company_id', { count: 'exact' }).not('company_id', 'is', null).limit(1),
+            supabase.from('companies').select('*', { count: 'exact' }),
             supabase.from('users').select('*', { count: 'exact' }),
           ]);
+
+          console.log('Companies query result:', companiesResult);
           
-          // Fetch vendors with active perks (for Master Admin)
-          const activeVendorsResult = await supabase
+          // Fetch active vendors with perks
+          const activePerksResult = await supabase
             .from('perks')
-            .select('name')
-            .order('created_at', { ascending: false });
+            .select('*, vendors:vendor_id(name)')
+            .eq('is_enabled', true)
+            .eq('is_deleted', false);
           
           // Process vendor data
           const vendorsMap = new Map<string, number>();
-          if (activeVendorsResult.data) {
-            activeVendorsResult.data.forEach(perk => {
-              if (perk.name) {
-                const vendorName = perk.name.split(' ')[0]; // Simple extraction of vendor name
+          
+          if (activePerksResult.data && activePerksResult.data.length > 0) {
+            console.log('Active perks data:', activePerksResult.data);
+            
+            activePerksResult.data.forEach(perk => {
+              if (perk.vendors && perk.vendors.name) {
+                const vendorName = perk.vendors.name;
                 vendorsMap.set(vendorName, (vendorsMap.get(vendorName) || 0) + 1);
               }
             });
@@ -58,19 +65,30 @@ export const useDashboardData = () => {
             .map(([name, perkCount]) => ({ name, perkCount }))
             .sort((a, b) => b.perkCount - a.perkCount)
             .slice(0, 10); // Top 10 vendors
+
+          console.log('Processed vendors list:', vendorsList);
           
           setActiveVendors(vendorsList);
+
+          // Get some recent activities (mocked for now)
+          const recentActivities = [
+            { action: 'New company registered', user: 'TechCorp', time: '2 hours ago' },
+            { action: 'New perk added', user: 'Amazon', time: '5 hours ago' },
+            { action: 'User role updated', user: 'John Smith', time: '1 day ago' },
+            { action: 'Vendor approved', user: 'Netflix', time: '2 days ago' },
+          ];
           
           setStats({
             totalPerks: totalPerksResult.count || 0,
             availablePerks: totalPerksResult.count || 0,
-            activePerks: totalPerksResult.count || 0, // Added new property
+            activePerks: totalPerksResult.count || 0,
             redeemedPerks: 0, // Would need another query
-            totalRedemptions: 0, // Added new property
-            pendingRedemptions: 0, // Added new property
+            totalRedemptions: 0,
+            pendingRedemptions: 0,
             companies: companiesResult.count || 0,
             users: usersResult.count || 0,
             totalSavings: 0,
+            recentActivities: recentActivities
           });
         } else if (authState.user?.role === 'company_admin') {
           // Company admin sees company stats
