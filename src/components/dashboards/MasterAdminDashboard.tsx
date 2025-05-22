@@ -105,83 +105,6 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({
         </Card>
       </div>
       
-      {/* Companies with Employees Section */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-medium flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-blue-500" />
-            Companies & Employees
-          </CardTitle>
-          <CardDescription>
-            Overview of all companies and their associated employees
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {stats.companyUsers && stats.companyUsers.length > 0 ? (
-            <Accordion type="single" collapsible className="w-full">
-              {stats.companyUsers.map((company) => (
-                <AccordionItem key={company.companyId || company.companyName} value={company.companyId || company.companyName}>
-                  <AccordionTrigger className="hover:bg-gray-50 px-4 rounded-md">
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center gap-2">
-                        <Building2 className="h-4 w-4 text-blue-500" />
-                        <span className="font-medium">{company.companyName}</span>
-                      </div>
-                      <Badge variant="outline" className={`ml-2 ${company.userCount > 0 ? 'bg-green-50 text-green-700 border-green-200' : ''}`}>
-                        {company.userCount} {company.userCount === 1 ? 'employee' : 'employees'}
-                      </Badge>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4">
-                    {stats.userDetails && stats.userDetails.filter(user => 
-                        user.companyName === company.companyName
-                      ).length > 0 ? (
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Role</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {stats.userDetails
-                            .filter(user => user.companyName === company.companyName)
-                            .map((user) => (
-                              <TableRow key={user.id}>
-                                <TableCell className="font-medium">{user.name}</TableCell>
-                                <TableCell>{user.email}</TableCell>
-                                <TableCell>
-                                  <Badge variant="outline" className={
-                                    user.role === 'company_admin' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                                    'bg-green-50 text-green-700 border-green-200'
-                                  }>
-                                    <Shield className="h-3 w-3 mr-1" />
-                                    {user.role}
-                                  </Badge>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                        </TableBody>
-                      </Table>
-                    ) : (
-                      <div className="text-center py-4 text-gray-500">
-                        <p>No employees found for this company</p>
-                      </div>
-                    )}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              <Building2 className="mx-auto h-8 w-8 opacity-30 mb-2" />
-              <p>No companies found</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-      
       {/* Users Card */}
       <Card>
         <CardHeader className="pb-2">
@@ -262,32 +185,6 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({
                 <p>No active vendors found</p>
               </div>
             )}
-          </CardContent>
-        </Card>
-      </div>
-      
-      {/* Platform Health */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Platform Health</h2>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-medium">System Status</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-500" />
-                <span>All systems operational</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-blue-500" />
-                <span>User growth: +{Math.round(stats.users * 0.12)}% this month</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Award className="h-5 w-5 text-yellow-500" />
-                <span>Most popular perk: Gift cards</span>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>
