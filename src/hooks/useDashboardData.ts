@@ -79,7 +79,10 @@ export const useDashboardData = () => {
                 email: user.email,
                 role: user.role,
                 companyId: user.company_id,
-                companyName: user.companies ? user.companies.name : 'No Company'
+                // Fix: Check if companies exists and access the first item's name if it's an array
+                companyName: user.companies && user.companies.name 
+                  ? user.companies.name 
+                  : 'No Company'
               }))
             : [];
           
