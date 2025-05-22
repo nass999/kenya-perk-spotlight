@@ -28,66 +28,84 @@ const AnalyticsCharts = ({
   formatCurrency,
   COLORS
 }: AnalyticsChartsProps) => {
+  // Only render charts when we have data
+  const hasUserData = dailyUsers && dailyUsers.length > 0;
+  const hasOrgData = dailyOrgs && dailyOrgs.length > 0;
+  const hasPerkData = perksRedeemed && perksRedeemed.length > 0;
+  const hasRevenueData = revenueData && revenueData.length > 0;
+  const hasCategoryData = perksRedeemedByCategory && perksRedeemedByCategory.length > 0;
+  const hasCompanyData = redemptionsByCompany && redemptionsByCompany.length > 0;
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* New Users Over Time */}
-      <AreaChartCard
-        title="New Users"
-        description="Daily new user registrations"
-        data={dailyUsers}
-        color="#0088FE"
-        gradient={{
-          id: "userColorFill",
-          startColor: "#0088FE",
-          endColor: "#0088FE"
-        }}
-      />
+      {hasUserData && (
+        <AreaChartCard
+          title="New Users"
+          description="Daily new user registrations"
+          data={dailyUsers}
+          color="#0088FE"
+          gradient={{
+            id: "userColorFill",
+            startColor: "#0088FE",
+            endColor: "#0088FE"
+          }}
+        />
+      )}
       
       {/* New Organizations Over Time */}
-      <AreaChartCard
-        title="New Organizations"
-        description="Daily new company registrations"
-        data={dailyOrgs}
-        color="#00C49F"
-        gradient={{
-          id: "orgColorFill",
-          startColor: "#00C49F",
-          endColor: "#00C49F"
-        }}
-      />
+      {hasOrgData && (
+        <AreaChartCard
+          title="New Organizations"
+          description="Daily new company registrations"
+          data={dailyOrgs}
+          color="#00C49F"
+          gradient={{
+            id: "orgColorFill",
+            startColor: "#00C49F",
+            endColor: "#00C49F"
+          }}
+        />
+      )}
       
       {/* Revenue Over Time */}
-      <AreaChartCard
-        title="Revenue"
-        description="Daily platform revenue"
-        data={revenueData}
-        color="#8884d8"
-        gradient={{
-          id: "revenueColorFill",
-          startColor: "#8884d8",
-          endColor: "#8884d8"
-        }}
-        valueFormatter={formatCurrency}
-      />
+      {hasRevenueData && (
+        <AreaChartCard
+          title="Revenue"
+          description="Daily platform revenue"
+          data={revenueData}
+          color="#8884d8"
+          gradient={{
+            id: "revenueColorFill",
+            startColor: "#8884d8",
+            endColor: "#8884d8"
+          }}
+          valueFormatter={formatCurrency}
+        />
+      )}
       
       {/* Perks Redeemed Over Time */}
-      <BarChartCard
-        title="Perks Redeemed"
-        description="Daily perk redemption activity"
-        data={perksRedeemed}
-        color="#da7756"
-      />
+      {hasPerkData && (
+        <BarChartCard
+          title="Perks Redeemed"
+          description="Daily perk redemption activity"
+          data={perksRedeemed}
+          color="#da7756"
+        />
+      )}
       
       {/* Perks Redeemed by Category */}
-      <PieChartCard
-        title="Redemptions by Category"
-        description="Distribution of redeemed perks by category"
-        data={perksRedeemedByCategory}
-        colors={COLORS}
-      />
+      {hasCategoryData && (
+        <PieChartCard
+          title="Redemptions by Category"
+          description="Distribution of redeemed perks by category"
+          data={perksRedeemedByCategory}
+          colors={COLORS}
+        />
+      )}
       
-      {/* Redemptions by Company (Master Admin Only) */}
-      {isMasterAdmin && (
+      {/* Redemptions by Company (Master Admin Only) - skip this chart for now */}
+      {isMasterAdmin && hasCompanyData && false && (
         <BarChartCard
           title="Top Companies by Redemptions"
           description="Companies with the most perk redemptions"

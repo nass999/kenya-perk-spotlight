@@ -13,10 +13,10 @@ interface KPISectionProps {
 }
 
 const KPISection = ({ 
-  activeUsers, 
-  totalCompanies, 
-  totalPerks, 
-  redemptionRate,
+  activeUsers = 0, 
+  totalCompanies = 0, 
+  totalPerks = 0, 
+  redemptionRate = 0,
   currentActiveUsers = 0,
   weeklyNewPerksCount = 0
 }: KPISectionProps) => {

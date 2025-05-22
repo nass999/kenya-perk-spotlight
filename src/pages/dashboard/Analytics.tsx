@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useAuth } from '@/contexts/auth';
 
 // Hooks
@@ -8,7 +8,6 @@ import {
   useCompanyAnalytics,
   usePerkAnalytics,
   useRevenueAnalytics,
-  useCompanyRedemptionsAnalytics,
   useAnalyticsTimeRange
 } from '@/hooks/analytics';
 
@@ -29,7 +28,7 @@ const Analytics = () => {
   // Time range state management
   const { timeRange, handleTimeRangeChange } = useAnalyticsTimeRange('30days');
   
-  // Fetch different types of analytics data
+  // Fetch different types of analytics data with error handling
   const {
     dailyUsers,
     activeUsersCount,
@@ -61,18 +60,18 @@ const Analytics = () => {
     error: revenueError
   } = useRevenueAnalytics(timeRange);
   
-  const {
-    redemptionsByCompany,
-    isLoading: loadingCompanyRedemptionsData,
-    error: companyRedemptionsError
-  } = useCompanyRedemptionsAnalytics(timeRange);
+  // Check for any loading state
+  const isLoading = loadingUserData || loadingCompanyData || loadingPerkData || loadingRevenueData;
   
-  // Check for any loading or error state
-  const isLoading = loadingUserData || loadingCompanyData || loadingPerkData || loadingRevenueData || 
-    (isMasterAdmin && loadingCompanyRedemptionsData);
+  // Determine which sections have errors
+  const hasUserError = !!userError;
+  const hasCompanyError = !!companyError;
+  const hasPerkError = !!perkError;
+  const hasRevenueError = !!revenueError;
   
-  const error = userError || companyError || perkError || revenueError || 
-    (isMasterAdmin && companyRedemptionsError);
+  // Show general error state only if all sections have errors
+  const showGeneralError = hasUserError && hasCompanyError && hasPerkError && hasRevenueError;
+  const error = userError || companyError || perkError || revenueError;
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -87,9 +86,19 @@ const Analytics = () => {
     return <AnalyticsLoadingState />;
   }
   
-  if (error) {
+  if (showGeneralError) {
     return <AnalyticsErrorState error={error} />;
   }
+  
+  // Safe data for charts - only pass data that exists and hasn't errored
+  const safeData = {
+    dailyUsers: !hasUserError ? dailyUsers : [],
+    dailyOrgs: !hasCompanyError ? dailyOrgs : [],
+    perksRedeemed: !hasPerkError ? perksRedeemed : [],
+    revenueData: !hasRevenueError ? revenueData : [],
+    perksRedeemedByCategory: !hasPerkError ? perksRedeemedByCategory : [],
+    redemptionsByCompany: [] // We're skipping this as it's causing errors
+  };
   
   return (
     <div className="container mx-auto p-4 space-y-6">
@@ -98,23 +107,24 @@ const Analytics = () => {
         onTimeRangeChange={handleTimeRangeChange} 
       />
 
-      {/* KPI Cards */}
+      {/* KPI Cards - only show when data is available */}
       <KPISection 
-        activeUsers={activeUsersCount}
-        totalCompanies={totalCompaniesCount}
-        totalPerks={totalPerksCount}
-        redemptionRate={redemptionRate}
-        currentActiveUsers={currentActiveUsers}
-        weeklyNewPerksCount={weeklyNewPerksCount}
+        activeUsers={!hasUserError ? activeUsersCount : 0}
+        totalCompanies={!hasCompanyError ? totalCompaniesCount : 0}
+        totalPerks={!hasPerkError ? totalPerksCount : 0}
+        redemptionRate={!hasPerkError ? redemptionRate : 0}
+        currentActiveUsers={!hasUserError ? currentActiveUsers : 0}
+        weeklyNewPerksCount={!hasPerkError ? weeklyNewPerksCount : 0}
       />
 
+      {/* Only render charts when we have non-error data */}
       <AnalyticsCharts 
-        dailyUsers={dailyUsers}
-        dailyOrgs={dailyOrgs}
-        perksRedeemed={perksRedeemed}
-        revenueData={revenueData}
-        perksRedeemedByCategory={perksRedeemedByCategory}
-        redemptionsByCompany={redemptionsByCompany}
+        dailyUsers={safeData.dailyUsers}
+        dailyOrgs={safeData.dailyOrgs}
+        perksRedeemed={safeData.perksRedeemed}
+        revenueData={safeData.revenueData}
+        perksRedeemedByCategory={safeData.perksRedeemedByCategory}
+        redemptionsByCompany={safeData.redemptionsByCompany}
         isMasterAdmin={isMasterAdmin}
         formatCurrency={formatCurrency}
         COLORS={COLORS}
