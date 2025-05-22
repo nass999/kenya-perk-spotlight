@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -38,7 +39,7 @@ export const useDashboardData = () => {
             supabase.from('companies').select('*', { count: 'exact' }),
           ]);
 
-          // Fetch all companies directly
+          // Fetch all companies
           const { data: companies, error: companiesError } = await supabase
             .from('companies')
             .select('id, name');
@@ -50,14 +51,37 @@ export const useDashboardData = () => {
           
           console.log('All companies fetched:', companies);
           
-          // Create company users array directly from companies
+          // Fetch users to count by company ID
+          const { data: users, error: usersError } = await supabase
+            .from('users')
+            .select('company_id');
+          
+          if (usersError) {
+            console.error('Error fetching users:', usersError);
+            throw usersError;
+          }
+          
+          console.log('Users data fetched:', users);
+          
+          // Count users per company
+          const userCountByCompany: Record<string, number> = {};
+          
+          if (users && users.length > 0) {
+            users.forEach(user => {
+              if (user.company_id) {
+                userCountByCompany[user.company_id] = (userCountByCompany[user.company_id] || 0) + 1;
+              }
+            });
+          }
+          
+          // Create company users array with user counts
           const companyUsers = companies ? companies.map(company => ({
             companyId: company.id,
             companyName: company.name,
-            userCount: 0 // Not showing user count anymore
+            userCount: userCountByCompany[company.id] || 0
           })) : [];
           
-          console.log('Final company users array:', companyUsers);
+          console.log('Final company users array with counts:', companyUsers);
           
           // Fetch active vendors with perks
           const { data: activePerks } = await supabase
