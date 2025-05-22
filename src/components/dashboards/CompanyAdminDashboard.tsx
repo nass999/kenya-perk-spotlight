@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { DashboardStats } from '@/types/dashboard';
 import { UserInviteDialog } from '@/components/users/UserInviteDialog';
+import Analytics from '@/pages/dashboard/Analytics';
+import { useAuth } from '@/contexts/auth';
 
 interface CompanyAdminDashboardProps {
   stats: DashboardStats;
@@ -20,6 +22,7 @@ interface CompanyAdminDashboardProps {
 
 const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, welcomeMessage }) => {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const { authState } = useAuth();
   
   return (
     <div className="space-y-8">
@@ -27,7 +30,7 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
         <div>
           <h1 className="text-3xl font-bold">{welcomeMessage}</h1>
           <p className="mt-2 text-gray-500">
-            Company Admin Dashboard - Manage your organization's rewards
+            Company Admin Dashboard - {authState.user?.company_name || 'Your Organization'}
           </p>
         </div>
         <Button onClick={() => setInviteDialogOpen(true)} className="flex items-center gap-2">
@@ -83,62 +86,6 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
         </Card>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-medium">Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-4">
-              <Button 
-                className="w-full justify-start" 
-                variant="outline"
-                asChild
-              >
-                <Link to="/dashboard/perks">
-                  <ShoppingBag className="mr-2 h-4 w-4" />
-                  Manage Company Perks
-                </Link>
-              </Button>
-              <Button 
-                className="w-full justify-start" 
-                variant="outline"
-                asChild
-              >
-                <Link to="/dashboard/manage-users">
-                  <Users className="mr-2 h-4 w-4" />
-                  Manage Teams
-                </Link>
-              </Button>
-              <Button 
-                className="w-full justify-start" 
-                variant="outline"
-                onClick={() => setInviteDialogOpen(true)}
-              >
-                <UserPlus className="mr-2 h-4 w-4" />
-                Invite Team Members
-              </Button>
-              <Button className="w-full justify-start" variant="outline">
-                <BarChart className="mr-2 h-4 w-4" />
-                View Analytics
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-medium">Top Performing Perks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center text-gray-500 py-10">
-              <p>No perk usage data available yet.</p>
-              <p className="mt-2">Usage statistics will appear here</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
       <div>
         <h2 className="text-xl font-semibold mb-4">Recent Redemptions</h2>
         <div className="rounded-lg border bg-white p-6">
@@ -146,6 +93,13 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
             <p>No recent redemptions to display.</p>
             <p className="mt-2">Employee reward redemptions will appear here</p>
           </div>
+        </div>
+      </div>
+
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Analytics</h2>
+        <div className="rounded-lg border bg-white p-6">
+          <Analytics />
         </div>
       </div>
 

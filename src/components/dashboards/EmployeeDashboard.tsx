@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PerkTiles from './employee/PerkTiles';
+import { useAuth } from '@/contexts/auth';
 
 interface EmployeeDashboardProps {
   stats: DashboardStats;
@@ -14,6 +15,7 @@ interface EmployeeDashboardProps {
 
 const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ stats, welcomeMessage }) => {
   const { featuredPerks, loading } = useFeaturedPerks();
+  const { authState } = useAuth();
   
   console.log("Stats in EmployeeDashboard:", stats);
 
@@ -23,7 +25,7 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ stats, welcomeMes
         <div>
           <h1 className="text-3xl font-bold">{welcomeMessage}</h1>
           <p className="mt-2 text-gray-500">
-            Discover and redeem exclusive perks for your company
+            {authState.user?.company_name || 'Your Company'} - Discover and redeem exclusive perks
           </p>
         </div>
         <Button className="bg-[#da7756] hover:bg-[#c96a4c]" asChild>
