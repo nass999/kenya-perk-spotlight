@@ -42,6 +42,7 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
         </p>
       </div>
       
+      {/* Companies & Employees Card */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
@@ -65,30 +66,29 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
             </div>
           </div>
           
-          <Accordion type="single" collapsible className="w-full">
-            {stats.companyUsers && stats.companyUsers.length > 0 ? (
-              stats.companyUsers.map((company) => (
-                <AccordionItem value={company.companyId} key={company.companyId}>
-                  <AccordionTrigger className="hover:no-underline">
-                    <div className="flex justify-between w-full pr-4">
-                      <span>{company.companyName}</span>
-                      <span className="font-semibold">{company.userCount} employees</span>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="pl-4 py-2 text-sm">
-                      <p className="flex justify-between">
-                        <span>Company ID:</span> 
-                        <span className="font-mono text-xs">{company.companyId}</span>
-                      </p>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))
-            ) : (
-              <p className="text-center py-4 text-gray-500">No companies found</p>
-            )}
-          </Accordion>
+          {/* Companies Table */}
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Company Name</TableHead>
+                <TableHead className="text-right">Employee Count</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {stats.companyUsers && stats.companyUsers.length > 0 ? (
+                stats.companyUsers.map((company) => (
+                  <TableRow key={company.companyId}>
+                    <TableCell className="font-medium">{company.companyName}</TableCell>
+                    <TableCell className="text-right">{company.userCount}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={2} className="text-center py-4 text-gray-500">No companies found</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
       
