@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -50,6 +49,14 @@ export const useDashboardData = () => {
           if (companies && companies.length > 0) {
             // For each company, fetch the employee count (only role='employee')
             for (const company of companies) {
+              // Debug check to see user data for this company
+              const { data: companyUserData } = await supabase
+                .from('users')
+                .select('*')
+                .eq('company_id', company.id);
+              
+              console.log(`Users for company ${company.name} (ID: ${company.id}):`, companyUserData);
+              
               const { count } = await supabase
                 .from('users')
                 .select('*', { count: 'exact', head: true })
