@@ -6,7 +6,8 @@ import {
   Users,
   Settings,
   User,
-  ShoppingBag
+  ShoppingBag,
+  UserPlus
 } from 'lucide-react';
 import { UserRole } from '@/lib/supabase';
 
@@ -46,10 +47,9 @@ export const getNavigationByRole = (role: UserRole | undefined): NavigationItem[
   } else {
     // Employee role
     navigation.push(
-      { name: 'Dashboard', href: '/dashboard', icon: Home },
-      { name: 'Perks', href: '/dashboard/manage-perks', icon: ShoppingBag },
+      { name: 'Perks', href: '/dashboard', icon: ShoppingBag },
       { name: 'My Redemptions', href: '/dashboard/my-redemptions', icon: CreditCard },
-      { name: 'Vendor Recommendations', href: '/dashboard/vendor-recommendations', icon: User }
+      { name: 'Vendor Recommendations', href: '/dashboard/vendor-recommendations', icon: UserPlus }
     );
   }
   
