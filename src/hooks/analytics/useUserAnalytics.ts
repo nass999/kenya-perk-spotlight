@@ -47,21 +47,29 @@ export const useUserAnalytics = (timeRange: TimeRange) => {
 
         if (newUsersError) throw new Error(`Error fetching user data: ${newUsersError.message}`);
 
-        // Count active users (users who logged in within last 30 days)
-        const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
+        // Count active users (users who are active)
+        // Since we don't have last_sign_in_at, we'll count users with is_active = true
         const { count: activeUsers, error: activeUsersError } = await supabase
           .from('users')
           .select('*', { count: 'exact', head: true })
-          .gte('last_sign_in_at', thirtyDaysAgo);
+          .eq('is_active', true);
 
         if (activeUsersError) throw new Error(`Error fetching active users: ${activeUsersError.message}`);
 
         // Simulate current active users (in a real app, this would come from presence functionality)
-        const currentActiveUsers = Math.floor(Math.random() * 10) + 1; // Random number between 1-10 for demo
+        // For demo purposes, we'll use a percentage of active users
+        const { data: recentUsers, error: recentUsersError } = await supabase
+          .from('users')
+          .select('id')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(10);
         
-        // In a production app, you could use Supabase Realtime for actual active users:
-        // This would involve setting up a channel for user presence and tracking online users
-
+        if (recentUsersError) throw new Error(`Error fetching recent users: ${recentUsersError.message}`);
+        
+        // Current active users will be a subset of total active users
+        const currentActiveUsers = recentUsers ? recentUsers.length : 0;
+        
         // Process users data by day
         const usersByDay: AnalyticsDataPoint[] = dateLabels.map(({ date, displayDate }) => {
           const count = newUsersData ? 
