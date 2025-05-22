@@ -43,27 +43,26 @@ export const useDashboardData = () => {
           const { data: companies } = await supabase
             .from('companies')
             .select('id, name');
-          
-          // Get all users for debugging
-          const { data: allUsers } = await supabase
-            .from('users')
-            .select('id, email, company_id, role, full_name');
             
-          console.log('All users in system:', allUsers);
+          console.log('All companies:', companies);
           
           // Create a proper array to store company users count
           const companyUsers = [];
           
           if (companies && companies.length > 0) {
-            // For each company, count associated users
+            // For each company, directly query users with that company_id
             for (const company of companies) {
-              // Get count of users for this company using a specific query for each company
-              const { count } = await supabase
+              // Get count of users for this company using a simple count query
+              const { count, error } = await supabase
                 .from('users')
                 .select('*', { count: 'exact', head: true })
                 .eq('company_id', company.id);
               
               console.log(`User count for company ${company.name} (ID: ${company.id}): ${count}`);
+              
+              if (error) {
+                console.error(`Error counting users for company ${company.id}:`, error);
+              }
               
               companyUsers.push({
                 companyId: company.id,
@@ -178,7 +177,7 @@ export const useDashboardData = () => {
 
           const recentActivities = await fetchRecentActivities();
           
-          // Get the total user count across all companies
+          // Get the total user count directly from the users table
           const { count: totalUserCount } = await supabase
             .from('users')
             .select('*', { count: 'exact', head: true });
