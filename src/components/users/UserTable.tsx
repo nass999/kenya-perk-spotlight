@@ -89,6 +89,9 @@ const UserTable: React.FC<UserTableProps> = ({
               <TableRow key={user.id}>
                 <TableCell className="font-medium">
                   {user.full_name || 'Not specified'}
+                  {user.id === currentUserId && (
+                    <Badge variant="outline" className="ml-2 text-xs">You</Badge>
+                  )}
                 </TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>
@@ -135,7 +138,7 @@ const UserTable: React.FC<UserTableProps> = ({
                       value={user.role}
                       onValueChange={(value) => onUpdateUserRole(user.id, value as UserRole)}
                       disabled={
-                        updating === user.id || 
+                        updating !== null || 
                         user.id === currentUserId ||
                         // Company admins can't modify master admins
                         (!isMasterAdmin && user.role === 'master_admin')
@@ -172,7 +175,11 @@ const UserTable: React.FC<UserTableProps> = ({
                         variant="ghost"
                         size="sm"
                         onClick={() => onToggleUserStatus(user.id, !user.is_active)}
-                        disabled={user.id === currentUserId}
+                        disabled={
+                          user.id === currentUserId ||
+                          // Prevent company admins from toggling master admin status
+                          (!isMasterAdmin && user.role === 'master_admin')
+                        }
                         className="h-8 w-8 p-0"
                       >
                         {user.is_active === false ? (

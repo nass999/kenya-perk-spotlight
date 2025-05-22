@@ -37,7 +37,7 @@ export const useUserManagement = () => {
         console.log('Company admin without company_id, showing only self');
         query = query.eq('id', currentUserId);
       }
-      // For master_admin, we don't add any filters, so they can see all users
+      // Master admins see all users, so no filter is applied
       
       // Order users by created_at date
       query = query.order('created_at', { ascending: false });
