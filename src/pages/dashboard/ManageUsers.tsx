@@ -95,6 +95,11 @@ const ManageUsers = () => {
     ? users
     : (groupedUsers[activeCompany] || []);
 
+  console.log("Active company:", activeCompany);
+  console.log("All users length:", users.length);
+  console.log("Display users length:", displayUsers.length);
+  console.log("Available companies:", companies);
+
   return (
     <div className="container mx-auto py-10">
       <UserManagementHeader

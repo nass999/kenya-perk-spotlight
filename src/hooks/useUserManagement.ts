@@ -23,7 +23,7 @@ export const useUserManagement = () => {
       setError(null);
       console.log('Fetching users, role:', authState.user?.role, 'company_id:', companyId);
       
-      // Use a simpler query structure to get all users with their company info
+      // Create a query that properly includes all users with their company info
       let query = supabase
         .from('users')
         .select('*, companies:company_id(name)');
@@ -41,13 +41,13 @@ export const useUserManagement = () => {
           
           // Also show a warning to the user
           toast({
-            variant: "destructive", // Changed from "warning" to "destructive"
+            variant: "destructive",
             title: "No company assigned",
             description: "You don't have a company assigned. Please contact an administrator."
           });
         }
       }
-      // Master admins see all users, so no filter is applied
+      // For master admins, no filtering, get ALL users
       
       // Order users by created_at date (newest first)
       query = query.order('created_at', { ascending: false });
