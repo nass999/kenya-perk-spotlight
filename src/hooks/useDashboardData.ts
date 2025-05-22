@@ -59,7 +59,9 @@ export const useDashboardData = () => {
               full_name,
               role,
               company_id,
-              companies:company_id (name)
+              companies (
+                name
+              )
             `);
           
           if (usersError) {
