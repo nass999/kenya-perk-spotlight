@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useAuth } from '@/contexts/auth';
-import { useDashboardData } from '@/hooks/useDashboardData';
+import { useDashboardData } from '@/hooks/dashboard';
 import EmployeeDashboard from '@/components/dashboards/EmployeeDashboard';
 import CompanyAdminDashboard from '@/components/dashboards/CompanyAdminDashboard';
 import MasterAdminDashboard from '@/components/dashboards/MasterAdminDashboard';
