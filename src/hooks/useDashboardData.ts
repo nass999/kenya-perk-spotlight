@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,7 +16,8 @@ export const useDashboardData = () => {
     companies: 0,
     users: 0,
     totalSavings: 0,
-    recentActivities: []
+    recentActivities: [],
+    companyUsers: []
   });
   const [activeVendors, setActiveVendors] = useState<VendorWithPerks[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +39,22 @@ export const useDashboardData = () => {
             supabase.from('users').select('*', { count: 'exact' }),
           ]);
 
-          console.log('Companies query result:', companiesResult);
+          // Fetch companies with user counts
+          const { data: companyUsersData } = await supabase
+            .from('companies')
+            .select(`
+              id,
+              name,
+              users:users(id)
+            `);
+          
+          const companyUsers = companyUsersData?.map(company => ({
+            companyId: company.id,
+            companyName: company.name,
+            userCount: Array.isArray(company.users) ? company.users.length : 0
+          })) || [];
+          
+          console.log('Companies with users:', companyUsers);
           
           // Fetch active vendors with perks
           const activePerksResult = await supabase
@@ -52,8 +67,6 @@ export const useDashboardData = () => {
           const vendorsMap = new Map<string, number>();
           
           if (activePerksResult.data && activePerksResult.data.length > 0) {
-            console.log('Active perks data:', activePerksResult.data);
-            
             activePerksResult.data.forEach(perk => {
               if (perk.vendors && perk.vendors.name) {
                 const vendorName = perk.vendors.name;
@@ -66,14 +79,10 @@ export const useDashboardData = () => {
             .map(([name, perkCount]) => ({ name, perkCount }))
             .sort((a, b) => b.perkCount - a.perkCount)
             .slice(0, 10); // Top 10 vendors
-
-          console.log('Processed vendors list:', vendorsList);
           
           setActiveVendors(vendorsList);
 
           // Fetch real activities from various tables
-          // For a real implementation, we would have an audit_log table
-          // For now, we'll gather recent activities from existing tables
           const fetchRecentActivities = async () => {
             try {
               // Fetch recent user additions
@@ -154,13 +163,14 @@ export const useDashboardData = () => {
             totalPerks: totalPerksResult.count || 0,
             availablePerks: totalPerksResult.count || 0,
             activePerks: totalPerksResult.count || 0,
-            redeemedPerks: 0, // Would need another query
+            redeemedPerks: 0,
             totalRedemptions: 0,
             pendingRedemptions: 0,
             companies: companiesResult.count || 0,
             users: usersResult.count || 0,
             totalSavings: 0,
-            recentActivities: recentActivities
+            recentActivities: recentActivities,
+            companyUsers: companyUsers
           });
         } else if (authState.user?.role === 'company_admin') {
           // Company admin sees company stats

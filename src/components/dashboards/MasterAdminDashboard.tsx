@@ -4,12 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { 
   Building2, 
   Users, 
-  CreditCard, 
   Store,
   CheckCircle,
   TrendingUp,
   Award,
-  Clock,
   Activity
 } from 'lucide-react';
 import { DashboardStats, VendorWithPerks } from '@/types/dashboard';
@@ -21,6 +19,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface MasterAdminDashboardProps {
   stats: DashboardStats;
@@ -38,37 +42,55 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
         </p>
       </div>
       
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
-              <Building2 className="h-4 w-4 text-blue-500" />
-              Companies
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats.companies}</div>
-            <p className="mt-2 text-xs text-gray-500">
-              Organizations on platform
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
-              <Users className="h-4 w-4 text-indigo-500" />
-              End Users
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats.users}</div>
-            <p className="mt-2 text-xs text-gray-500">
-              Total registered users
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
+            <Building2 className="h-4 w-4 text-blue-500" />
+            Companies & Users
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-between mb-4">
+            <div>
+              <div className="text-3xl font-bold">{stats.companies}</div>
+              <p className="text-xs text-gray-500">
+                Organizations on platform
+              </p>
+            </div>
+            <div>
+              <div className="text-3xl font-bold">{stats.users}</div>
+              <p className="text-xs text-gray-500">
+                Total users across all companies
+              </p>
+            </div>
+          </div>
+          
+          <Accordion type="single" collapsible className="w-full">
+            {stats.companyUsers && stats.companyUsers.length > 0 ? (
+              stats.companyUsers.map((company) => (
+                <AccordionItem value={company.companyId} key={company.companyId}>
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex justify-between w-full pr-4">
+                      <span>{company.companyName}</span>
+                      <span className="font-semibold">{company.userCount} users</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="pl-4 py-2 text-sm">
+                      <p className="flex justify-between">
+                        <span>Company ID:</span> 
+                        <span className="font-mono text-xs">{company.companyId}</span>
+                      </p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))
+            ) : (
+              <p className="text-center py-4 text-gray-500">No companies found</p>
+            )}
+          </Accordion>
+        </CardContent>
+      </Card>
       
       {/* Active Vendors Table */}
       <div className="space-y-4">

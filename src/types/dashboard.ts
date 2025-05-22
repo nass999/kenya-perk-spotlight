@@ -10,6 +10,13 @@ export interface DashboardStats {
   users: number;
   totalSavings: number;
   recentActivities?: Activity[];
+  companyUsers?: CompanyUsers[];
+}
+
+export interface CompanyUsers {
+  companyId: string;
+  companyName: string;
+  userCount: number;
 }
 
 export interface Activity {
