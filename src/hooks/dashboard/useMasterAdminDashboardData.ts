@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { DashboardStats, VendorWithPerks, Activity, CompanyUsers, UserDetail } from '@/types/dashboard';
@@ -78,26 +77,17 @@ export const useMasterAdminDashboardData = () => {
             }))
           : [];
         
-        // Count users by company_name instead of company_id
-        const userCountByCompany: Record<string, { id: string, count: number }> = {};
+        // Count users by company_name
+        const companyNameCounts: Record<string, number> = {};
         
         if (users && users.length > 0) {
           users.forEach(user => {
-            if (user.company_name) {
-              // Initialize if this company name hasn't been seen yet
-              if (!userCountByCompany[user.company_name]) {
-                userCountByCompany[user.company_name] = { 
-                  id: user.company_id || 'unknown', 
-                  count: 0 
-                };
-              }
-              // Increment user count for this company
-              userCountByCompany[user.company_name].count += 1;
-            }
+            const companyName = user.company_name || 'No Company';
+            companyNameCounts[companyName] = (companyNameCounts[companyName] || 0) + 1;
           });
         }
         
-        console.log('User count by company:', userCountByCompany);
+        console.log('User count by company name:', companyNameCounts);
         
         // Create company users array with user counts
         const companyUsers: CompanyUsers[] = [];
@@ -108,24 +98,22 @@ export const useMasterAdminDashboardData = () => {
             companyUsers.push({
               companyId: company.id,
               companyName: company.name,
-              userCount: 0 // Will be updated below if users exist
+              userCount: companyNameCounts[company.name] || 0 // Get count from our tally
             });
           });
         }
         
-        // Then update counts or add entries for companies that only exist in the users table
-        Object.entries(userCountByCompany).forEach(([companyName, data]) => {
-          const existingCompanyIndex = companyUsers.findIndex(c => c.companyName === companyName);
+        // Then add entries for companies that only exist in the users table
+        Object.entries(companyNameCounts).forEach(([companyName, count]) => {
+          // Skip if this company name already exists in our company users array
+          const existingCompany = companyUsers.find(c => c.companyName === companyName);
           
-          if (existingCompanyIndex >= 0) {
-            // Update count for existing company
-            companyUsers[existingCompanyIndex].userCount = data.count;
-          } else {
+          if (!existingCompany && companyName !== 'No Company') {
             // Add company from users table that's not in companies table
             companyUsers.push({
-              companyId: data.id,
+              companyId: 'unknown', // We don't have the ID for companies that only exist in users table
               companyName: companyName,
-              userCount: data.count
+              userCount: count
             });
           }
         });

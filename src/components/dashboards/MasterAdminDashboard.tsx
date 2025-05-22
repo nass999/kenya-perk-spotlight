@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -76,9 +75,7 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
                   </AccordionTrigger>
                   <AccordionContent className="px-4">
                     {stats.userDetails && stats.userDetails.filter(user => 
-                        // Match by company name (primary) or id (fallback)
-                        user.companyName === company.companyName || 
-                        (user.companyId && user.companyId === company.companyId)
+                        user.companyName === company.companyName
                       ).length > 0 ? (
                       <Table>
                         <TableHeader>
@@ -90,10 +87,7 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
                         </TableHeader>
                         <TableBody>
                           {stats.userDetails
-                            .filter(user => 
-                              user.companyName === company.companyName || 
-                              (user.companyId && user.companyId === company.companyId)
-                            )
+                            .filter(user => user.companyName === company.companyName)
                             .map((user) => (
                               <TableRow key={user.id}>
                                 <TableCell className="font-medium">{user.name}</TableCell>
