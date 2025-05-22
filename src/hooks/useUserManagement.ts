@@ -41,7 +41,7 @@ export const useUserManagement = () => {
           
           // Also show a warning to the user
           toast({
-            variant: "warning",
+            variant: "destructive", // Changed from "warning" to "destructive"
             title: "No company assigned",
             description: "You don't have a company assigned. Please contact an administrator."
           });
