@@ -55,6 +55,7 @@ export const useDashboardData = () => {
           
           // Fetch users to count by company ID
           const { data: users } = await supabase.from('users').select('id, company_id');
+          console.log('All users:', users);
           
           // Group users by company_id and count them
           const usersByCompany: Record<string, number> = {};
@@ -66,6 +67,8 @@ export const useDashboardData = () => {
               }
             });
           }
+          
+          console.log('Users grouped by company:', usersByCompany);
           
           // Build company users array with company names and exact counts
           const companyUsers = Object.entries(usersByCompany).map(([companyId, userCount]) => ({

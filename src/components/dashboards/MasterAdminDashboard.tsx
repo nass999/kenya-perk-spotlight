@@ -33,6 +33,8 @@ interface MasterAdminDashboardProps {
 }
 
 const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welcomeMessage, activeVendors = [] }) => {
+  console.log("Dashboard company users data:", stats.companyUsers);
+  
   return (
     <div className="space-y-8">
       <div>
@@ -63,7 +65,7 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
               {stats.companyUsers && stats.companyUsers.length > 0 ? (
                 stats.companyUsers.map((company) => (
                   <TableRow key={company.companyId}>
-                    <TableCell className="font-medium">{company.companyName}</TableCell>
+                    <TableCell className="font-medium">{company.companyName || 'Unknown Company'}</TableCell>
                     <TableCell className="text-right">{company.userCount}</TableCell>
                   </TableRow>
                 ))
