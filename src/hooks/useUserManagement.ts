@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { UserData, UserRole } from '@/lib/supabase';
@@ -23,47 +22,36 @@ export const useUserManagement = () => {
       setError(null);
       console.log('Fetching users, role:', authState.user?.role, 'company_id:', companyId);
       
-      // Create a query that properly includes all users with their company info
-      let query = supabase
+      // For master admins, we need to make sure we're getting ALL users without filtering
+      let { data: allUsers, error } = await supabase
         .from('users')
-        .select('*, companies:company_id(name)');
-      
-      if (authState.user?.role === 'company_admin') {
-        // Company admins should only see users from their company
-        if (companyId) {
-          console.log('Filtering by company_id:', companyId);
-          query = query.eq('company_id', companyId);
-        } else {
-          // If the company admin doesn't have a company_id (which should be rare),
-          // they should only see themselves for security reasons
-          console.log('Company admin without company_id, showing only self');
-          query = query.eq('id', currentUserId);
-          
-          // Also show a warning to the user
-          toast({
-            variant: "destructive",
-            title: "No company assigned",
-            description: "You don't have a company assigned. Please contact an administrator."
-          });
-        }
-      }
-      // For master admins, no filtering, get ALL users
-      
-      // Order users by created_at date (newest first)
-      query = query.order('created_at', { ascending: false });
-      
-      const { data, error } = await query;
+        .select('*, companies:company_id(name)')
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error('Error from Supabase:', error);
         throw error;
       }
-      
-      let processedUsers = data as any[];
-      console.log('Raw users data:', processedUsers);
+
+      // If not a master admin, filter the results client-side
+      // This ensures we get all users first, then filter if needed
+      if (authState.user?.role === 'company_admin' && companyId) {
+        console.log('Filtering by company_id for company admin:', companyId);
+        allUsers = allUsers?.filter(user => user.company_id === companyId) || [];
+      } else if (authState.user?.role === 'company_admin' && !companyId) {
+        // Company admin without company_id - should only see themselves
+        console.log('Company admin without company_id, showing only self');
+        allUsers = allUsers?.filter(user => user.id === currentUserId) || [];
+        
+        toast({
+          variant: "destructive",
+          title: "No company assigned",
+          description: "You don't have a company assigned. Please contact an administrator."
+        });
+      }
       
       // Process users to include company_name
-      const finalUsers = processedUsers.map(user => ({
+      const finalUsers = (allUsers || []).map(user => ({
         ...user,
         company_name: user.companies?.name || null
       }));

@@ -25,7 +25,9 @@ const ManageUsers = () => {
   
   // Group users by company
   const groupedUsers = React.useMemo(() => {
-    if (!users.length) return {};
+    if (!users || !users.length) return {};
+    
+    console.log("Grouping users by company:", users);
     
     return users.reduce((acc: Record<string, any[]>, user) => {
       const companyId = user.company_id || 'no-company';
@@ -41,7 +43,9 @@ const ManageUsers = () => {
   
   // Get company names for tabs
   const companies = React.useMemo(() => {
-    if (!users.length) return [];
+    if (!users || !users.length) return [];
+    
+    console.log("Building companies list from users:", users);
     
     const companiesMap = new Map();
     users.forEach(user => {
@@ -55,10 +59,13 @@ const ManageUsers = () => {
       companiesMap.set('no-company', 'No Company');
     }
     
-    return Array.from(companiesMap).map(([id, name]) => ({
+    const companiesList = Array.from(companiesMap).map(([id, name]) => ({
       id,
       name
     }));
+    
+    console.log("Built companies list:", companiesList);
+    return companiesList;
   }, [users]);
   
   const [activeCompany, setActiveCompany] = useState<string>('all');
