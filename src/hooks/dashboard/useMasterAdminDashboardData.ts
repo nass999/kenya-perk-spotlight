@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { DashboardStats, VendorWithPerks, Activity, CompanyUsers, UserDetail } from '@/types/dashboard';
@@ -47,30 +46,6 @@ export const useMasterAdminDashboardData = () => {
           throw companiesError;
         }
         
-        // Count occurrences of each company name in users table directly
-        const { data: companyCounts, error: countError } = await supabase
-          .from('users')
-          .select('company_name, count(*)')
-          .not('company_name', 'is', null)
-          .group('company_name');
-          
-        if (countError) {
-          console.error('Error counting companies:', countError);
-          throw countError;
-        }
-        
-        console.log('Company counts from direct query:', companyCounts);
-        
-        // Convert to a map for easy lookup
-        const companyCountMap: Record<string, number> = {};
-        if (companyCounts) {
-          companyCounts.forEach(item => {
-            if (item.company_name) {
-              companyCountMap[item.company_name] = item.count;
-            }
-          });
-        }
-        
         // Fetch users with company information directly from users table
         const { data: users, error: usersError } = await supabase
           .from('users')
@@ -102,45 +77,46 @@ export const useMasterAdminDashboardData = () => {
             }))
           : [];
         
-        // Create company users array with user counts from direct count query
+        // Count users by company_name
+        const companyNameCounts: Record<string, number> = {};
+        
+        if (users && users.length > 0) {
+          users.forEach(user => {
+            const companyName = user.company_name || 'No Company';
+            companyNameCounts[companyName] = (companyNameCounts[companyName] || 0) + 1;
+          });
+        }
+        
+        console.log('User count by company name:', companyNameCounts);
+        
+        // Create company users array with user counts
         const companyUsers: CompanyUsers[] = [];
         
-        // Add companies from our direct count query
-        Object.entries(companyCountMap).forEach(([companyName, count]) => {
-          companyUsers.push({
-            companyId: 'unknown', // We don't have the ID here
-            companyName: companyName,
-            userCount: count
-          });
-        });
-        
-        // Add any companies from the companies table that might not be in the users table
+        // First add companies from the companies table
         if (companies) {
           companies.forEach(company => {
-            const existingIndex = companyUsers.findIndex(c => c.companyName === company.name);
-            
-            if (existingIndex === -1) {
-              // This company doesn't have any users yet
-              companyUsers.push({
-                companyId: company.id,
-                companyName: company.name,
-                userCount: 0
-              });
-            } else {
-              // Update the companyId for this entry
-              companyUsers[existingIndex].companyId = company.id;
-            }
+            companyUsers.push({
+              companyId: company.id,
+              companyName: company.name,
+              userCount: companyNameCounts[company.name] || 0 // Get count from our tally
+            });
           });
         }
         
-        // Don't forget to add "No Company" if it exists
-        if (companyCountMap['No Company']) {
-          companyUsers.push({
-            companyId: 'unknown',
-            companyName: 'No Company',
-            userCount: companyCountMap['No Company']
-          });
-        }
+        // Then add entries for companies that only exist in the users table
+        Object.entries(companyNameCounts).forEach(([companyName, count]) => {
+          // Skip if this company name already exists in our company users array
+          const existingCompany = companyUsers.find(c => c.companyName === companyName);
+          
+          if (!existingCompany && companyName !== 'No Company') {
+            // Add company from users table that's not in companies table
+            companyUsers.push({
+              companyId: 'unknown', // We don't have the ID for companies that only exist in users table
+              companyName: companyName,
+              userCount: count
+            });
+          }
+        });
         
         const recentActivities = await fetchRecentActivities();
         
