@@ -7,6 +7,7 @@ import { User, Loader2, Building } from 'lucide-react';
 import UserTable from '@/components/users/UserTable';
 import UserManagementHeader from '@/components/users/UserManagementHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import CreateTestUser from '@/components/users/CreateTestUser'; // Import the new component
 
 const ManageUsers = () => {
   const {
@@ -69,6 +70,7 @@ const ManageUsers = () => {
   }, [users]);
   
   const [activeCompany, setActiveCompany] = useState<string>('all');
+  const [showCreateUser, setShowCreateUser] = useState(false);
 
   useEffect(() => {
     console.log('ManageUsers component mounted, authorized:', isAuthorized);
@@ -121,6 +123,24 @@ const ManageUsers = () => {
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
+      )}
+
+      {/* Add Create Test User section for master admins */}
+      {isMasterAdmin && (
+        <div className="mb-6">
+          <button 
+            onClick={() => setShowCreateUser(!showCreateUser)}
+            className="text-sm text-blue-600 hover:text-blue-800 mb-2"
+          >
+            {showCreateUser ? 'Hide Test User Creator' : 'Show Test User Creator'}
+          </button>
+          
+          {showCreateUser && (
+            <div className="mb-6">
+              <CreateTestUser />
+            </div>
+          )}
+        </div>
       )}
 
       <Card>
