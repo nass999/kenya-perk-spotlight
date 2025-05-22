@@ -14,6 +14,8 @@ interface EmployeeDashboardProps {
 
 const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ stats, welcomeMessage }) => {
   const { featuredPerks, loading } = useFeaturedPerks();
+  
+  console.log("Stats in EmployeeDashboard:", stats);
 
   return (
     <div className="space-y-6">

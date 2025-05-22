@@ -124,28 +124,37 @@ export const useDashboardData = () => {
           });
         } else {
           // Employee sees personal stats
+          // Get today's date for comparing with valid_through_date
+          const today = new Date().toISOString().split('T')[0];
+          
+          // For employees, directly query the perks that should be available to them
+          const availablePerksResult = await supabase
+            .from('perks')
+            .select('*', { count: 'exact' })
+            .eq('is_enabled', true)
+            .eq('is_deleted', false)
+            .or(`company_id.eq.${authState.user.company_id},company_id.is.null`)
+            .or(`valid_through_date.gt.${today},valid_through_date.is.null`);
+          
+          // Query for redemptions made by this user
           const userRedemptionsResult = await supabase
             .from('redemptions')
             .select('*', { count: 'exact' })
             .eq('user_id', authState.user.id);
-            
-          // Get available perks for employee
-          const availablePerksResult = await supabase
-            .from('perks')
-            .select('*', { count: 'exact' })
-            .or(`company_id.eq.${authState.user.company_id},company_id.is.null`);
           
           // Calculate estimated savings (placeholder calculation - in a real app you'd use actual redemption values)
           // For now we'll just use 100 as a base value per redemption
           const estimatedSavings = (userRedemptionsResult.count || 0) * 100;
+
+          console.log("Employee perks count:", availablePerksResult.count, "Data:", availablePerksResult.data?.length);
           
           setStats({
             totalPerks: availablePerksResult.count || 0,
             availablePerks: availablePerksResult.count || 0,
-            activePerks: availablePerksResult.count || 0, // Added new property
+            activePerks: availablePerksResult.count || 0,
             redeemedPerks: userRedemptionsResult.count || 0,
-            totalRedemptions: userRedemptionsResult.count || 0, // Added new property
-            pendingRedemptions: 0, // Added new property
+            totalRedemptions: userRedemptionsResult.count || 0,
+            pendingRedemptions: 0,
             companies: 0,
             users: 0,
             totalSavings: estimatedSavings,
