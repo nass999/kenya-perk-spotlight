@@ -33,6 +33,12 @@ interface MasterAdminDashboardProps {
 }
 
 const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welcomeMessage, activeVendors = [] }) => {
+  // Find the specific company we're interested in
+  const highlightedCompanyId = '466eb8f4-2409-4547-9a24-18ecc2474518';
+  const highlightedCompany = stats.companyUsers?.find(
+    company => company.companyId === highlightedCompanyId
+  );
+  
   return (
     <div className="space-y-8">
       <div>
@@ -77,9 +83,21 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
             <TableBody>
               {stats.companyUsers && stats.companyUsers.length > 0 ? (
                 stats.companyUsers.map((company) => (
-                  <TableRow key={company.companyId}>
-                    <TableCell className="font-medium">{company.companyName}</TableCell>
-                    <TableCell className="text-right">{company.userCount}</TableCell>
+                  <TableRow 
+                    key={company.companyId} 
+                    className={company.companyId === highlightedCompanyId ? "bg-blue-50" : ""}
+                  >
+                    <TableCell className="font-medium">
+                      {company.companyName}
+                      {company.companyId === highlightedCompanyId && (
+                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                          Selected
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right font-medium">
+                      {company.userCount}
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
@@ -89,6 +107,16 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
               )}
             </TableBody>
           </Table>
+          
+          {/* Show highlighted company details if found */}
+          {highlightedCompany && (
+            <div className="mt-4 p-3 bg-blue-50 rounded-md border border-blue-100">
+              <h3 className="font-medium">Selected Company Details:</h3>
+              <p>ID: {highlightedCompanyId}</p>
+              <p>Name: {highlightedCompany.companyName}</p>
+              <p>Users: {highlightedCompany.userCount}</p>
+            </div>
+          )}
         </CardContent>
       </Card>
       
