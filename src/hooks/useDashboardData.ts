@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -45,29 +46,40 @@ export const useDashboardData = () => {
             .select('id, name');
             
           console.log('All companies:', companies);
+
+          // Debug: Log all users to verify data
+          const { data: allUsers } = await supabase
+            .from('users')
+            .select('id, company_id, email');
+          
+          console.log('All users in system:', allUsers);
           
           // Create a proper array to store company users count
           const companyUsers = [];
           
           if (companies && companies.length > 0) {
-            // For each company, directly query users with that company_id
+            // For each company, fetch all associated users
             for (const company of companies) {
-              // Get count of users for this company using a simple count query
-              const { count, error } = await supabase
+              // Get all users for this company to ensure accurate counting
+              const { data: companyUsersList, error } = await supabase
                 .from('users')
-                .select('*', { count: 'exact', head: true })
+                .select('id')
                 .eq('company_id', company.id);
               
-              console.log(`User count for company ${company.name} (ID: ${company.id}): ${count}`);
+              // Calculate the user count based on returned data array length
+              const userCount = companyUsersList ? companyUsersList.length : 0;
+              
+              console.log(`User count for company ${company.name} (ID: ${company.id}): ${userCount}`);
+              console.log(`Users for company ${company.name}:`, companyUsersList);
               
               if (error) {
-                console.error(`Error counting users for company ${company.id}:`, error);
+                console.error(`Error fetching users for company ${company.id}:`, error);
               }
               
               companyUsers.push({
                 companyId: company.id,
                 companyName: company.name,
-                userCount: count || 0
+                userCount: userCount
               });
             }
           }
