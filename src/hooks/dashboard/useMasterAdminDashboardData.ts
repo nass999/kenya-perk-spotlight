@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { DashboardStats, VendorWithPerks, Activity, CompanyUsers, UserDetail, CompanyUserCount } from '@/types/dashboard';
+import { DashboardStats, VendorWithPerks, Activity, CompanyUsers, UserDetail, CompanyUserCount, VendorRequest } from '@/types/dashboard';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const useMasterAdminDashboardData = () => {
@@ -18,7 +18,8 @@ export const useMasterAdminDashboardData = () => {
     totalSavings: 0,
     recentActivities: [],
     companyUsers: [],
-    userDetails: []
+    userDetails: [],
+    vendorRequests: []
   });
   const [activeVendors, setActiveVendors] = useState<VendorWithPerks[]>([]);
   const [companyUserCounts, setCompanyUserCounts] = useState<CompanyUserCount[]>([]);
@@ -133,6 +134,59 @@ export const useMasterAdminDashboardData = () => {
             });
           }
         });
+
+        // Fetch vendor recommendations
+        const { data: vendorRecommendations, error: vendorRecommendationsError } = await supabase
+          .from('vendor_recommendations')
+          .select(`
+            id,
+            vendor_name,
+            user_id,
+            description,
+            website,
+            status,
+            notes,
+            created_at
+          `)
+          .order('created_at', { ascending: false });
+
+        if (vendorRecommendationsError) {
+          console.error('Error fetching vendor recommendations:', vendorRecommendationsError);
+        }
+
+        // Enrich vendor recommendations with user names
+        let vendorRequests: VendorRequest[] = [];
+        if (vendorRecommendations && vendorRecommendations.length > 0) {
+          // Get unique user IDs from recommendations
+          const userIds = [...new Set(vendorRecommendations.map(rec => rec.user_id))];
+          
+          // Fetch user names for those IDs
+          const { data: recommendationUsers } = await supabase
+            .from('users')
+            .select('id, full_name, email')
+            .in('id', userIds);
+
+          // Create a mapping of user IDs to names
+          const userNameMap: Record<string, string> = {};
+          if (recommendationUsers) {
+            recommendationUsers.forEach(user => {
+              userNameMap[user.id] = user.full_name || user.email;
+            });
+          }
+
+          // Add user names to vendor recommendations
+          vendorRequests = vendorRecommendations.map(rec => ({
+            id: rec.id,
+            vendor_name: rec.vendor_name,
+            user_id: rec.user_id,
+            userName: userNameMap[rec.user_id] || 'Unknown User',
+            description: rec.description,
+            website: rec.website,
+            status: rec.status as 'pending' | 'approved' | 'rejected',
+            notes: rec.notes,
+            created_at: rec.created_at
+          }));
+        }
         
         const recentActivities = await fetchRecentActivities();
         
@@ -156,7 +210,8 @@ export const useMasterAdminDashboardData = () => {
           totalSavings: 0,
           recentActivities: recentActivities,
           companyUsers: companyUsers,
-          userDetails: userDetails
+          userDetails: userDetails,
+          vendorRequests: vendorRequests
         });
       } catch (err) {
         console.error("Error fetching master admin dashboard data:", err);

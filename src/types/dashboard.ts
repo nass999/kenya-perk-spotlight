@@ -12,6 +12,7 @@ export interface DashboardStats {
   recentActivities?: Activity[];
   companyUsers?: CompanyUsers[];
   userDetails?: UserDetail[];
+  vendorRequests?: VendorRequest[];
 }
 
 export interface CompanyUsers {
@@ -48,4 +49,16 @@ export interface VendorWithPerks {
 export interface CompanyUserCount {
   company_name: string;
   count: number;
+}
+
+export interface VendorRequest {
+  id: string;
+  vendor_name: string;
+  user_id: string;
+  userName?: string;
+  description?: string;
+  website?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  notes?: string;
+  created_at: string;
 }
