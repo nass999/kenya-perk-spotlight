@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { DashboardStats, VendorWithPerks, Activity, CompanyUsers, UserDetail, CompanyUserCount } from '@/types/dashboard';
@@ -48,13 +47,9 @@ export const useMasterAdminDashboardData = () => {
           throw companiesError;
         }
         
-        // Fetch company user counts directly
+        // Instead of using group which doesn't exist, use the RPC function
         const { data: companyUserCounts, error: companyUserCountsError } = await supabase
-          .from('users')
-          .select('company_name, count')
-          .not('company_name', 'is', null)
-          .group('company_name')
-          .order('count', { ascending: false });
+          .rpc('get_company_user_counts');
         
         if (companyUserCountsError) {
           console.error('Error fetching company user counts:', companyUserCountsError);
@@ -145,17 +140,8 @@ export const useMasterAdminDashboardData = () => {
           .from('users')
           .select('*', { count: 'exact', head: true });
 
-        // Execute the custom SQL query for company user counts
-        const { data: rawCompanyUserCounts, error: rawCompanyUserCountsError } = await supabase
-          .rpc('get_company_user_counts');
-
-        if (rawCompanyUserCountsError) {
-          console.error('Error fetching raw company user counts:', rawCompanyUserCountsError);
-          throw rawCompanyUserCountsError;
-        }
-
         // Process the raw company user counts into the expected format
-        const processedCompanyUserCounts: CompanyUserCount[] = rawCompanyUserCounts || [];
+        const processedCompanyUserCounts: CompanyUserCount[] = companyUserCounts || [];
         
         console.log('Processed company user counts:', processedCompanyUserCounts);
           
