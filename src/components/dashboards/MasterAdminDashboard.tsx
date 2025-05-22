@@ -60,64 +60,22 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
         </CardHeader>
         <CardContent>
           {stats.companyUsers && stats.companyUsers.length > 0 ? (
-            <Accordion type="single" collapsible className="w-full">
-              {stats.companyUsers.map((company) => (
-                <AccordionItem key={company.companyId || company.companyName} value={company.companyId || company.companyName}>
-                  <AccordionTrigger className="hover:bg-gray-50 px-4 rounded-md">
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center gap-2">
-                        <Building2 className="h-4 w-4 text-blue-500" />
-                        <span className="font-medium">{company.companyName}</span>
-                        <Badge className="ml-2 bg-blue-100 text-blue-700 border-blue-200">
-                          {company.userCount} users
-                        </Badge>
-                      </div>
-                      <Badge variant="outline" className={`ml-2 ${company.userCount > 0 ? 'bg-green-50 text-green-700 border-green-200' : ''}`}>
-                        {company.userCount} {company.userCount === 1 ? 'employee' : 'employees'}
-                      </Badge>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4">
-                    {stats.userDetails && stats.userDetails.filter(user => 
-                        user.companyName === company.companyName
-                      ).length > 0 ? (
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Role</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {stats.userDetails
-                            .filter(user => user.companyName === company.companyName)
-                            .map((user) => (
-                              <TableRow key={user.id}>
-                                <TableCell className="font-medium">{user.name}</TableCell>
-                                <TableCell>{user.email}</TableCell>
-                                <TableCell>
-                                  <Badge variant="outline" className={
-                                    user.role === 'company_admin' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                                    'bg-green-50 text-green-700 border-green-200'
-                                  }>
-                                    <Shield className="h-3 w-3 mr-1" />
-                                    {user.role}
-                                  </Badge>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                        </TableBody>
-                      </Table>
-                    ) : (
-                      <div className="text-center py-4 text-gray-500">
-                        <p>No employees found for this company</p>
-                      </div>
-                    )}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Company Name</TableHead>
+                  <TableHead>Count</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {stats.companyUsers.map((company) => (
+                  <TableRow key={company.companyId || company.companyName}>
+                    <TableCell className="font-medium">{company.companyName}</TableCell>
+                    <TableCell>{company.userCount}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           ) : (
             <div className="text-center py-8 text-gray-500">
               <Building2 className="mx-auto h-8 w-8 opacity-30 mb-2" />
