@@ -44,12 +44,12 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
         </p>
       </div>
       
-      {/* Companies & Users Card */}
+      {/* Companies Card */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
             <Building2 className="h-4 w-4 text-blue-500" />
-            Companies & Users
+            Companies
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -58,7 +58,6 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
             <TableHeader>
               <TableRow>
                 <TableHead>Company Name</TableHead>
-                <TableHead className="text-right">User Count</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -66,12 +65,11 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({ stats, welc
                 stats.companyUsers.map((company, index) => (
                   <TableRow key={company.companyId || index}>
                     <TableCell className="font-medium">{company.companyName || 'Unknown Company'}</TableCell>
-                    <TableCell className="text-right">{company.userCount}</TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={2} className="text-center py-4 text-gray-500">No companies found</TableCell>
+                  <TableCell className="text-center py-4 text-gray-500">No companies found</TableCell>
                 </TableRow>
               )}
             </TableBody>
