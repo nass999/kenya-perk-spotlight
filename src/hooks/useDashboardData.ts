@@ -38,14 +38,22 @@ export const useDashboardData = () => {
             supabase.from('companies').select('*', { count: 'exact' }),
           ]);
 
-          // Directly fetch all companies
+          // Fetch all companies with their names
           const { data: companies } = await supabase
             .from('companies')
             .select('id, name');
             
           console.log('All companies:', companies);
           
-          // For more accurate user count by company_id, query users table directly
+          // Create a map of company IDs to company names
+          const companyNameMap: Record<string, string> = {};
+          if (companies && companies.length > 0) {
+            companies.forEach(company => {
+              companyNameMap[company.id] = company.name;
+            });
+          }
+          
+          // Fetch users to count by company ID
           const { data: users } = await supabase.from('users').select('id, company_id');
           
           // Group users by company_id and count them
@@ -59,10 +67,10 @@ export const useDashboardData = () => {
             });
           }
           
-          // Build company users array with company IDs and exact counts
+          // Build company users array with company names and exact counts
           const companyUsers = Object.entries(usersByCompany).map(([companyId, userCount]) => ({
             companyId,
-            companyName: '', // Not showing company name as requested
+            companyName: companyNameMap[companyId] || 'Unknown Company',
             userCount
           }));
           
