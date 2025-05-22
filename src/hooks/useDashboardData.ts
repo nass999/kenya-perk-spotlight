@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -39,11 +40,16 @@ export const useDashboardData = () => {
           ]);
 
           // Fetch all companies with their names
-          const { data: companies } = await supabase
+          const { data: companies, error: companiesError } = await supabase
             .from('companies')
             .select('id, name');
             
-          console.log('All companies:', companies);
+          if (companiesError) {
+            console.error('Error fetching companies:', companiesError);
+            throw companiesError;
+          }
+          
+          console.log('All companies fetched:', companies);
           
           // Create a map of company IDs to company names
           const companyNameMap: Record<string, string> = {};
@@ -53,9 +59,17 @@ export const useDashboardData = () => {
             });
           }
           
+          console.log('Company name map:', companyNameMap);
+          
           // Fetch users to count by company ID
-          const { data: users } = await supabase.from('users').select('id, company_id');
-          console.log('All users:', users);
+          const { data: users, error: usersError } = await supabase.from('users').select('id, company_id');
+          
+          if (usersError) {
+            console.error('Error fetching users:', usersError);
+            throw usersError;
+          }
+          
+          console.log('All users fetched:', users);
           
           // Group users by company_id and count them
           const usersByCompany: Record<string, number> = {};
@@ -77,7 +91,7 @@ export const useDashboardData = () => {
             userCount
           }));
           
-          console.log('Companies with user counts:', companyUsers);
+          console.log('Final company users array:', companyUsers);
           
           // Fetch active vendors with perks
           const { data: activePerks } = await supabase
