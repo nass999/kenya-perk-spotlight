@@ -77,7 +77,7 @@ export const useDashboardData = () => {
                 email: user.email,
                 role: user.role,
                 companyId: user.company_id,
-                companyName: user.companies?.name || 'No Company'
+                companyName: user.companies ? user.companies.name : 'No Company'
               }))
             : [];
           
