@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -39,7 +38,7 @@ export const useDashboardData = () => {
             supabase.from('companies').select('*', { count: 'exact' }),
           ]);
 
-          // Fetch all companies with their names
+          // Fetch all companies directly
           const { data: companies, error: companiesError } = await supabase
             .from('companies')
             .select('id, name');
@@ -51,45 +50,12 @@ export const useDashboardData = () => {
           
           console.log('All companies fetched:', companies);
           
-          // Create a map of company IDs to company names
-          const companyNameMap: Record<string, string> = {};
-          if (companies && companies.length > 0) {
-            companies.forEach(company => {
-              companyNameMap[company.id] = company.name;
-            });
-          }
-          
-          console.log('Company name map:', companyNameMap);
-          
-          // Fetch users to count by company ID
-          const { data: users, error: usersError } = await supabase.from('users').select('id, company_id');
-          
-          if (usersError) {
-            console.error('Error fetching users:', usersError);
-            throw usersError;
-          }
-          
-          console.log('All users fetched:', users);
-          
-          // Group users by company_id and count them
-          const usersByCompany: Record<string, number> = {};
-          
-          if (users && users.length > 0) {
-            users.forEach(user => {
-              if (user.company_id) {
-                usersByCompany[user.company_id] = (usersByCompany[user.company_id] || 0) + 1;
-              }
-            });
-          }
-          
-          console.log('Users grouped by company:', usersByCompany);
-          
-          // Build company users array with company names and exact counts
-          const companyUsers = Object.entries(usersByCompany).map(([companyId, userCount]) => ({
-            companyId,
-            companyName: companyNameMap[companyId] || 'Unknown Company',
-            userCount
-          }));
+          // Create company users array directly from companies
+          const companyUsers = companies ? companies.map(company => ({
+            companyId: company.id,
+            companyName: company.name,
+            userCount: 0 // Not showing user count anymore
+          })) : [];
           
           console.log('Final company users array:', companyUsers);
           
