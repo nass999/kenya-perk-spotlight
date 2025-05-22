@@ -50,6 +50,11 @@ const ManageUsers = () => {
     );
   }
 
+  const handleRefreshUsers = () => {
+    console.log("Manually refreshing users list");
+    fetchUsers();
+  };
+
   return (
     <div className="container mx-auto py-10">
       <UserManagementHeader
@@ -83,11 +88,6 @@ const ManageUsers = () => {
               <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
               <p className="text-gray-500">Loading users...</p>
             </div>
-          ) : users.length === 0 ? (
-            <div className="text-center py-8">
-              <User className="mx-auto h-12 w-12 text-gray-300 mb-2" />
-              <p className="text-gray-500">No users found</p>
-            </div>
           ) : (
             <UserTable 
               users={users}
@@ -96,6 +96,7 @@ const ManageUsers = () => {
               currentUserId={currentUserId}
               onUpdateUserRole={updateUserRole}
               onToggleUserStatus={toggleUserStatus}
+              onRefreshUsers={handleRefreshUsers}
             />
           )}
         </CardContent>
