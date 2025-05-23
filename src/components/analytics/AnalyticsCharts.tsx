@@ -3,17 +3,14 @@ import React from 'react';
 import AreaChartCard from './AreaChartCard';
 import BarChartCard from './BarChartCard';
 import PieChartCard from './PieChartCard';
-import { AnalyticsDataPoint, CategoryData, CompanyData } from '@/types/analytics';
+import { AnalyticsDataPoint, CategoryData } from '@/types/analytics';
 
 interface AnalyticsChartsProps {
   dailyUsers: AnalyticsDataPoint[];
   dailyOrgs: AnalyticsDataPoint[];
   perksRedeemed: AnalyticsDataPoint[];
-  revenueData: AnalyticsDataPoint[];
   perksRedeemedByCategory: CategoryData[];
-  redemptionsByCompany: CompanyData[];
   isMasterAdmin: boolean;
-  formatCurrency: (value: number) => string;
   COLORS: string[];
 }
 
@@ -21,20 +18,15 @@ const AnalyticsCharts = ({
   dailyUsers,
   dailyOrgs,
   perksRedeemed,
-  revenueData,
   perksRedeemedByCategory,
-  redemptionsByCompany,
   isMasterAdmin,
-  formatCurrency,
   COLORS
 }: AnalyticsChartsProps) => {
   // Only render charts when we have data
   const hasUserData = dailyUsers && dailyUsers.length > 0;
   const hasOrgData = dailyOrgs && dailyOrgs.length > 0;
   const hasPerkData = perksRedeemed && perksRedeemed.length > 0;
-  const hasRevenueData = revenueData && revenueData.length > 0;
   const hasCategoryData = perksRedeemedByCategory && perksRedeemedByCategory.length > 0;
-  const hasCompanyData = redemptionsByCompany && redemptionsByCompany.length > 0;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -68,22 +60,6 @@ const AnalyticsCharts = ({
         />
       )}
       
-      {/* Revenue Over Time */}
-      {hasRevenueData && (
-        <AreaChartCard
-          title="Revenue"
-          description="Daily platform revenue"
-          data={revenueData}
-          color="#8884d8"
-          gradient={{
-            id: "revenueColorFill",
-            startColor: "#8884d8",
-            endColor: "#8884d8"
-          }}
-          valueFormatter={formatCurrency}
-        />
-      )}
-      
       {/* Perks Redeemed Over Time */}
       {hasPerkData && (
         <BarChartCard
@@ -101,19 +77,6 @@ const AnalyticsCharts = ({
           description="Distribution of redeemed perks by category"
           data={perksRedeemedByCategory}
           colors={COLORS}
-        />
-      )}
-      
-      {/* Redemptions by Company (Master Admin Only) - skip this chart for now */}
-      {isMasterAdmin && hasCompanyData && false && (
-        <BarChartCard
-          title="Top Companies by Redemptions"
-          description="Companies with the most perk redemptions"
-          data={redemptionsByCompany.slice(0, 10)}
-          color="#8884d8"
-          dataKey="value"
-          labelKey="name"
-          layout="vertical"
         />
       )}
     </div>

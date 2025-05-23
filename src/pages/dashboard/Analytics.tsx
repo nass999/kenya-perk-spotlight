@@ -7,7 +7,6 @@ import {
   useUserAnalytics,
   useCompanyAnalytics,
   usePerkAnalytics,
-  useRevenueAnalytics,
   useAnalyticsTimeRange
 } from '@/hooks/analytics';
 
@@ -54,33 +53,17 @@ const Analytics = () => {
     error: perkError
   } = usePerkAnalytics(timeRange);
   
-  const {
-    revenueData,
-    isLoading: loadingRevenueData,
-    error: revenueError
-  } = useRevenueAnalytics(timeRange);
-  
   // Check for any loading state
-  const isLoading = loadingUserData || loadingCompanyData || loadingPerkData || loadingRevenueData;
+  const isLoading = loadingUserData || loadingCompanyData || loadingPerkData;
   
   // Determine which sections have errors
   const hasUserError = !!userError;
   const hasCompanyError = !!companyError;
   const hasPerkError = !!perkError;
-  const hasRevenueError = !!revenueError;
   
   // Show general error state only if all sections have errors
-  const showGeneralError = hasUserError && hasCompanyError && hasPerkError && hasRevenueError;
-  const error = userError || companyError || perkError || revenueError;
-  
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
+  const showGeneralError = hasUserError && hasCompanyError && hasPerkError;
+  const error = userError || companyError || perkError;
   
   if (isLoading) {
     return <AnalyticsLoadingState />;
@@ -95,9 +78,7 @@ const Analytics = () => {
     dailyUsers: !hasUserError ? dailyUsers : [],
     dailyOrgs: !hasCompanyError ? dailyOrgs : [],
     perksRedeemed: !hasPerkError ? perksRedeemed : [],
-    revenueData: !hasRevenueError ? revenueData : [],
     perksRedeemedByCategory: !hasPerkError ? perksRedeemedByCategory : [],
-    redemptionsByCompany: [] // We're skipping this as it's causing errors
   };
   
   return (
@@ -122,11 +103,8 @@ const Analytics = () => {
         dailyUsers={safeData.dailyUsers}
         dailyOrgs={safeData.dailyOrgs}
         perksRedeemed={safeData.perksRedeemed}
-        revenueData={safeData.revenueData}
         perksRedeemedByCategory={safeData.perksRedeemedByCategory}
-        redemptionsByCompany={safeData.redemptionsByCompany}
         isMasterAdmin={isMasterAdmin}
-        formatCurrency={formatCurrency}
         COLORS={COLORS}
       />
     </div>

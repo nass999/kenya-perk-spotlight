@@ -46,7 +46,9 @@ export const usePerkAnalytics = (timeRange: TimeRange) => {
         // Fetch total perks count
         const { count: totalPerks, error: totalPerksError } = await supabase
           .from('perks')
-          .select('*', { count: 'exact', head: true });
+          .select('*', { count: 'exact', head: true })
+          .eq('is_enabled', true)
+          .eq('is_deleted', false);
 
         if (totalPerksError) throw new Error(`Error fetching total perks: ${totalPerksError.message}`);
         
@@ -54,45 +56,65 @@ export const usePerkAnalytics = (timeRange: TimeRange) => {
         const { count: weeklyNewPerks, error: weeklyPerksError } = await supabase
           .from('perks')
           .select('*', { count: 'exact', head: true })
+          .eq('is_enabled', true)
+          .eq('is_deleted', false)
           .gte('created_at', weekAgo.toISOString());
           
         if (weeklyPerksError) throw new Error(`Error fetching weekly perks: ${weeklyPerksError.message}`);
-
-        // For this example, we'll simulate perk redemption data
-        // In a real application, you would fetch actual redemption data from your database
-        const simulateRedemptionData = (): AnalyticsDataPoint[] => {
-          return dateLabels.map(({ date, displayDate }) => {
-            // Generate a random number of redemptions for each day
-            const count = Math.floor(Math.random() * 20);
-            return { date, displayDate, count };
-          });
-        };
-
-        const simulateCategoryData = (): CategoryData[] => {
-          const categories = [
-            'Food & Dining', 
-            'Entertainment', 
-            'Wellness', 
-            'Education', 
-            'Travel', 
-            'Technology'
-          ];
+        
+        // Fetch redemption data from the database
+        const { data: redemptionsData, error: redemptionsError } = await supabase
+          .from('redemptions')
+          .select('created_at')
+          .gte('created_at', startDate.toISOString())
+          .lte('created_at', endDate.toISOString());
           
-          return categories.map(category => ({
-            name: category,
-            value: Math.floor(Math.random() * 100) + 10
-          }));
-        };
-
-        // Calculate a redemption rate
-        const redemptionRate = totalPerks ? Math.min(
-          ((Math.floor(Math.random() * 50) + 10) / totalPerks) * 100,
-          100
-        ) : 0;
+        if (redemptionsError) throw new Error(`Error fetching redemptions: ${redemptionsError.message}`);
+        
+        // Process redemption data by day
+        const redemptionsByDay: AnalyticsDataPoint[] = dateLabels.map(({ date, displayDate }) => {
+          const count = redemptionsData ? 
+            redemptionsData.filter(redemption => 
+              format(new Date(redemption.created_at), 'yyyy-MM-dd') === date
+            ).length : 0;
+          return { date, displayDate, count };
+        });
+        
+        // Fetch perk categories and their redemption counts
+        const { data: categoryData, error: categoryError } = await supabase
+          .from('redemptions')
+          .select(`
+            perk_id,
+            perks:perk_id(category)
+          `)
+          .gte('created_at', startDate.toISOString())
+          .lte('created_at', endDate.toISOString());
+          
+        if (categoryError) throw new Error(`Error fetching category data: ${categoryError.message}`);
+        
+        // Process redemptions by category
+        const categoryMap = new Map<string, number>();
+        
+        categoryData?.forEach(item => {
+          const category = item.perks?.category || 'Uncategorized';
+          categoryMap.set(category, (categoryMap.get(category) || 0) + 1);
+        });
+        
+        const perksRedeemedByCategory: CategoryData[] = Array.from(categoryMap.entries())
+          .map(([name, value]) => ({ name, value }))
+          .sort((a, b) => b.value - a.value);
+        
+        // Calculate redemption rate - total redemptions / total perks
+        const totalRedemptions = redemptionsData?.length || 0;
+        const redemptionRate = totalPerks && totalPerks > 0 
+          ? (totalRedemptions / totalPerks) * 100
+          : 0;
 
         setData({
-          perksRedeemed: simulateRedemptionData(),
-          perksRedeemedByCategory: simulateCategoryData(),
+          perksRedeemed: redemptionsByDay,
+          perksRedeemedByCategory: perksRedeemedByCategory.length > 0 
+            ? perksRedeemedByCategory 
+            : [{ name: 'No Redemptions', value: 0 }],
           totalPerksCount: totalPerks || 0,
           weeklyNewPerksCount: weeklyNewPerks || 0,
           redemptionRate,
