@@ -16,6 +16,7 @@ export interface FeaturedPerk {
   image_url: string | null;
   vendor_name?: string;
   vendor_id?: string;
+  created_at?: string | null; // Added created_at property
 }
 
 export const useFeaturedPerks = () => {
