@@ -65,13 +65,14 @@ export const usePerksQuery = () => {
       
       setPerks(processedPerks);
 
-      // Group perks by vendor
+      // Group perks by vendor - Fix: Ensure vendors is properly extracted
       const vendorsMap = new Map<string, VendorWithPerks>();
       
       data?.forEach(item => {
-        const { vendors, ...perk } = item;
-        const vendorId = vendors?.id || 'unknown';
-        const vendorName = vendors?.name || 'Unknown Vendor';
+        if (!item.vendors || !item.vendor_id) return; // Skip items with no vendor
+        
+        const vendorId = item.vendor_id;
+        const vendorName = item.vendors?.name || 'Unknown Vendor';
         
         if (!vendorsMap.has(vendorId)) {
           vendorsMap.set(vendorId, {
@@ -81,7 +82,9 @@ export const usePerksQuery = () => {
           });
         }
         
-        vendorsMap.get(vendorId)?.perks.push(perk as Perk);
+        // Create a clean perk object without the vendors property
+        const { vendors, ...perkData } = item;
+        vendorsMap.get(vendorId)?.perks.push(perkData as Perk);
       });
       
       // Convert map to array and sort vendors alphabetically

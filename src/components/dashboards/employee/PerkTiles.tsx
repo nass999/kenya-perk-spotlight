@@ -30,6 +30,18 @@ const PerkTiles: React.FC<PerkTilesProps> = ({ perks, loading }) => {
 
   const fetchUserRedemptions = async () => {
     try {
+      // Check if the redemptions table exists before querying
+      const { error: tableError } = await supabase
+        .from('redemptions')
+        .select('count')
+        .limit(1)
+        .single();
+
+      if (tableError) {
+        console.log("Redemptions table might not exist yet:", tableError.message);
+        return;
+      }
+      
       const { data, error } = await supabase
         .from('redemptions')
         .select('perk_id, redemption_code')
@@ -131,7 +143,16 @@ const PerkTiles: React.FC<PerkTilesProps> = ({ perks, loading }) => {
 
   return (
     <>
-      <style>{vibrationKeyframes}</style>
+      <style>{`
+        @keyframes vibrate {
+          0% { transform: translateX(0); }
+          20% { transform: translateX(-2px) rotate(-1deg); }
+          40% { transform: translateX(2px) rotate(1deg); }
+          60% { transform: translateX(-2px) rotate(-1deg); }
+          80% { transform: translateX(2px) rotate(1deg); }
+          100% { transform: translateX(0); }
+        }
+      `}</style>
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
         {perks.map((perk, index) => {
           const isRedeemed = !!redeemedPerks[perk.id];
@@ -141,7 +162,7 @@ const PerkTiles: React.FC<PerkTilesProps> = ({ perks, loading }) => {
             <Card 
               key={perk.id} 
               className={`overflow-hidden hover:shadow-md transition-all duration-200 ${
-                index === 0 ? `ring-1 ring-[#da7756] ${vibrateAnimation}` : ''
+                index === 0 ? `ring-1 ring-[#da7756] animate-[vibrate_0.8s_ease-in-out_3]` : ''
               }`}
             >
               <div className={`h-20 bg-gradient-to-r ${index === 0 ? 'from-[#fdf1ea] to-[#f8ece7]' : 'from-blue-50 to-indigo-50'} flex items-center justify-center border-b relative`}>
