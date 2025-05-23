@@ -96,7 +96,11 @@ export const usePerkAnalytics = (timeRange: TimeRange) => {
         const categoryMap = new Map<string, number>();
         
         categoryData?.forEach(item => {
-          const category = item.perks?.category || 'Uncategorized';
+          // Fix: Type safety when accessing perks.category
+          const category = item.perks && typeof item.perks === 'object' ? 
+            (item.perks as {category?: string}).category || 'Uncategorized' : 
+            'Uncategorized';
+            
           categoryMap.set(category, (categoryMap.get(category) || 0) + 1);
         });
         
