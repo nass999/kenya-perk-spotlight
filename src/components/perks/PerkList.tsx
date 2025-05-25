@@ -13,9 +13,15 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
+import { useAuth } from '@/contexts/auth';
+
+interface PerkWithStatus extends Perk {
+  is_activated?: boolean;
+  activation_status?: boolean;
+}
 
 interface PerkListProps {
-  perks: Perk[];
+  perks: PerkWithStatus[];
   loading: boolean;
   error: string | null;
   onEdit?: (perk: Perk) => void;
@@ -44,6 +50,8 @@ export const PerkList = ({
   isEmployee = false,
 }: PerkListProps) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const { authState } = useAuth();
+  const isCompanyAdmin = authState.user?.role === 'company_admin';
 
   // Sort perks by created_at (newest first)
   const sortedPerks = [...perks].sort((a, b) => {
@@ -55,6 +63,13 @@ export const PerkList = ({
     perk.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     perk.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const getColumnCount = () => {
+    let count = 5; // Base columns: Name, Discount, Category, Valid Through, Actions
+    if (isCompanyAdmin && !isDeletedList) count += 1; // Add Status column for company admins
+    if (isMasterAdmin && !isDeletedList && !isEmployee) count += 1; // Add Status column for master admins
+    return count;
+  };
 
   return (
     <>
@@ -75,6 +90,9 @@ export const PerkList = ({
               <TableHead>Discount</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Valid Through</TableHead>
+              {isCompanyAdmin && !isDeletedList && (
+                <TableHead>Activation Status</TableHead>
+              )}
               {isMasterAdmin && !isDeletedList && !isEmployee && (
                 <TableHead>Status</TableHead>
               )}
@@ -84,13 +102,13 @@ export const PerkList = ({
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={isMasterAdmin && !isDeletedList && !isEmployee ? 6 : 5} className="text-center py-8">
+                <TableCell colSpan={getColumnCount()} className="text-center py-8">
                   <div className="flex justify-center">Loading perks...</div>
                 </TableCell>
               </TableRow>
             ) : error ? (
               <TableRow>
-                <TableCell colSpan={isMasterAdmin && !isDeletedList && !isEmployee ? 6 : 5} className="text-center py-8">
+                <TableCell colSpan={getColumnCount()} className="text-center py-8">
                   <div className="flex justify-center text-red-500">
                     {error}
                     <Button variant="outline" onClick={onRetry} className="ml-2">
@@ -101,7 +119,7 @@ export const PerkList = ({
               </TableRow>
             ) : filteredPerks.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={isMasterAdmin && !isDeletedList && !isEmployee ? 6 : 5} className="text-center py-8">
+                <TableCell colSpan={getColumnCount()} className="text-center py-8">
                   <div className="flex flex-col items-center">
                     <Tag className="h-8 w-8 text-gray-400 mb-2" />
                     <p className="text-gray-500">

@@ -15,8 +15,13 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Pencil, Trash2, RotateCw } from 'lucide-react';
 
+interface PerkWithStatus extends Perk {
+  is_activated?: boolean;
+  activation_status?: boolean;
+}
+
 interface PerkItemProps {
-  perk: Perk;
+  perk: PerkWithStatus;
   onRedeem?: (perkId: string) => void;
   showRedeemButton?: boolean;
   onEdit?: (perk: Perk) => void;
@@ -46,6 +51,7 @@ export const PerkItem = ({
   const [redemptionCode, setRedemptionCode] = useState<string | null>(null);
   const { authState } = useAuth();
   const { redeemPerk, isRedeeming } = useRedeemPerk();
+  const isCompanyAdmin = authState.user?.role === 'company_admin';
   
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'No expiration';
@@ -96,6 +102,30 @@ export const PerkItem = ({
       <TableCell>{perk.discount_amount}%</TableCell>
       <TableCell>{perk.category || 'General'}</TableCell>
       <TableCell>{formatDate(perk.valid_through_date)}</TableCell>
+      
+      {/* Show status column for company admins */}
+      {isCompanyAdmin && !isDeletedList && (
+        <TableCell>
+          <div className="flex items-center space-x-2">
+            {perk.is_activated ? (
+              <>
+                <Badge variant={perk.activation_status ? "default" : "secondary"}>
+                  {perk.activation_status ? "Enabled" : "Disabled"}
+                </Badge>
+                <Switch 
+                  checked={perk.activation_status || false}
+                  onCheckedChange={() => onToggleStatus && onToggleStatus(perk)}
+                  aria-label={perk.activation_status ? "Disable perk" : "Enable perk"}
+                />
+              </>
+            ) : (
+              <Badge variant="outline">Not Activated</Badge>
+            )}
+          </div>
+        </TableCell>
+      )}
+      
+      {/* Show status for master admin */}
       {isMasterAdmin && !isDeletedList && !isEmployee && (
         <TableCell>
           <Switch 
@@ -105,6 +135,7 @@ export const PerkItem = ({
           />
         </TableCell>
       )}
+      
       <TableCell className="text-right">
         <div className="flex justify-end items-center space-x-2">
           {isDeletedList ? (
@@ -119,7 +150,6 @@ export const PerkItem = ({
                   Restore
                 </Button>
               )}
-              {/* Permanent delete button for deleted list */}
             </>
           ) : (
             <>

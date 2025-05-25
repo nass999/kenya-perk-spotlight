@@ -8,12 +8,17 @@ import { useAuth } from '@/contexts/auth';
 export interface VendorWithPerks {
   id: string;
   name: string;
-  perks: Perk[];
+  perks: PerkWithStatus[];
+}
+
+export interface PerkWithStatus extends Perk {
+  is_activated?: boolean;
+  activation_status?: boolean;
 }
 
 export const usePerksQuery = () => {
   const { authState } = useAuth();
-  const [perks, setPerks] = useState<Perk[]>([]);
+  const [perks, setPerks] = useState<PerkWithStatus[]>([]);
   const [perksByVendor, setPerksByVendor] = useState<VendorWithPerks[]>([]);
   const [deletedPerks, setDeletedPerks] = useState<Perk[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,93 +37,142 @@ export const usePerksQuery = () => {
       
       console.log("Fetching perks with user role:", authState.user?.role);
       
-      let query = supabase
-        .from('perks')
-        .select(`
-          *,
-          vendors:vendor_id (
-            id,
-            name
-          )
-        `)
-        .eq('is_deleted', false)
-        .order('created_at', { ascending: false });
-
-      // Master admins see all perks (they manage global templates)
       if (isMasterAdmin) {
-        // Master admin sees all perks regardless of company_id
-        console.log("Master admin fetching all perks");
-      } 
-      // Company admins see perks activated for their company
-      else if (isCompanyAdmin && authState.user?.company_id) {
-        console.log("Company admin fetching perks for company:", authState.user.company_id);
-        query = query.eq('company_id', authState.user.company_id);
-      }
-      // Employees see perks activated for their company
-      else if (isEmployee && authState.user?.company_id) {
-        console.log("Employee fetching perks for company:", authState.user.company_id);
-        query = query
-          .eq('company_id', authState.user.company_id)
-          .eq('is_enabled', true); // Employees only see enabled perks
-      }
-      // If no company_id, return empty for non-master admins
-      else if (!isMasterAdmin) {
+        // Master admins see all global template perks
+        console.log("Master admin fetching all global template perks");
+        const { data, error } = await supabase
+          .from('perks')
+          .select(`
+            *,
+            vendors:vendor_id (
+              id,
+              name
+            )
+          `)
+          .eq('is_deleted', false)
+          .order('created_at', { ascending: false });
+          
+        if (error) throw error;
+        
+        const processedPerks = data?.map(item => {
+          const { vendors, ...perk } = item;
+          return {
+            ...perk,
+            vendor_name: vendors?.name || 'Unknown Vendor'
+          };
+        }) as PerkWithStatus[] || [];
+        
+        setPerks(processedPerks);
+        setPerksByVendor([]);
+        
+      } else if (isCompanyAdmin && authState.user?.company_id) {
+        // Company admins see global perks with activation status
+        console.log("Company admin fetching perks with activation status for company:", authState.user.company_id);
+        
+        const { data, error } = await supabase
+          .from('perks')
+          .select(`
+            *,
+            vendors:vendor_id (
+              id,
+              name
+            ),
+            company_perks!left (
+              is_enabled,
+              activated_at
+            )
+          `)
+          .eq('is_deleted', false)
+          .eq('company_perks.company_id', authState.user.company_id)
+          .order('created_at', { ascending: false });
+          
+        if (error) throw error;
+        
+        // Process perks with activation status
+        const processedPerks = data?.map(item => {
+          const { vendors, company_perks, ...perk } = item;
+          const isActivated = company_perks && company_perks.length > 0;
+          return {
+            ...perk,
+            vendor_name: vendors?.name || 'Unknown Vendor',
+            is_activated: isActivated,
+            activation_status: isActivated ? company_perks[0].is_enabled : false
+          };
+        }) as PerkWithStatus[] || [];
+        
+        setPerks(processedPerks);
+        
+        // Group by vendor for company admin view
+        const vendorsMap = new Map<string, VendorWithPerks>();
+        
+        processedPerks.forEach(perk => {
+          if (!perk.vendor_id) return;
+          
+          const vendorId = perk.vendor_id;
+          const vendorName = perk.vendor_name || 'Unknown Vendor';
+          
+          if (!vendorsMap.has(vendorId)) {
+            vendorsMap.set(vendorId, {
+              id: vendorId,
+              name: vendorName,
+              perks: []
+            });
+          }
+          
+          vendorsMap.get(vendorId)?.perks.push(perk);
+        });
+        
+        const vendorsArray = Array.from(vendorsMap.values()).sort((a, b) => 
+          a.name.localeCompare(b.name)
+        );
+        
+        setPerksByVendor(vendorsArray);
+        
+      } else if (isEmployee && authState.user?.company_id) {
+        // Employees see only activated and enabled perks for their company
+        console.log("Employee fetching activated perks for company:", authState.user.company_id);
+        
+        const { data, error } = await supabase
+          .from('perks')
+          .select(`
+            *,
+            vendors:vendor_id (
+              id,
+              name
+            ),
+            company_perks!inner (
+              is_enabled
+            )
+          `)
+          .eq('is_deleted', false)
+          .eq('company_perks.company_id', authState.user.company_id)
+          .eq('company_perks.is_enabled', true)
+          .order('created_at', { ascending: false });
+          
+        if (error) throw error;
+        
+        const processedPerks = data?.map(item => {
+          const { vendors, company_perks, ...perk } = item;
+          return {
+            ...perk,
+            vendor_name: vendors?.name || 'Unknown Vendor'
+          };
+        }) as PerkWithStatus[] || [];
+        
+        setPerks(processedPerks);
+        setPerksByVendor([]);
+        
+      } else {
         console.log("No company_id found for non-master admin user");
         setPerks([]);
         setPerksByVendor([]);
-        setLoading(false);
-        return;
       }
       
-      const { data, error } = await query;
+      console.log("Fetched perks:", perks.length);
       
-      if (error) {
-        console.error("Error fetching perks:", error);
-        setError(error.message);
-        throw error;
-      }
-      
-      console.log("Fetched perks:", data?.length || 0);
-
-      // Process the data for flat perks list
-      const processedPerks = data?.map(item => {
-        const { vendors, ...perk } = item;
-        return {
-          ...perk,
-          vendor_name: vendors?.name || 'Unknown Vendor'
-        };
-      }) as Perk[] || [];
-      
-      setPerks(processedPerks);
-
-      // Group perks by vendor
-      const vendorsMap = new Map<string, VendorWithPerks>();
-      
-      data?.forEach(item => {
-        if (!item.vendors || !item.vendor_id) return;
-        
-        const vendorId = item.vendor_id;
-        const vendorName = item.vendors?.name || 'Unknown Vendor';
-        
-        if (!vendorsMap.has(vendorId)) {
-          vendorsMap.set(vendorId, {
-            id: vendorId,
-            name: vendorName,
-            perks: []
-          });
-        }
-        
-        const { vendors, ...perkData } = item;
-        vendorsMap.get(vendorId)?.perks.push(perkData as Perk);
-      });
-      
-      const vendorsArray = Array.from(vendorsMap.values()).sort((a, b) => 
-        a.name.localeCompare(b.name)
-      );
-      
-      setPerksByVendor(vendorsArray);
     } catch (error: any) {
       console.error('Error fetching perks:', error);
+      setError(error.message);
       toast({
         variant: "destructive",
         title: "Error fetching perks",
@@ -143,16 +197,13 @@ export const usePerksQuery = () => {
         .eq('is_deleted', true)
         .order('created_at', { ascending: false });
       
-      if (error) {
-        console.error("Error fetching deleted perks:", error);
-        setDeletedError(error.message);
-        throw error;
-      }
+      if (error) throw error;
       
       console.log("Fetched deleted perks:", data);
       setDeletedPerks(data as Perk[] || []);
     } catch (error: any) {
       console.error('Error fetching deleted perks:', error);
+      setDeletedError(error.message);
       toast({
         variant: "destructive",
         title: "Error fetching deleted perks",

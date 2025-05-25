@@ -38,17 +38,22 @@ export const useFeaturedPerks = (limit = 12) => {
         
         console.log("Fetching featured perks for company:", authState.user.company_id);
         
+        // Fetch perks that are activated and enabled for this company through junction table
         const { data, error } = await supabase
           .from('perks')
           .select(`
             *,
             vendors:vendor_id (
               name
+            ),
+            company_perks!inner (
+              is_enabled
             )
           `)
           .eq('is_enabled', true)
           .eq('is_deleted', false)
-          .eq('company_id', authState.user.company_id) // Only perks activated for this company
+          .eq('company_perks.company_id', authState.user.company_id)
+          .eq('company_perks.is_enabled', true)
           .order('created_at', { ascending: false })
           .limit(limit);
         
@@ -59,7 +64,7 @@ export const useFeaturedPerks = (limit = 12) => {
 
         // Process perks to include vendor name
         const processedPerks = data.map(perk => {
-          const { vendors, ...rest } = perk;
+          const { vendors, company_perks, ...rest } = perk;
           return {
             ...rest,
             vendor_name: vendors?.name || 'Unknown Vendor'

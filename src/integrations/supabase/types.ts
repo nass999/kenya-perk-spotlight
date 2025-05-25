@@ -39,10 +39,36 @@ export type Database = {
         }
         Relationships: []
       }
+      company_perks: {
+        Row: {
+          activated_at: string
+          activated_by: string | null
+          company_id: string
+          id: string
+          is_enabled: boolean
+          perk_id: string
+        }
+        Insert: {
+          activated_at?: string
+          activated_by?: string | null
+          company_id: string
+          id?: string
+          is_enabled?: boolean
+          perk_id: string
+        }
+        Update: {
+          activated_at?: string
+          activated_by?: string | null
+          company_id?: string
+          id?: string
+          is_enabled?: boolean
+          perk_id?: string
+        }
+        Relationships: []
+      }
       perks: {
         Row: {
           category: string | null
-          company_id: string | null
           created_at: string
           description: string
           discount_amount: number
@@ -60,7 +86,6 @@ export type Database = {
         }
         Insert: {
           category?: string | null
-          company_id?: string | null
           created_at?: string
           description: string
           discount_amount: number
@@ -78,7 +103,6 @@ export type Database = {
         }
         Update: {
           category?: string | null
-          company_id?: string | null
           created_at?: string
           description?: string
           discount_amount?: number
@@ -95,13 +119,6 @@ export type Database = {
           vendor_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "perks_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "perks_vendor_id_fkey"
             columns: ["vendor_id"]

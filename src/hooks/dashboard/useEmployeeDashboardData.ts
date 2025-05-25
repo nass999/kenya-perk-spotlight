@@ -47,13 +47,19 @@ export const useEmployeeDashboardData = () => {
         
         console.log("Fetching employee dashboard data for company:", authState.user.company_id);
         
-        // For employees, query perks available to their company
+        // For employees, query perks available to their company through junction table
         const { data: availablePerks, error: perksError } = await supabase
           .from('perks')
-          .select('*')
+          .select(`
+            *,
+            company_perks!inner (
+              is_enabled
+            )
+          `)
           .eq('is_enabled', true)
           .eq('is_deleted', false)
-          .eq('company_id', authState.user.company_id); // Only company's activated perks
+          .eq('company_perks.company_id', authState.user.company_id)
+          .eq('company_perks.is_enabled', true);
         
         if (perksError) {
           console.error("Error fetching employee perks:", perksError);

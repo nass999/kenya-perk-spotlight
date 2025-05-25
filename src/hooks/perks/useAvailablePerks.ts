@@ -28,41 +28,32 @@ export const useAvailablePerks = () => {
       // Get the current date for comparing with valid_through_date
       const today = new Date().toISOString().split('T')[0];
       
-      // Get all global perks (created by master admins, no company_id)
+      // Get all global template perks that are not yet activated for this company
       const { data: globalPerks, error: globalError } = await supabase
         .from('perks')
-        .select('*')
-        .is('company_id', null) // Only global template perks
+        .select(`
+          *,
+          company_perks!left (
+            id,
+            company_id
+          )
+        `)
         .eq('is_enabled', true)
         .eq('is_deleted', false)
         .or(`valid_through_date.gt.${today},valid_through_date.is.null`)
+        .is('company_perks.company_id', null) // Only perks not activated for this company
         .order('name');
       
       if (globalError) {
-        console.error('Error fetching global perks:', globalError);
+        console.error('Error fetching available perks:', globalError);
         throw globalError;
       }
       
-      console.log(`Found ${globalPerks?.length || 0} global template perks`);
-      
-      // Get perks already activated for this company
-      const { data: companyPerks, error: companyError } = await supabase
-        .from('perks')
-        .select('id')
-        .eq('company_id', authState.user.company_id);
-      
-      if (companyError) {
-        console.error('Error fetching company perks:', companyError);
-        throw companyError;
-      }
-      
-      // Get IDs of perks already activated for this company
-      const companyPerkIds = companyPerks?.map(p => p.id) || [];
-      
-      console.log(`Company already has ${companyPerkIds.length} activated perks`);
-      
-      // Filter out perks that are already activated for this company
-      const availablePerks = globalPerks?.filter(p => !companyPerkIds.includes(p.id)) || [];
+      // Filter out perks that already have company_perks entries for this company
+      const availablePerks = globalPerks?.filter(perk => {
+        // Check if this perk is already activated for the company
+        return !perk.company_perks || perk.company_perks.length === 0;
+      }) || [];
       
       console.log(`Found ${availablePerks.length} available perks to activate for company ${authState.user.company_id}`);
       setPerks(availablePerks as Perk[]);
