@@ -107,28 +107,39 @@ export const useAuthMethods = () => {
   const signOut = async (): Promise<void> => {
     try {
       setLoading(true);
-      console.log('Signing out user...');
+      console.log('Starting sign out process...');
       
-      // Just proceed directly with signOut - don't check session first
-      // This avoids potential race conditions or inconsistent session states
+      // Clear any local storage items immediately to prevent stale data
+      localStorage.removeItem('supabase.auth.token');
+      
+      // Sign out from Supabase
       const { error } = await supabase.auth.signOut({ 
         scope: 'global' // Sign out from all browser tabs
       });
       
       if (error) {
-        console.error('Sign out error:', error);
-        throw error;
+        console.error('Supabase sign out error:', error);
+        
+        // Even if there's an error, we should still clear local state
+        // This handles cases where the session might be stale on the server
+        console.log('Continuing with local cleanup despite error');
+      } else {
+        console.log('Successfully signed out from Supabase');
       }
       
-      console.log('Successfully signed out');
+      // Force clear any remaining auth state
+      localStorage.clear();
       
-      // Clear any local state relying on auth immediately
-      // This ensures we don't rely solely on the auth state listener
-      // (which might sometimes be delayed)
+      console.log('Sign out process completed');
       
     } catch (error: any) {
       console.error('Sign out error:', error);
-      throw error;
+      
+      // Even if there's an error, clear local state to prevent being stuck
+      localStorage.clear();
+      console.log('Cleared local storage due to sign out error');
+      
+      // Don't throw the error - let the auth state listener handle the cleanup
     } finally {
       setLoading(false);
     }

@@ -31,39 +31,55 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Wrapper for signOut that handles navigation after signout
   const signOut = async () => {
     try {
+      console.log('AuthProvider signOut called');
       await authMethodsSignOut();
+      
+      // Immediately clear local auth state
+      setAuthState({ user: null, session: null, loading: false });
+      
       // Navigation will be handled by the auth state change listener
+      console.log('Sign out completed, auth state cleared');
     } catch (error) {
       console.error('Error in signOut wrapper:', error);
-      throw error;
+      
+      // Even if there's an error, clear the local state
+      setAuthState({ user: null, session: null, loading: false });
+      
+      // Force navigation to login
+      if (location.pathname !== '/login' && location.pathname !== '/register') {
+        navigate('/login', { replace: true });
+      }
     }
   };
 
   useEffect(() => {
     console.log("Setting up auth state listener");
+    
     // Set up auth state listener FIRST before checking for existing sessions
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
-        
-        // First synchronously update session to prevent UI flicker
-        setAuthState(current => ({ ...current, session, loading: session ? true : false }));
+        console.log('Auth state changed:', event, session?.user?.email || 'no user');
         
         // Handle sign-out event specifically
-        if (event === 'SIGNED_OUT') {
-          console.log('User signed out, clearing state and redirecting');
+        if (event === 'SIGNED_OUT' || !session) {
+          console.log('User signed out or no session, clearing state and redirecting');
+          
           // Fully reset auth state to ensure complete cleanup
           setAuthState({ user: null, session: null, loading: false });
           
           // Only redirect to login if not already there
           if (location.pathname !== '/login' && location.pathname !== '/register') {
+            console.log('Redirecting to login from:', location.pathname);
             navigate('/login', { replace: true });
           }
           return;
         }
         
-        // Use setTimeout to defer fetching user data to prevent Supabase auth deadlocks
+        // For sign-in events, first update session synchronously
         if (session?.user) {
+          setAuthState(current => ({ ...current, session, loading: true }));
+          
+          // Use setTimeout to defer fetching user data to prevent Supabase auth deadlocks
           setTimeout(async () => {
             console.log("Fetching user data after auth state change");
             const userData = await fetchUserData(session.user.id);
@@ -71,6 +87,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             // If userData is null despite having a session, the user may be inactive/deleted
             if (!userData) {
               console.log("User authentication failed - user may be inactive or deleted");
+              
               // Show error message
               toast({
                 variant: "destructive",
@@ -88,41 +105,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             }
             
             console.log("User data fetched, updating state and checking for redirect");
-            setAuthState(current => ({ ...current, user: userData, loading: false }));
+            setAuthState({ user: userData, session, loading: false });
             
-            // When logging in or when user session is created/changed, redirect to dashboard
-            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+            // When logging in, redirect to dashboard if on login/register page
+            if (event === 'SIGNED_IN' && (location.pathname === '/login' || location.pathname === '/register')) {
               console.log(`Auth state change (${event}) - redirecting to dashboard from`, location.pathname);
               
-              // Only redirect if on login/register page to avoid disrupting user navigation
-              if (location.pathname === '/login' || location.pathname === '/register') {
-                toast({
-                  title: "Welcome!",
-                  description: "You've been successfully logged in.",
-                });
-                navigate('/dashboard', { replace: true });
-              }
+              toast({
+                title: "Welcome!",
+                description: "You've been successfully logged in.",
+              });
+              navigate('/dashboard', { replace: true });
             }
           }, 0);
-        } else {
-          setAuthState(current => ({ ...current, user: null, loading: false }));
-          
-          // If not logged in and on a protected route, redirect to login
-          if (location.pathname !== '/login' && 
-              location.pathname !== '/register' && 
-              location.pathname !== '/' && 
-              location.pathname !== '/pricing' &&
-              !location.pathname.startsWith('/auth/callback')) {
-            console.log("Not authenticated, redirecting to login from", location.pathname);
-            navigate('/login', { replace: true });
-          }
         }
       }
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      console.log('Retrieved session:', session?.user?.email);
+    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
+      if (error) {
+        console.error('Error getting session:', error);
+        setAuthState({ user: null, session: null, loading: false });
+        return;
+      }
+      
+      console.log('Retrieved session:', session?.user?.email || 'no session');
       
       if (session) {
         // Set the session synchronously first
@@ -152,7 +160,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
           
           console.log("User data fetched for existing session, updating state");
-          setAuthState(current => ({ ...current, user: userData, loading: false }));
+          setAuthState({ user: userData, session, loading: false });
           
           // If on login/register page with existing session, redirect to dashboard
           if (location.pathname === '/login' || location.pathname === '/register') {
@@ -161,11 +169,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         }, 0);
       } else {
-        setAuthState(current => ({ ...current, loading: false }));
+        setAuthState({ user: null, session: null, loading: false });
       }
-    }).catch(error => {
-      console.error('Error checking session:', error);
-      setAuthState(current => ({ ...current, loading: false }));
     });
     
     return () => {
