@@ -15,6 +15,7 @@ export interface FeaturedPerk {
   category: string | null;
   vendor_id: string | null;
   vendor_name?: string;
+  redemption_code: string | null;
 }
 
 export const useFeaturedPerks = (limit = 12) => {
