@@ -30,11 +30,9 @@ export const usePerksQuery = () => {
       setLoading(true);
       setError(null);
       
-      console.log("Fetching active perks with user role:", authState.user?.role);
+      console.log("Fetching perks with user role:", authState.user?.role);
       
-      // With RLS enabled, we now get the perks based on the user's role permissions
-      // We just need to filter by is_deleted flag
-      const { data, error } = await supabase
+      let query = supabase
         .from('perks')
         .select(`
           *,
@@ -45,6 +43,34 @@ export const usePerksQuery = () => {
         `)
         .eq('is_deleted', false)
         .order('created_at', { ascending: false });
+
+      // Master admins see all perks (they manage global templates)
+      if (isMasterAdmin) {
+        // Master admin sees all perks regardless of company_id
+        console.log("Master admin fetching all perks");
+      } 
+      // Company admins see perks activated for their company
+      else if (isCompanyAdmin && authState.user?.company_id) {
+        console.log("Company admin fetching perks for company:", authState.user.company_id);
+        query = query.eq('company_id', authState.user.company_id);
+      }
+      // Employees see perks activated for their company
+      else if (isEmployee && authState.user?.company_id) {
+        console.log("Employee fetching perks for company:", authState.user.company_id);
+        query = query
+          .eq('company_id', authState.user.company_id)
+          .eq('is_enabled', true); // Employees only see enabled perks
+      }
+      // If no company_id, return empty for non-master admins
+      else if (!isMasterAdmin) {
+        console.log("No company_id found for non-master admin user");
+        setPerks([]);
+        setPerksByVendor([]);
+        setLoading(false);
+        return;
+      }
+      
+      const { data, error } = await query;
       
       if (error) {
         console.error("Error fetching perks:", error);
@@ -52,7 +78,7 @@ export const usePerksQuery = () => {
         throw error;
       }
       
-      console.log("Fetched active perks:", data);
+      console.log("Fetched perks:", data?.length || 0);
 
       // Process the data for flat perks list
       const processedPerks = data?.map(item => {
@@ -65,11 +91,11 @@ export const usePerksQuery = () => {
       
       setPerks(processedPerks);
 
-      // Group perks by vendor - Fix: Ensure vendors is properly extracted
+      // Group perks by vendor
       const vendorsMap = new Map<string, VendorWithPerks>();
       
       data?.forEach(item => {
-        if (!item.vendors || !item.vendor_id) return; // Skip items with no vendor
+        if (!item.vendors || !item.vendor_id) return;
         
         const vendorId = item.vendor_id;
         const vendorName = item.vendors?.name || 'Unknown Vendor';
@@ -82,12 +108,10 @@ export const usePerksQuery = () => {
           });
         }
         
-        // Create a clean perk object without the vendors property
         const { vendors, ...perkData } = item;
         vendorsMap.get(vendorId)?.perks.push(perkData as Perk);
       });
       
-      // Convert map to array and sort vendors alphabetically
       const vendorsArray = Array.from(vendorsMap.values()).sort((a, b) => 
         a.name.localeCompare(b.name)
       );
@@ -113,7 +137,6 @@ export const usePerksQuery = () => {
       setDeletedError(null);
       
       console.log("Fetching deleted perks...");
-      // With RLS enabled, master admins can still access deleted perks
       const { data, error } = await supabase
         .from('perks')
         .select('*')
@@ -149,7 +172,6 @@ export const usePerksQuery = () => {
       }
     }
     
-    // Listen for refresh events from the PerkSelectList component
     const handleRefreshPerks = () => {
       fetchPerks();
       if (isMasterAdmin) {

@@ -28,7 +28,16 @@ export const useFeaturedPerks = (limit = 12) => {
       try {
         setLoading(true);
         
-        // Simple query for enabled and non-deleted perks
+        // Only fetch perks if user has a company_id (employees and company admins)
+        if (!authState.user?.company_id) {
+          console.log("No company_id found, not fetching perks");
+          setFeaturedPerks([]);
+          setLoading(false);
+          return;
+        }
+        
+        console.log("Fetching featured perks for company:", authState.user.company_id);
+        
         const { data, error } = await supabase
           .from('perks')
           .select(`
@@ -39,6 +48,7 @@ export const useFeaturedPerks = (limit = 12) => {
           `)
           .eq('is_enabled', true)
           .eq('is_deleted', false)
+          .eq('company_id', authState.user.company_id) // Only perks activated for this company
           .order('created_at', { ascending: false })
           .limit(limit);
         

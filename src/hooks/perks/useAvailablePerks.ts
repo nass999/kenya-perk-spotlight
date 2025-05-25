@@ -23,24 +23,19 @@ export const useAvailablePerks = () => {
       setLoading(true);
       setError(null);
       
-      console.log("Fetching available perks for company:", authState.user.company_id);
+      console.log("Fetching available perks for company admin to activate");
       
       // Get the current date for comparing with valid_through_date
       const today = new Date().toISOString().split('T')[0];
       
-      // First, get all the global perks (created by platform/master admins)
-      // We want perks that:
-      // 1. Are not associated with a company (global/platform-wide)
-      // 2. Are enabled
-      // 3. Are not deleted
-      // 4. Are not expired or don't have an expiration date
+      // Get all global perks (created by master admins, no company_id)
       const { data: globalPerks, error: globalError } = await supabase
         .from('perks')
         .select('*')
-        .is('company_id', null) // Only global perks with no company
-        .eq('is_enabled', true) // Only enabled perks
-        .eq('is_deleted', false) // Not deleted
-        .or(`valid_through_date.gt.${today},valid_through_date.is.null`) // Not expired
+        .is('company_id', null) // Only global template perks
+        .eq('is_enabled', true)
+        .eq('is_deleted', false)
+        .or(`valid_through_date.gt.${today},valid_through_date.is.null`)
         .order('name');
       
       if (globalError) {
@@ -48,10 +43,9 @@ export const useAvailablePerks = () => {
         throw globalError;
       }
       
-      console.log(`Found ${globalPerks?.length || 0} global perks`);
+      console.log(`Found ${globalPerks?.length || 0} global template perks`);
       
-      // Then, get all perks already associated with this company
-      // These are perks that have already been activated by the org admin
+      // Get perks already activated for this company
       const { data: companyPerks, error: companyError } = await supabase
         .from('perks')
         .select('id')
@@ -68,7 +62,6 @@ export const useAvailablePerks = () => {
       console.log(`Company already has ${companyPerkIds.length} activated perks`);
       
       // Filter out perks that are already activated for this company
-      // These are the perks that the org admin can still activate
       const availablePerks = globalPerks?.filter(p => !companyPerkIds.includes(p.id)) || [];
       
       console.log(`Found ${availablePerks.length} available perks to activate for company ${authState.user.company_id}`);

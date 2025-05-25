@@ -27,16 +27,33 @@ export const useEmployeeDashboardData = () => {
       try {
         setLoading(true);
         
-        // Get today's date for comparing with valid_through_date
-        const today = new Date().toISOString().split('T')[0];
+        // Only fetch perks if user has a company_id
+        if (!authState.user.company_id) {
+          console.log("No company_id found for employee dashboard");
+          setStats({
+            totalPerks: 0,
+            availablePerks: 0,
+            activePerks: 0,
+            redeemedPerks: 0,
+            totalRedemptions: 0,
+            pendingRedemptions: 0,
+            companies: 0,
+            users: 0,
+            totalSavings: 0,
+          });
+          setLoading(false);
+          return;
+        }
         
-        // For employees, query perks available to them
-        // Fix: simplify the query to focus on perks that are enabled and not deleted
+        console.log("Fetching employee dashboard data for company:", authState.user.company_id);
+        
+        // For employees, query perks available to their company
         const { data: availablePerks, error: perksError } = await supabase
           .from('perks')
           .select('*')
           .eq('is_enabled', true)
-          .eq('is_deleted', false);
+          .eq('is_deleted', false)
+          .eq('company_id', authState.user.company_id); // Only company's activated perks
         
         if (perksError) {
           console.error("Error fetching employee perks:", perksError);
@@ -44,26 +61,19 @@ export const useEmployeeDashboardData = () => {
         }
         
         console.log("Employee perks data count:", availablePerks?.length || 0);
-        console.log("First few perks:", availablePerks?.slice(0, 3));
         
-        // Calculate statistics
         const availablePerksCount = availablePerks?.length || 0;
-        
-        // We can't calculate redemptions without a redemptions table
-        // Instead, just set zeroes for now
-        const userRedemptionsCount = 0;
-        const estimatedSavings = 0;
         
         setStats({
           totalPerks: availablePerksCount,
           availablePerks: availablePerksCount,
           activePerks: availablePerksCount,
-          redeemedPerks: userRedemptionsCount,
-          totalRedemptions: userRedemptionsCount,
+          redeemedPerks: 0, // Would need redemptions table
+          totalRedemptions: 0,
           pendingRedemptions: 0,
           companies: 0,
           users: 0,
-          totalSavings: estimatedSavings,
+          totalSavings: 0,
         });
       } catch (err) {
         console.error("Error fetching employee dashboard data:", err);
