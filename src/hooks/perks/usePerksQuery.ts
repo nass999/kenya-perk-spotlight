@@ -29,6 +29,7 @@ export const usePerksQuery = () => {
   const isMasterAdmin = authState.user?.role === 'master_admin';
   const isCompanyAdmin = authState.user?.role === 'company_admin';
   const isEmployee = authState.user?.role === 'employee';
+  const isVendor = authState.user?.role === 'vendor';
 
   const fetchPerks = async () => {
     try {
@@ -38,7 +39,7 @@ export const usePerksQuery = () => {
       console.log("Fetching perks with user role:", authState.user?.role);
       
       if (isMasterAdmin) {
-        // Master admins see all global template perks
+        // Master admins see all global template perks for activation management
         console.log("Master admin fetching all global template perks");
         const { data, error } = await supabase
           .from('perks')
@@ -66,8 +67,8 @@ export const usePerksQuery = () => {
         setPerksByVendor([]);
         
       } else if (isCompanyAdmin && authState.user?.company_id) {
-        // Company admins see global perks with activation status
-        console.log("Company admin fetching perks with activation status for company:", authState.user.company_id);
+        // Company admins see only activated perks (is_enabled = true) with their company's activation status
+        console.log("Company admin fetching activated perks for company:", authState.user.company_id);
         
         const { data, error } = await supabase
           .from('perks')
@@ -83,20 +84,21 @@ export const usePerksQuery = () => {
             )
           `)
           .eq('is_deleted', false)
+          .eq('is_enabled', true) // Only show activated perks
           .eq('company_perks.company_id', authState.user.company_id)
           .order('created_at', { ascending: false });
           
         if (error) throw error;
         
-        // Process perks with activation status
+        // Process perks with activation status for the company
         const processedPerks = data?.map(item => {
           const { vendors, company_perks, ...perk } = item;
-          const isActivated = company_perks && company_perks.length > 0;
+          const isActivatedForCompany = company_perks && company_perks.length > 0;
           return {
             ...perk,
             vendor_name: vendors?.name || 'Unknown Vendor',
-            is_activated: isActivated,
-            activation_status: isActivated ? company_perks[0].is_enabled : false
+            is_activated: isActivatedForCompany,
+            activation_status: isActivatedForCompany ? company_perks[0].is_enabled : false
           };
         }) as PerkWithStatus[] || [];
         
@@ -129,8 +131,8 @@ export const usePerksQuery = () => {
         setPerksByVendor(vendorsArray);
         
       } else if (isEmployee && authState.user?.company_id) {
-        // Employees see only activated and enabled perks for their company
-        console.log("Employee fetching activated perks for company:", authState.user.company_id);
+        // Employees see only perks that are activated AND enabled for their company
+        console.log("Employee fetching enabled perks for company:", authState.user.company_id);
         
         const { data, error } = await supabase
           .from('perks')
@@ -145,8 +147,9 @@ export const usePerksQuery = () => {
             )
           `)
           .eq('is_deleted', false)
+          .eq('is_enabled', true) // Only activated perks
           .eq('company_perks.company_id', authState.user.company_id)
-          .eq('company_perks.is_enabled', true)
+          .eq('company_perks.is_enabled', true) // Only enabled for their company
           .order('created_at', { ascending: false });
           
         if (error) throw error;
@@ -162,8 +165,38 @@ export const usePerksQuery = () => {
         setPerks(processedPerks);
         setPerksByVendor([]);
         
+      } else if (isVendor) {
+        // Vendors see only their own perks
+        console.log("Vendor fetching their own perks");
+        
+        const { data, error } = await supabase
+          .from('perks')
+          .select(`
+            *,
+            vendors:vendor_id (
+              id,
+              name
+            )
+          `)
+          .eq('is_deleted', false)
+          .eq('vendor_id', authState.user?.id) // Only their perks
+          .order('created_at', { ascending: false });
+          
+        if (error) throw error;
+        
+        const processedPerks = data?.map(item => {
+          const { vendors, ...perk } = item;
+          return {
+            ...perk,
+            vendor_name: vendors?.name || 'Your Company'
+          };
+        }) as PerkWithStatus[] || [];
+        
+        setPerks(processedPerks);
+        setPerksByVendor([]);
+        
       } else {
-        console.log("No company_id found for non-master admin user");
+        console.log("No valid role or company_id found");
         setPerks([]);
         setPerksByVendor([]);
       }
@@ -251,5 +284,6 @@ export const usePerksQuery = () => {
     isMasterAdmin,
     isCompanyAdmin,
     isEmployee,
+    isVendor,
   };
 };

@@ -52,10 +52,10 @@ export const PerkList = ({
   const [searchQuery, setSearchQuery] = useState('');
   const { authState } = useAuth();
   const isCompanyAdmin = authState.user?.role === 'company_admin';
+  const isVendor = authState.user?.role === 'vendor';
 
   // Sort perks by created_at (newest first)
   const sortedPerks = [...perks].sort((a, b) => {
-    // Use created_at as the primary sort field
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
   });
   
@@ -66,8 +66,12 @@ export const PerkList = ({
 
   const getColumnCount = () => {
     let count = 5; // Base columns: Name, Discount, Category, Valid Through, Actions
-    if (isCompanyAdmin && !isDeletedList) count += 1; // Add Status column for company admins
-    if (isMasterAdmin && !isDeletedList && !isEmployee) count += 1; // Add Status column for master admins
+    
+    // Add status columns based on role
+    if (isMasterAdmin && !isDeletedList && !isEmployee) count += 1; // Global activation status
+    if (isCompanyAdmin && !isDeletedList) count += 1; // Company activation status  
+    if (isVendor && !isDeletedList) count += 1; // Approval status
+    
     return count;
   };
 
@@ -90,12 +94,19 @@ export const PerkList = ({
               <TableHead>Discount</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Valid Through</TableHead>
-              {isCompanyAdmin && !isDeletedList && (
-                <TableHead>Activation Status</TableHead>
-              )}
+              
               {isMasterAdmin && !isDeletedList && !isEmployee && (
-                <TableHead>Status</TableHead>
+                <TableHead>Global Status</TableHead>
               )}
+              
+              {isCompanyAdmin && !isDeletedList && (
+                <TableHead>Organization Status</TableHead>
+              )}
+              
+              {isVendor && !isDeletedList && (
+                <TableHead>Approval Status</TableHead>
+              )}
+              
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -130,9 +141,14 @@ export const PerkList = ({
                         Try adjusting your search
                       </p>
                     )}
-                    {!isDeletedList && !isMasterAdmin && !isEmployee && filteredPerks.length === 0 && !searchQuery && (
+                    {!isDeletedList && isCompanyAdmin && filteredPerks.length === 0 && !searchQuery && (
                       <p className="text-sm text-gray-400 mt-1">
-                        Click "Activate Perks" to make platform perks available to your users
+                        Click "Activate Perks" to enable platform perks for your users
+                      </p>
+                    )}
+                    {!isDeletedList && isVendor && filteredPerks.length === 0 && !searchQuery && (
+                      <p className="text-sm text-gray-400 mt-1">
+                        Click "Create Perk" to submit perks for review
                       </p>
                     )}
                   </div>

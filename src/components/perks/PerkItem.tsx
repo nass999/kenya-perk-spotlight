@@ -1,11 +1,8 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Perk } from './PerkTypes';
-import { Calendar, Tag } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import { useRedeemPerk } from '@/hooks/perks/useRedeemPerk';
 import { 
@@ -52,6 +49,7 @@ export const PerkItem = ({
   const { authState } = useAuth();
   const { redeemPerk, isRedeeming } = useRedeemPerk();
   const isCompanyAdmin = authState.user?.role === 'company_admin';
+  const isVendor = authState.user?.role === 'vendor';
   
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'No expiration';
@@ -66,7 +64,7 @@ export const PerkItem = ({
     const result = await redeemPerk(perk.id);
     if (result.success && onRedeem) {
       setIsRedeemed(true);
-      setRedemptionCode(result.data?.redemption_code || 'CODE');
+      setRedemptionCode(result.data?.redemption_code || 'CODE12345');
       onRedeem(perk.id);
     }
   };
@@ -74,7 +72,6 @@ export const PerkItem = ({
   // Only employees can redeem
   const canRedeem = authState.user?.role === 'employee';
 
-  // This is a table row component, not a card
   return (
     <TableRow key={perk.id}>
       <TableCell>
@@ -103,7 +100,23 @@ export const PerkItem = ({
       <TableCell>{perk.category || 'General'}</TableCell>
       <TableCell>{formatDate(perk.valid_through_date)}</TableCell>
       
-      {/* Show status column for company admins */}
+      {/* Show global activation status for master admin */}
+      {isMasterAdmin && !isDeletedList && !isEmployee && (
+        <TableCell>
+          <div className="flex items-center space-x-2">
+            <Badge variant={perk.is_enabled ? "default" : "secondary"}>
+              {perk.is_enabled ? "Activated" : "Deactivated"}
+            </Badge>
+            <Switch 
+              checked={perk.is_enabled} 
+              onCheckedChange={() => onToggleStatus && onToggleStatus(perk)}
+              aria-label={perk.is_enabled ? "Deactivate perk globally" : "Activate perk globally"}
+            />
+          </div>
+        </TableCell>
+      )}
+      
+      {/* Show company activation status for company admin */}
       {isCompanyAdmin && !isDeletedList && (
         <TableCell>
           <div className="flex items-center space-x-2">
@@ -115,24 +128,31 @@ export const PerkItem = ({
                 <Switch 
                   checked={perk.activation_status || false}
                   onCheckedChange={() => onToggleStatus && onToggleStatus(perk)}
-                  aria-label={perk.activation_status ? "Disable perk" : "Enable perk"}
+                  aria-label={perk.activation_status ? "Disable perk for organization" : "Enable perk for organization"}
                 />
               </>
             ) : (
-              <Badge variant="outline">Not Activated</Badge>
+              <>
+                <Badge variant="outline">Not Enabled</Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onToggleStatus && onToggleStatus(perk)}
+                >
+                  Enable
+                </Button>
+              </>
             )}
           </div>
         </TableCell>
       )}
       
-      {/* Show status for master admin */}
-      {isMasterAdmin && !isDeletedList && !isEmployee && (
+      {/* Show submission status for vendors */}
+      {isVendor && !isDeletedList && (
         <TableCell>
-          <Switch 
-            checked={perk.is_enabled} 
-            onCheckedChange={() => onToggleStatus && onToggleStatus(perk)}
-            aria-label={perk.is_enabled ? "Disable perk" : "Enable perk"}
-          />
+          <Badge variant={perk.is_enabled ? "default" : "secondary"}>
+            {perk.is_enabled ? "Approved" : "Pending Review"}
+          </Badge>
         </TableCell>
       )}
       
@@ -171,7 +191,7 @@ export const PerkItem = ({
                 )
               ) : (
                 <>
-                  {onEdit && (
+                  {(isMasterAdmin || isVendor) && onEdit && (
                     <Button 
                       variant="outline" 
                       size="icon"
@@ -180,7 +200,7 @@ export const PerkItem = ({
                       <Pencil className="h-4 w-4" />
                     </Button>
                   )}
-                  {onDelete && (
+                  {(isMasterAdmin || isVendor) && onDelete && (
                     <Button 
                       variant="destructive" 
                       size="icon"
