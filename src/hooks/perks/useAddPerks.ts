@@ -5,94 +5,82 @@ import { useAuth } from '@/contexts/auth';
 import { toast } from '@/components/ui/use-toast';
 import { Perk } from '@/components/perks/PerkTypes';
 
-export const useAddPerks = (onClose: () => void) => {
+export const useAddPerks = () => {
   const { authState } = useAuth();
-  const [selectedPerks, setSelectedPerks] = useState<string[]>([]);
-  const [saving, setSaving] = useState(false);
-  
-  const handleTogglePerk = (perkId: string) => {
-    if (selectedPerks.includes(perkId)) {
-      setSelectedPerks(selectedPerks.filter(id => id !== perkId));
-    } else {
-      setSelectedPerks([...selectedPerks, perkId]);
-    }
-  };
-  
-  const handleAddSelectedPerks = async (perksArray: Perk[]) => {
-    if (selectedPerks.length === 0) {
+  const [selectedPerks, setSelectedPerks] = useState<Perk[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleAddSelectedPerks = async () => {
+    if (!authState.user?.company_id || authState.user.role !== 'company_admin') {
       toast({
-        title: "No perks selected",
-        description: "Please select at least one perk to enable for your organization's users.",
+        variant: "destructive",
+        title: "Error",
+        description: "Only company admins can activate perks for their organization.",
       });
       return;
     }
-    
-    try {
-      setSaving(true);
-      
-      // Get the perks that were selected
-      const perksToCopy = perksArray.filter(perk => selectedPerks.includes(perk.id));
-      console.log("Enabling the following perks for the organization:", perksToCopy);
-      
-      // Create copies of these perks for the company
-      // These will be the activated perks available to the organization's users
-      const newPerks = perksToCopy.map(perk => ({
-        name: perk.name,
-        description: perk.description,
-        image_url: perk.image_url,
-        discount_amount: perk.discount_amount,
-        discount_type: perk.discount_type,
-        category: perk.category,
-        expiry_date: perk.expiry_date || null,
-        terms_conditions: perk.terms_conditions,
-        company_id: authState.user?.company_id, // Associate with this organization
-        is_enabled: true, // Activated by default when added to organization
-        valid_through_date: perk.valid_through_date,
-      }));
-      
-      console.log("Activating perks for organization:", newPerks);
-      
-      if (!authState.user?.company_id) {
-        throw new Error("No company ID available for this user");
-      }
-      
-      const { data, error } = await supabase
-        .from('perks')
-        .insert(newPerks)
-        .select();
-      
-      if (error) {
-        console.error("Error activating perks:", error);
-        throw error;
-      }
-      
-      console.log("Successfully activated perks for organization:", data);
+
+    if (selectedPerks.length === 0) {
       toast({
-        title: "Perks activated successfully",
-        description: `${selectedPerks.length} perks have been activated for your organization's users.`,
+        variant: "destructive",
+        title: "No perks selected",
+        description: "Please select at least one perk to activate.",
       });
+      return;
+    }
+
+    console.log("Enabling the following perks for the organization:", selectedPerks);
+
+    try {
+      setIsSubmitting(true);
       
-      onClose();
+      // Prepare company_perks records for insertion
+      const companyPerksData = selectedPerks.map(perk => ({
+        company_id: authState.user.company_id,
+        perk_id: perk.id,
+        is_enabled: true,
+        activated_by: authState.user.id
+      }));
+
+      console.log("Activating perks for organization:", companyPerksData);
+
+      // Insert into company_perks table
+      const { error: insertError } = await supabase
+        .from('company_perks')
+        .insert(companyPerksData);
+
+      if (insertError) {
+        console.error('Error activating perks:', insertError);
+        throw insertError;
+      }
+
+      toast({
+        title: "Perks activated",
+        description: `Successfully activated ${selectedPerks.length} perk${selectedPerks.length > 1 ? 's' : ''} for your organization.`,
+      });
+
+      // Clear selected perks after successful activation
+      setSelectedPerks([]);
       
-      // Refresh the main perks list by triggering a window event
-      window.dispatchEvent(new CustomEvent('refreshPerks'));
-      
+      // Trigger a refresh of the perks list
+      window.dispatchEvent(new Event('refreshPerks'));
+
     } catch (error: any) {
       console.error('Error activating perks:', error);
       toast({
         variant: "destructive",
         title: "Error activating perks",
-        description: error.message || "There was a problem activating the selected perks.",
+        description: error.message || "Failed to activate perks. Please try again.",
       });
     } finally {
-      setSaving(false);
+      setIsSubmitting(false);
     }
   };
-  
+
   return {
     selectedPerks,
-    saving,
-    handleTogglePerk,
-    handleAddSelectedPerks
+    setSelectedPerks,
+    handleAddSelectedPerks,
+    isSubmitting
   };
 };

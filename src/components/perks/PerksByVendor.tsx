@@ -21,6 +21,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/auth';
 
 interface PerksByVendorProps {
   vendors: VendorWithPerks[];
@@ -48,6 +49,8 @@ export const PerksByVendor = ({
   isEmployee = false,
 }: PerksByVendorProps) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const { authState } = useAuth();
+  const isCompanyAdmin = authState.user?.role === 'company_admin';
   
   // Filter vendors and their perks based on search query
   const filteredVendors = vendors.map(vendor => ({
@@ -125,8 +128,8 @@ export const PerksByVendor = ({
                         <TableHead>Discount</TableHead>
                         <TableHead>Category</TableHead>
                         <TableHead>Valid Through</TableHead>
-                        {isMasterAdmin && !isEmployee && (
-                          <TableHead>Status</TableHead>
+                        {isCompanyAdmin && (
+                          <TableHead>Organization Status</TableHead>
                         )}
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>

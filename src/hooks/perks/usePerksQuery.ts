@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/components/ui/use-toast';
@@ -67,7 +66,7 @@ export const usePerksQuery = () => {
         setPerksByVendor([]);
         
       } else if (isCompanyAdmin && authState.user?.company_id) {
-        // Company admins see only activated perks (is_enabled = true) with their company's activation status
+        // Company admins see all activated perks (is_enabled = true) with their company's activation status
         console.log("Company admin fetching activated perks for company:", authState.user.company_id);
         
         const { data, error } = await supabase
@@ -77,10 +76,6 @@ export const usePerksQuery = () => {
             vendors!fk_perks_vendor_id (
               id,
               name
-            ),
-            company_perks (
-              is_enabled,
-              activated_at
             )
           `)
           .eq('is_deleted', false)
@@ -89,20 +84,31 @@ export const usePerksQuery = () => {
           
         if (error) throw error;
         
+        // Get company_perks data separately
+        const { data: companyPerksData, error: companyPerksError } = await supabase
+          .from('company_perks')
+          .select('perk_id, is_enabled')
+          .eq('company_id', authState.user.company_id);
+          
+        if (companyPerksError) throw companyPerksError;
+        
+        // Create a map of perk activations for this company
+        const companyPerksMap = new Map();
+        companyPerksData?.forEach(cp => {
+          companyPerksMap.set(cp.perk_id, cp.is_enabled);
+        });
+        
         // Process perks with activation status for the company
         const processedPerks = data?.map(item => {
-          const { vendors, company_perks, ...perk } = item;
-          // Find the company_perks entry for this specific company
-          const companyPerkEntry = company_perks?.find(
-            (cp: any) => cp.company_id === authState.user.company_id
-          );
-          const isActivatedForCompany = !!companyPerkEntry;
+          const { vendors, ...perk } = item;
+          const isActivatedForCompany = companyPerksMap.has(perk.id);
+          const activationStatus = companyPerksMap.get(perk.id) || false;
           
           return {
             ...perk,
             vendor_name: vendors?.name || 'Unknown Vendor',
             is_activated: isActivatedForCompany,
-            activation_status: isActivatedForCompany ? companyPerkEntry.is_enabled : false
+            activation_status: activationStatus
           };
         }) as PerkWithStatus[] || [];
         
@@ -112,10 +118,8 @@ export const usePerksQuery = () => {
         const vendorsMap = new Map<string, VendorWithPerks>();
         
         processedPerks.forEach(perk => {
-          if (!perk.vendor_id) return;
-          
-          const vendorId = perk.vendor_id;
-          const vendorName = perk.vendor_name || 'Unknown Vendor';
+          const vendorId = perk.vendor_id || 'no-vendor';
+          const vendorName = perk.vendor_name || 'Platform Perks';
           
           if (!vendorsMap.has(vendorId)) {
             vendorsMap.set(vendorId, {
