@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/components/ui/use-toast';
@@ -78,14 +77,13 @@ export const usePerksQuery = () => {
               id,
               name
             ),
-            company_perks!left (
+            company_perks (
               is_enabled,
               activated_at
             )
           `)
           .eq('is_deleted', false)
           .eq('is_enabled', true) // Only show activated perks
-          .eq('company_perks.company_id', authState.user.company_id)
           .order('created_at', { ascending: false });
           
         if (error) throw error;
@@ -93,12 +91,17 @@ export const usePerksQuery = () => {
         // Process perks with activation status for the company
         const processedPerks = data?.map(item => {
           const { vendors, company_perks, ...perk } = item;
-          const isActivatedForCompany = company_perks && company_perks.length > 0;
+          // Find the company_perks entry for this specific company
+          const companyPerkEntry = company_perks?.find(
+            (cp: any) => cp.company_id === authState.user.company_id
+          );
+          const isActivatedForCompany = !!companyPerkEntry;
+          
           return {
             ...perk,
             vendor_name: vendors?.name || 'Unknown Vendor',
             is_activated: isActivatedForCompany,
-            activation_status: isActivatedForCompany ? company_perks[0].is_enabled : false
+            activation_status: isActivatedForCompany ? companyPerkEntry.is_enabled : false
           };
         }) as PerkWithStatus[] || [];
         
