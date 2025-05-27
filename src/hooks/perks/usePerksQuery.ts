@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/components/ui/use-toast';
@@ -44,7 +45,7 @@ export const usePerksQuery = () => {
           .from('perks')
           .select(`
             *,
-            vendors:vendor_id (
+            vendors!fk_perks_vendor_id (
               id,
               name
             )
@@ -73,7 +74,7 @@ export const usePerksQuery = () => {
           .from('perks')
           .select(`
             *,
-            vendors:vendor_id (
+            vendors!fk_perks_vendor_id (
               id,
               name
             ),
@@ -141,7 +142,7 @@ export const usePerksQuery = () => {
           .from('perks')
           .select(`
             *,
-            vendors:vendor_id (
+            vendors!fk_perks_vendor_id (
               id,
               name
             ),
@@ -176,7 +177,7 @@ export const usePerksQuery = () => {
           .from('perks')
           .select(`
             *,
-            vendors:vendor_id (
+            vendors!fk_perks_vendor_id (
               id,
               name
             )
