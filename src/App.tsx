@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/auth';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -32,69 +33,81 @@ import DashboardLayout from './components/DashboardLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { UserRole } from './lib/supabase';
 
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+    },
+  },
+});
+
 function App() {
   return (
     <div className="App">
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/pricing" element={<PricingPage />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/unauthorized" element={<Unauthorized />} />
-            
-            {/* Protected Routes - All require authentication */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/dashboard" element={<DashboardLayout />}>
-                <Route index element={<Dashboard />} />
-                
-                {/* Employee Routes */}
-                <Route path="my-redemptions" element={<MyRedemptions />} />
-                <Route path="vendor-recommendations" element={<VendorRecommendations />} />
-                
-                {/* Admin Routes */}
-                <Route path="manage-perks" element={
-                  <ProtectedRoute allowedRoles={['master_admin', 'company_admin', 'employee'] as UserRole[]}>
-                    <ManagePerks />
-                  </ProtectedRoute>
-                } />
-                <Route path="manage-users" element={
-                  <ProtectedRoute allowedRoles={['master_admin', 'company_admin'] as UserRole[]}>
-                    <ManageUsers />
-                  </ProtectedRoute>
-                } />
-                <Route path="manage-vendors" element={
-                  <ProtectedRoute allowedRoles={['master_admin'] as UserRole[]}>
-                    <ManageVendors />
-                  </ProtectedRoute>
-                } />
-                <Route path="analytics" element={
-                  <ProtectedRoute allowedRoles={['master_admin', 'company_admin'] as UserRole[]}>
-                    <Analytics />
-                  </ProtectedRoute>
-                } />
-                
-                {/* Vendor Routes */}
-                <Route path="vendor-profile" element={
-                  <ProtectedRoute allowedRoles={['vendor'] as UserRole[]}>
-                    <VendorProfile />
-                  </ProtectedRoute>
-                } />
-                <Route path="vendor-perks" element={
-                  <ProtectedRoute allowedRoles={['vendor'] as UserRole[]}>
-                    <VendorPerks />
-                  </ProtectedRoute>
-                } />
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/pricing" element={<PricingPage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/unauthorized" element={<Unauthorized />} />
+              
+              {/* Protected Routes - All require authentication */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/dashboard" element={<DashboardLayout />}>
+                  <Route index element={<Dashboard />} />
+                  
+                  {/* Employee Routes */}
+                  <Route path="my-redemptions" element={<MyRedemptions />} />
+                  <Route path="vendor-recommendations" element={<VendorRecommendations />} />
+                  
+                  {/* Admin Routes */}
+                  <Route path="manage-perks" element={
+                    <ProtectedRoute allowedRoles={['master_admin', 'company_admin', 'employee'] as UserRole[]}>
+                      <ManagePerks />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="manage-users" element={
+                    <ProtectedRoute allowedRoles={['master_admin', 'company_admin'] as UserRole[]}>
+                      <ManageUsers />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="manage-vendors" element={
+                    <ProtectedRoute allowedRoles={['master_admin'] as UserRole[]}>
+                      <ManageVendors />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="analytics" element={
+                    <ProtectedRoute allowedRoles={['master_admin', 'company_admin'] as UserRole[]}>
+                      <Analytics />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Vendor Routes */}
+                  <Route path="vendor-profile" element={
+                    <ProtectedRoute allowedRoles={['vendor'] as UserRole[]}>
+                      <VendorProfile />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="vendor-perks" element={
+                    <ProtectedRoute allowedRoles={['vendor'] as UserRole[]}>
+                      <VendorPerks />
+                    </ProtectedRoute>
+                  } />
+                </Route>
               </Route>
-            </Route>
-            
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <Toaster />
-        </AuthProvider>
-      </BrowserRouter>
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Toaster />
+          </AuthProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
     </div>
   );
 }
