@@ -135,18 +135,29 @@ export const PerksByVendor = ({
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {vendor.perks.map((perk) => (
-                        <PerkItem
-                          key={perk.id}
-                          perk={perk}
-                          onEdit={onEdit}
-                          onToggleStatus={onToggleStatus}
-                          onDelete={onDelete}
-                          deletingPerk={deletingPerk}
-                          isMasterAdmin={isMasterAdmin}
-                          isEmployee={isEmployee}
-                        />
-                      ))}
+                      {vendor.perks.map((perk) => {
+                        // Convert vendor perk to full Perk type
+                        const fullPerk: Perk = {
+                          ...perk,
+                          company_id: null, // These fields aren't in VendorWithPerks
+                          vendor_id: vendor.id,
+                          created_at: new Date().toISOString(), // Fallback
+                          is_deleted: false
+                        };
+                        
+                        return (
+                          <PerkItem
+                            key={perk.id}
+                            perk={fullPerk}
+                            onEdit={onEdit}
+                            onToggleStatus={onToggleStatus}
+                            onDelete={onDelete}
+                            deletingPerk={deletingPerk}
+                            isMasterAdmin={isMasterAdmin}
+                            isEmployee={isEmployee}
+                          />
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>
