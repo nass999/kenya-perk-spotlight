@@ -66,7 +66,7 @@ export const usePerksQuery = () => {
         setPerksByVendor([]);
         
       } else if (isCompanyAdmin && authState.user?.company_id) {
-        // Company admins see all activated perks (is_enabled = true) with their company's activation status
+        // Company admins see only perks that are globally activated (is_enabled = true)
         console.log("Company admin fetching activated perks for company:", authState.user.company_id);
         
         const { data, error } = await supabase
@@ -79,12 +79,12 @@ export const usePerksQuery = () => {
             )
           `)
           .eq('is_deleted', false)
-          .eq('is_enabled', true) // Only show activated perks
+          .eq('is_enabled', true) // Only show globally activated perks
           .order('created_at', { ascending: false });
           
         if (error) throw error;
         
-        // Get company_perks data separately
+        // Get company_perks data to check if company has enabled each perk
         const { data: companyPerksData, error: companyPerksError } = await supabase
           .from('company_perks')
           .select('perk_id, is_enabled')
@@ -106,7 +106,7 @@ export const usePerksQuery = () => {
           
           return {
             ...perk,
-            vendor_name: vendors?.name || 'Unknown Vendor',
+            vendor_name: vendors?.name || 'Platform Perks',
             is_activated: isActivatedForCompany,
             activation_status: activationStatus
           };
@@ -114,11 +114,11 @@ export const usePerksQuery = () => {
         
         setPerks(processedPerks);
         
-        // Group by vendor for company admin view
+        // Group by vendor for company admin view, ensuring proper vendor assignment
         const vendorsMap = new Map<string, VendorWithPerks>();
         
         processedPerks.forEach(perk => {
-          const vendorId = perk.vendor_id || 'no-vendor';
+          const vendorId = perk.vendor_id || 'platform-perks';
           const vendorName = perk.vendor_name || 'Platform Perks';
           
           if (!vendorsMap.has(vendorId)) {
@@ -166,7 +166,7 @@ export const usePerksQuery = () => {
           const { vendors, company_perks, ...perk } = item;
           return {
             ...perk,
-            vendor_name: vendors?.name || 'Unknown Vendor'
+            vendor_name: vendors?.name || 'Platform Perks'
           };
         }) as PerkWithStatus[] || [];
         

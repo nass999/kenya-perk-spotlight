@@ -5,7 +5,7 @@ import { VendorWithPerks } from '@/hooks/perks/usePerksQuery';
 import { PerkItem } from './PerkItem';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Tag, ChevronDown, ChevronUp, Store } from 'lucide-react';
+import { Tag, Store } from 'lucide-react';
 import { 
   Table, 
   TableBody, 
@@ -97,7 +97,7 @@ export const PerksByVendor = ({
             </p>
             {!isMasterAdmin && !isEmployee && totalPerks === 0 && !searchQuery && (
               <p className="text-sm text-gray-400 mt-1">
-                Click "Activate Perks" to make platform perks available to your users
+                Contact your administrator to activate perks for your organization
               </p>
             )}
           </div>
@@ -129,7 +129,7 @@ export const PerksByVendor = ({
                         <TableHead>Category</TableHead>
                         <TableHead>Valid Through</TableHead>
                         {isCompanyAdmin && (
-                          <TableHead>Organization Status</TableHead>
+                          <TableHead>Status</TableHead>
                         )}
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>

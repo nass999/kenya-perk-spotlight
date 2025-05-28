@@ -116,7 +116,7 @@ export const PerkItem = ({
         </TableCell>
       )}
       
-      {/* Show company activation status for company admin */}
+      {/* Show simplified status for company admin */}
       {isCompanyAdmin && !isDeletedList && (
         <TableCell>
           <div className="flex items-center space-x-2">
@@ -128,12 +128,12 @@ export const PerkItem = ({
                 <Switch 
                   checked={perk.activation_status || false}
                   onCheckedChange={() => onToggleStatus && onToggleStatus(perk)}
-                  aria-label={perk.activation_status ? "Disable perk for organization" : "Enable perk for organization"}
+                  aria-label={perk.activation_status ? "Disable perk for your users" : "Enable perk for your users"}
                 />
               </>
             ) : (
               <>
-                <Badge variant="outline">Not Enabled</Badge>
+                <Badge variant="outline">Disabled</Badge>
                 <Button
                   variant="outline"
                   size="sm"

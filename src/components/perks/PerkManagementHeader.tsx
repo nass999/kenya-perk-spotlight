@@ -1,107 +1,67 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Share2, Plus } from 'lucide-react';
-import { PerkForm } from './PerkForm';
+import { Plus } from 'lucide-react';
 import { Perk, PerkFormValues } from './PerkTypes';
-import { UserInviteDialog } from '@/components/users/UserInviteDialog';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import PerkSelectList from './PerkSelectList';
+import { PerkFormDialog } from './PerkFormDialog';
+import { PerkSelectList } from './PerkSelectList';
 
 interface PerkManagementHeaderProps {
   isCompanyAdmin: boolean;
-  isEmployee?: boolean;
-  onSubmit: (values: PerkFormValues) => Promise<boolean>;
+  isEmployee: boolean;
+  onSubmit: (values: PerkFormValues) => Promise<void>;
   editingPerk: Perk | null;
 }
 
 export const PerkManagementHeader = ({
   isCompanyAdmin,
-  isEmployee = false,
+  isEmployee,
   onSubmit,
   editingPerk
 }: PerkManagementHeaderProps) => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
-  const [isPerkSelectDialogOpen, setIsPerkSelectDialogOpen] = useState(false);
+  const [showPerkForm, setShowPerkForm] = useState(false);
+  const [showAvailablePerks, setShowAvailablePerks] = useState(false);
+
+  const handleCloseForm = () => {
+    setShowPerkForm(false);
+  };
+
+  const handleCloseAvailablePerks = () => {
+    setShowAvailablePerks(false);
+  };
 
   return (
     <div className="flex justify-between items-center mb-6">
       <div>
-        <h1 className="text-3xl font-bold">{isEmployee ? "Available Perks" : "Manage Perks"}</h1>
-        <p className="text-gray-500 mt-1">
-          {isEmployee 
-            ? "View and redeem perks available to you" 
-            : isCompanyAdmin 
-              ? "Activate and manage perks for your organization's users" 
-              : "Create and manage platform-wide perks"}
+        <h1 className="text-3xl font-bold">
+          {isEmployee ? 'Browse Perks' : 'Manage Perks'}
+        </h1>
+        <p className="text-gray-600 mt-1">
+          {isEmployee ? 'Discover and redeem available perks' : 'Create and manage your organization\'s perks'}
         </p>
       </div>
       
-      {/* Only show action buttons for admins, not for employees */}
-      {!isEmployee && (
-        <div className="flex items-center gap-3">
-          {isCompanyAdmin ? (
-            <>
-              <Button 
-                variant="outline" 
-                className="flex items-center gap-2"
-                onClick={() => setIsInviteDialogOpen(true)}
-              >
-                <Share2 className="h-4 w-4" />
-                Invite Users
-              </Button>
-              <Button 
-                onClick={() => setIsPerkSelectDialogOpen(true)}
-                className="flex items-center gap-2 bg-[#da7756]"
-              >
-                <Plus className="h-4 w-4" />
-                Activate Perks
-              </Button>
-            </>
-          ) : (
-            <Button 
-              onClick={() => setIsDialogOpen(true)} 
-              className="flex items-center gap-2 bg-[#da7756]"
-            >
-              <Plus className="h-4 w-4" />
-              Create Perk
-            </Button>
-          )}
+      <div className="space-x-2">
+        {/* Only show Create Perk button for master admins and vendors */}
+        {!isCompanyAdmin && !isEmployee && (
+          <Button onClick={() => setShowPerkForm(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Perk
+          </Button>
+        )}
+      </div>
 
-          {/* PerkForm dialog for master admins */}
-          <PerkForm
-            isOpen={isDialogOpen}
-            onOpenChange={setIsDialogOpen}
-            onSubmit={onSubmit}
-            editingPerk={editingPerk}
-            isCompanyAdmin={isCompanyAdmin}
-          />
-        </div>
-      )}
-      
-      {/* Invite Users Dialog */}
-      {isCompanyAdmin && !isEmployee && (
-        <UserInviteDialog
-          isOpen={isInviteDialogOpen}
-          onOpenChange={setIsInviteDialogOpen}
-        />
-      )}
+      <PerkFormDialog 
+        open={showPerkForm}
+        onClose={handleCloseForm}
+        onSubmit={onSubmit}
+        editingPerk={editingPerk}
+      />
 
-      {/* Select Perks Dialog */}
-      {isCompanyAdmin && !isEmployee && (
-        <Dialog open={isPerkSelectDialogOpen} onOpenChange={setIsPerkSelectDialogOpen}>
-          <DialogContent className="sm:max-w-[600px] max-h-[80vh]">
-            <DialogHeader>
-              <DialogTitle>Activate Perks For Your Organization</DialogTitle>
-              <DialogDescription>
-                Select platform perks to activate for all your organization's users.
-              </DialogDescription>
-            </DialogHeader>
-            <PerkSelectList onClose={() => setIsPerkSelectDialogOpen(false)} />
-          </DialogContent>
-        </Dialog>
-      )}
+      <PerkSelectList 
+        open={showAvailablePerks}
+        onClose={handleCloseAvailablePerks}
+      />
     </div>
   );
 };
