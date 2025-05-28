@@ -5,12 +5,20 @@ import { useAuth } from '@/contexts/auth';
 import { toast } from '@/components/ui/use-toast';
 import { Perk } from '@/components/perks/PerkTypes';
 
-export const useAddPerks = () => {
+export const useAddPerks = (onClose?: () => void) => {
   const { authState } = useAuth();
-  const [selectedPerks, setSelectedPerks] = useState<Perk[]>([]);
+  const [selectedPerks, setSelectedPerks] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAddSelectedPerks = async () => {
+  const handleTogglePerk = (perkId: string) => {
+    setSelectedPerks(prev => 
+      prev.includes(perkId) 
+        ? prev.filter(id => id !== perkId)
+        : [...prev, perkId]
+    );
+  };
+
+  const handleAddSelectedPerks = async (availablePerks: Perk[]) => {
     if (!authState.user?.company_id || authState.user.role !== 'company_admin') {
       toast({
         variant: "destructive",
@@ -35,9 +43,9 @@ export const useAddPerks = () => {
       setIsSubmitting(true);
       
       // Prepare company_perks records for insertion
-      const companyPerksData = selectedPerks.map(perk => ({
+      const companyPerksData = selectedPerks.map(perkId => ({
         company_id: authState.user.company_id,
-        perk_id: perk.id,
+        perk_id: perkId,
         is_enabled: true,
         activated_by: authState.user.id
       }));
@@ -65,6 +73,11 @@ export const useAddPerks = () => {
       // Trigger a refresh of the perks list
       window.dispatchEvent(new Event('refreshPerks'));
 
+      // Close the dialog if onClose is provided
+      if (onClose) {
+        onClose();
+      }
+
     } catch (error: any) {
       console.error('Error activating perks:', error);
       toast({
@@ -80,7 +93,9 @@ export const useAddPerks = () => {
   return {
     selectedPerks,
     setSelectedPerks,
+    handleTogglePerk,
     handleAddSelectedPerks,
+    saving: isSubmitting,
     isSubmitting
   };
 };
