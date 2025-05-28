@@ -47,11 +47,13 @@ export const PerkManagementHeader = ({
       </div>
 
       <PerkFormDialog 
-        open={showPerkForm}
-        onClose={handleCloseForm}
+        isOpen={showPerkForm}
+        onOpenChange={setShowPerkForm}
         onSubmit={onSubmit}
         editingPerk={editingPerk}
-      />
+      >
+        <span />
+      </PerkFormDialog>
     </div>
   );
 };
