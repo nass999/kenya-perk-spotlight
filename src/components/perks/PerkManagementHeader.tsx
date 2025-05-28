@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { Perk, PerkFormValues } from './PerkTypes';
 import { PerkFormDialog } from './PerkFormDialog';
-import { PerkSelectList } from './PerkSelectList';
+import PerkSelectList from './PerkSelectList';
 
 interface PerkManagementHeaderProps {
   isCompanyAdmin: boolean;
   isEmployee: boolean;
-  onSubmit: (values: PerkFormValues) => Promise<void>;
+  onSubmit: (values: PerkFormValues) => Promise<boolean>;
   editingPerk: Perk | null;
 }
 
@@ -20,14 +20,9 @@ export const PerkManagementHeader = ({
   editingPerk
 }: PerkManagementHeaderProps) => {
   const [showPerkForm, setShowPerkForm] = useState(false);
-  const [showAvailablePerks, setShowAvailablePerks] = useState(false);
 
   const handleCloseForm = () => {
     setShowPerkForm(false);
-  };
-
-  const handleCloseAvailablePerks = () => {
-    setShowAvailablePerks(false);
   };
 
   return (
@@ -56,11 +51,6 @@ export const PerkManagementHeader = ({
         onClose={handleCloseForm}
         onSubmit={onSubmit}
         editingPerk={editingPerk}
-      />
-
-      <PerkSelectList 
-        open={showAvailablePerks}
-        onClose={handleCloseAvailablePerks}
       />
     </div>
   );
