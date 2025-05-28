@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { UserData, UserRole } from '@/lib/supabase';
@@ -22,18 +23,11 @@ export const useUserManagement = () => {
       setError(null);
       console.log('Fetching users, role:', authState.user?.role, 'company_id:', companyId);
       
-      // For debugging purposes, let's add more logging
-      if (isMasterAdmin) {
-        console.log('Master admin is fetching ALL users');
-      }
-      
-      // For master admins, fetch ALL users without filtering
-      // We'll use a simpler query to avoid any potential issues
       let query = supabase.from('users').select('*, companies:company_id(name)');
       
-      // Don't filter by company_id for master admins
+      // For company admins, only fetch users from their company
       if (authState.user?.role === 'company_admin' && companyId) {
-        console.log('Filtering by company_id for company admin:', companyId);
+        console.log('Company admin filtering by company_id:', companyId);
         query = query.eq('company_id', companyId);
       } else if (authState.user?.role === 'company_admin' && !companyId) {
         // Company admin without company_id - should only see themselves
@@ -139,7 +133,7 @@ export const useUserManagement = () => {
     }
   };
 
-  // Add function to toggle user active status
+  // Function to toggle user active status
   const toggleUserStatus = async (userId: string, isActive: boolean) => {
     try {
       // Company admins can only update users in their company

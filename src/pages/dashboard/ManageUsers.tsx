@@ -3,11 +3,10 @@ import React, { useEffect, useState } from 'react';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { User, Loader2, Building } from 'lucide-react';
+import { Building } from 'lucide-react';
 import UserTable from '@/components/users/UserTable';
 import UserManagementHeader from '@/components/users/UserManagementHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from '@/components/ui/button';
 
 const ManageUsers = () => {
   const {
@@ -154,7 +153,7 @@ const ManageUsers = () => {
           
           {loading ? (
             <div className="text-center py-8 flex flex-col items-center">
-              <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mb-2" />
               <p className="text-gray-500">Loading users...</p>
             </div>
           ) : (
@@ -165,7 +164,6 @@ const ManageUsers = () => {
               currentUserId={currentUserId}
               onUpdateUserRole={updateUserRole}
               onToggleUserStatus={toggleUserStatus}
-              onRefreshUsers={fetchUsers}
             />
           )}
         </CardContent>

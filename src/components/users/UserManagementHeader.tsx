@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Users, UserPlus, RefreshCw } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import { UserInviteDialog } from '@/components/users/UserInviteDialog';
 
 interface UserManagementHeaderProps {
@@ -14,8 +14,6 @@ interface UserManagementHeaderProps {
 
 const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
   isMasterAdmin,
-  onRefreshUsers,
-  loading,
   companyId,
   companyName
 }) => {
@@ -35,13 +33,9 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
         </p>
       </div>
       <div className="flex gap-2">
-        <Button onClick={() => setInviteDialogOpen(true)} variant="default" className="mr-2">
+        <Button onClick={() => setInviteDialogOpen(true)} variant="default">
           <UserPlus className="mr-2 h-4 w-4" />
           Invite Users
-        </Button>
-        <Button onClick={onRefreshUsers} variant="outline" disabled={loading}>
-          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
         </Button>
       </div>
 

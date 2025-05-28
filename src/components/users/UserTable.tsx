@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { UserData, UserRole } from '@/lib/supabase';
-import { Shield, Loader2, Check, X, Building, RefreshCw } from 'lucide-react';
+import { Shield, Loader2, Check, X, Building } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -17,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -39,24 +38,9 @@ const UserTable: React.FC<UserTableProps> = ({
   currentUserId,
   onUpdateUserRole,
   onToggleUserStatus,
-  onRefreshUsers,
 }) => {
   return (
     <div className="overflow-x-auto">
-      {onRefreshUsers && (
-        <div className="mb-4 flex justify-end">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={onRefreshUsers}
-            className="flex items-center"
-          >
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh Users
-          </Button>
-        </div>
-      )}
-      
       <Table>
         <TableHeader>
           <TableRow>
@@ -75,12 +59,6 @@ const UserTable: React.FC<UserTableProps> = ({
               <TableCell colSpan={7} className="text-center py-8">
                 <div className="flex flex-col items-center">
                   <p className="text-gray-500 mb-2">No users found</p>
-                  {onRefreshUsers && (
-                    <Button variant="outline" size="sm" onClick={onRefreshUsers}>
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                      Refresh
-                    </Button>
-                  )}
                 </div>
               </TableCell>
             </TableRow>
