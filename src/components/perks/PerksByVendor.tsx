@@ -136,13 +136,14 @@ export const PerksByVendor = ({
                     </TableHeader>
                     <TableBody>
                       {vendor.perks.map((perk) => {
-                        // Convert vendor perk to full Perk type
+                        // Convert vendor perk to full Perk type with proper type casting
                         const fullPerk: Perk = {
                           ...perk,
-                          company_id: null, // These fields aren't in VendorWithPerks
+                          company_id: null,
                           vendor_id: vendor.id,
-                          created_at: new Date().toISOString(), // Fallback
-                          is_deleted: false
+                          created_at: new Date().toISOString(),
+                          is_deleted: false,
+                          discount_type: perk.discount_type as 'percentage' | 'fixed'
                         };
                         
                         return (
