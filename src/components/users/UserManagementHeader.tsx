@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { UserPlus } from 'lucide-react';
 import { UserInviteDialog } from '@/components/users/UserInviteDialog';
+import { AssignUserToCompany } from '@/components/users/AssignUserToCompany';
 
 interface UserManagementHeaderProps {
   isMasterAdmin: boolean;
@@ -15,7 +16,8 @@ interface UserManagementHeaderProps {
 const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
   isMasterAdmin,
   companyId,
-  companyName
+  companyName,
+  onRefreshUsers
 }) => {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
 
@@ -33,6 +35,13 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
         </p>
       </div>
       <div className="flex gap-2">
+        {!isMasterAdmin && companyId && companyName && (
+          <AssignUserToCompany
+            companyId={companyId}
+            companyName={companyName}
+            onUserAssigned={onRefreshUsers}
+          />
+        )}
         <Button onClick={() => setInviteDialogOpen(true)} variant="default">
           <UserPlus className="mr-2 h-4 w-4" />
           Invite Users

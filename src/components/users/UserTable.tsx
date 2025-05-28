@@ -28,7 +28,6 @@ interface UserTableProps {
   currentUserId: string;
   onUpdateUserRole: (userId: string, newRole: UserRole) => Promise<void>;
   onToggleUserStatus: (userId: string, isActive: boolean) => Promise<void>;
-  onRefreshUsers?: () => void;
 }
 
 const UserTable: React.FC<UserTableProps> = ({
@@ -59,6 +58,12 @@ const UserTable: React.FC<UserTableProps> = ({
               <TableCell colSpan={7} className="text-center py-8">
                 <div className="flex flex-col items-center">
                   <p className="text-gray-500 mb-2">No users found</p>
+                  <p className="text-sm text-gray-400">
+                    {isMasterAdmin 
+                      ? "No users exist in the system yet" 
+                      : "No users in your company yet. Use 'Assign User' or 'Invite Users' to add team members."
+                    }
+                  </p>
                 </div>
               </TableCell>
             </TableRow>
@@ -83,7 +88,7 @@ const UserTable: React.FC<UserTableProps> = ({
                               <span className="truncate max-w-[120px]">{user.company_name}</span>
                             </>
                           ) : (
-                            <span className="text-gray-400 italic">None</span>
+                            <span className="text-gray-400 italic">No Company</span>
                           )}
                         </div>
                       </TooltipTrigger>
@@ -103,7 +108,7 @@ const UserTable: React.FC<UserTableProps> = ({
                       user.role === 'vendor' ? 'text-purple-500' :
                       'text-green-500'
                     }`} />
-                    <span>{user.role}</span>
+                    <span className="capitalize">{user.role.replace('_', ' ')}</span>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -141,8 +146,8 @@ const UserTable: React.FC<UserTableProps> = ({
                   )}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={user.is_active === false ? "destructive" : "outline"}>
-                    {user.is_active === false ? "Inactive" : "Active"}
+                  <Badge variant={user.is_active === false ? "destructive" : "default"}>
+                    {user.is_active === false ? "Disabled" : "Active"}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -150,26 +155,34 @@ const UserTable: React.FC<UserTableProps> = ({
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <div className="flex items-center space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onToggleUserStatus(user.id, !user.is_active)}
-                        disabled={
-                          user.id === currentUserId ||
-                          // Prevent company admins from toggling master admin status
-                          (!isMasterAdmin && user.role === 'master_admin')
-                        }
-                        className="h-8 w-8 p-0"
-                      >
-                        {user.is_active === false ? (
-                          <Check className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <X className="h-4 w-4 text-red-500" />
-                        )}
-                        <span className="sr-only">
-                          {user.is_active === false ? "Activate" : "Deactivate"} user
-                        </span>
-                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => onToggleUserStatus(user.id, !user.is_active)}
+                              disabled={
+                                user.id === currentUserId ||
+                                // Prevent company admins from toggling master admin status
+                                (!isMasterAdmin && user.role === 'master_admin')
+                              }
+                              className="h-8 w-8 p-0"
+                            >
+                              {user.is_active === false ? (
+                                <Check className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <X className="h-4 w-4 text-red-500" />
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>
+                              {user.is_active === false ? "Enable" : "Disable"} user
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   )}
                 </TableCell>

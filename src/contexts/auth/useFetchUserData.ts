@@ -45,25 +45,33 @@ export const useFetchUserData = () => {
         
         // Use metadata values or defaults
         const role = (metadata?.role || 'employee') as UserRole;
-        const fullName = metadata?.full_name || 'User';
+        const fullName = metadata?.full_name || authUser.email?.split('@')[0] || 'User';
         const companyId = metadata?.company_id || null;
         const companyName = metadata?.company_name || null;
         
         console.log("Creating user with role:", role, "company_id:", companyId, "company_name:", companyName);
         
-        // For company_admin with company_name but no company_id, create the company first
+        // For users invited by company admins, they should inherit the company_id from the inviter
         let finalCompanyId = companyId;
         let finalCompanyName = companyName;
         
-        if (role === 'company_admin' && !companyId) {
-          console.log("Creating company for new company admin");
+        // If this is an employee and no company info is provided, try to find the company from the invitation
+        if (role === 'employee' && !companyId && !companyName) {
+          console.log("Employee without company info, checking for invitation context");
           
-          // Use default company name if none was provided
-          const actualCompanyName = companyName || `${fullName}'s Company`;
+          // In a real invitation system, we would have the inviter's company_id in metadata
+          // For now, we'll set this to null and let the company admin assign them later
+          finalCompanyId = null;
+          finalCompanyName = null;
+        }
+        
+        // For company_admin with company_name but no company_id, create the company first
+        if (role === 'company_admin' && !companyId && companyName) {
+          console.log("Creating company for new company admin");
           
           try {
             // Use admin functions to create company
-            const { data: companyData, error: companyError } = await createCompany(actualCompanyName);
+            const { data: companyData, error: companyError } = await createCompany(companyName);
             
             if (companyError) {
               console.error('Error creating company:', companyError);
@@ -75,33 +83,14 @@ export const useFetchUserData = () => {
             } else if (companyData) {
               console.log("Created company with ID:", companyData.id);
               finalCompanyId = companyData.id;
-              finalCompanyName = actualCompanyName;
+              finalCompanyName = companyName;
               toast({
                 title: "Company created",
-                description: `Created company: ${actualCompanyName}`
+                description: `Created company: ${companyName}`
               });
             }
           } catch (companyErr) {
             console.error('Error in company creation process:', companyErr);
-            
-            // Fallback: Try to create the company directly (may fail due to RLS)
-            try {
-              const { data: companyData, error: companyError } = await supabase
-                .from('companies')
-                .insert({ name: actualCompanyName })
-                .select('id')
-                .single();
-                
-              if (companyError) {
-                console.error('Error in fallback company creation:', companyError);
-              } else if (companyData) {
-                console.log("Created company with ID (fallback):", companyData.id);
-                finalCompanyId = companyData.id;
-                finalCompanyName = actualCompanyName;
-              }
-            } catch (fallbackErr) {
-              console.error('Error in fallback company creation process:', fallbackErr);
-            }
           }
         }
         

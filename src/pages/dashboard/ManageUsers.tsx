@@ -102,6 +102,10 @@ const ManageUsers = () => {
   console.log("Display users length:", displayUsers.length);
   console.log("Available companies:", companies);
 
+  // Get current user's company name for header
+  const currentUser = users.find(user => user.id === currentUserId);
+  const currentUserCompanyName = currentUser?.company_name;
+
   return (
     <div className="container mx-auto py-10">
       <UserManagementHeader
@@ -109,7 +113,7 @@ const ManageUsers = () => {
         onRefreshUsers={fetchUsers}
         loading={loading}
         companyId={companyId}
-        companyName={activeCompany !== 'all' ? companies.find(c => c.id === activeCompany)?.name : 'All Companies'}
+        companyName={currentUserCompanyName}
       />
 
       {error && (
