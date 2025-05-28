@@ -126,7 +126,9 @@ export const usePerksQuery = () => {
       }
 
       if (isCompanyAdmin) {
-        // Company admin sees globally activated perks with company activation status
+        // Company admin sees all globally activated perks (is_enabled = true) with company activation status
+        console.log('Fetching perks for company admin with company_id:', user.company_id);
+        
         const { data: perks, error } = await supabase
           .from('perks')
           .select(`
@@ -138,14 +140,27 @@ export const usePerksQuery = () => {
           .eq('is_deleted', false)
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching perks for company admin:', error);
+          throw error;
+        }
+
+        console.log('Raw perks data for company admin:', perks);
+
+        if (!perks || perks.length === 0) {
+          console.log('No globally enabled perks found for company admin');
+          return [];
+        }
 
         // Group perks by vendor
         const vendorMap = new Map<string, VendorWithPerks>();
         
-        perks?.forEach(perk => {
+        perks.forEach(perk => {
           const vendor = perk.vendors;
-          if (!vendor) return;
+          if (!vendor) {
+            console.log('Perk missing vendor data:', perk);
+            return;
+          }
           
           if (!vendorMap.has(vendor.id)) {
             vendorMap.set(vendor.id, {
@@ -156,7 +171,15 @@ export const usePerksQuery = () => {
           }
           
           // Check if this perk is activated for the company
-          const companyPerk = perk.company_perks?.find(cp => cp.company_id === user.company_id);
+          const companyPerk = Array.isArray(perk.company_perks) 
+            ? perk.company_perks.find(cp => cp.company_id === user.company_id)
+            : (perk.company_perks?.company_id === user.company_id ? perk.company_perks : null);
+          
+          console.log(`Perk ${perk.name} company activation:`, { 
+            companyPerk, 
+            isActivated: !!companyPerk,
+            activationStatus: companyPerk?.is_enabled || false 
+          });
           
           vendorMap.get(vendor.id)?.perks.push({
             ...perk,
@@ -166,7 +189,9 @@ export const usePerksQuery = () => {
           });
         });
 
-        return Array.from(vendorMap.values());
+        const result = Array.from(vendorMap.values());
+        console.log('Final grouped perks for company admin:', result);
+        return result;
       }
 
       if (isEmployee) {
