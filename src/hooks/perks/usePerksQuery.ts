@@ -59,7 +59,12 @@ export const usePerksQuery = () => {
           .eq('is_deleted', false)
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching perks for master admin:', error);
+          throw error;
+        }
+
+        console.log('Master admin perks data:', perks);
 
         // Group perks by vendor
         const vendorMap = new Map<string, VendorWithPerks>();
@@ -97,7 +102,12 @@ export const usePerksQuery = () => {
           .eq('is_deleted', false)
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching perks for vendor:', error);
+          throw error;
+        }
+
+        console.log('Vendor perks data:', perks);
 
         if (!perks || perks.length === 0) return [];
 
@@ -138,10 +148,11 @@ export const usePerksQuery = () => {
 
         if (globalError) {
           console.error('Error checking global perks:', globalError);
+        } else {
+          console.log('Global perks check (is_enabled=true, is_deleted=false):', globalPerksCheck);
         }
 
-        console.log('Global perks check (is_enabled=true, is_deleted=false):', globalPerksCheck);
-
+        // Now fetch all globally enabled perks with vendor info
         const { data: perks, error } = await supabase
           .from('perks')
           .select(`
@@ -176,9 +187,9 @@ export const usePerksQuery = () => {
 
         if (companyPerksError) {
           console.error('Error fetching company perks:', companyPerksError);
+        } else {
+          console.log('Company perks data:', companyPerks);
         }
-
-        console.log('Company perks data:', companyPerks);
 
         // Create a map for quick lookup of company perk status
         const companyPerkMap = new Map();
@@ -235,25 +246,53 @@ export const usePerksQuery = () => {
           return [];
         }
 
-        const { data: perks, error } = await supabase
+        // First get all globally enabled perks
+        const { data: globalPerks, error: globalError } = await supabase
           .from('perks')
           .select(`
             *,
-            vendors!perks_vendor_id_fkey(id, name),
-            company_perks!inner(is_enabled, company_id)
+            vendors!perks_vendor_id_fkey(id, name)
           `)
           .eq('is_enabled', true)
           .eq('is_deleted', false)
-          .eq('company_perks.company_id', user.company_id)
-          .eq('company_perks.is_enabled', true)
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (globalError) {
+          console.error('Error fetching global perks for employee:', globalError);
+          throw globalError;
+        }
+
+        if (!globalPerks || globalPerks.length === 0) {
+          console.log('No globally enabled perks found for employee');
+          return [];
+        }
+
+        // Then get company perks that are enabled
+        const perkIds = globalPerks.map(perk => perk.id);
+        const { data: companyPerks, error: companyError } = await supabase
+          .from('company_perks')
+          .select('perk_id, is_enabled')
+          .eq('company_id', user.company_id)
+          .eq('is_enabled', true)
+          .in('perk_id', perkIds);
+
+        if (companyError) {
+          console.error('Error fetching company perks for employee:', companyError);
+          throw companyError;
+        }
+
+        // Create a set of enabled perk IDs for this company
+        const enabledPerkIds = new Set(companyPerks?.map(cp => cp.perk_id) || []);
+
+        // Filter perks to only those enabled for this company
+        const enabledPerks = globalPerks.filter(perk => enabledPerkIds.has(perk.id));
+
+        console.log('Employee enabled perks:', enabledPerks);
 
         // Group perks by vendor
         const vendorMap = new Map<string, VendorWithPerks>();
         
-        perks?.forEach(perk => {
+        enabledPerks.forEach(perk => {
           const vendor = perk.vendors;
           if (!vendor) return;
           
