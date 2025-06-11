@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -27,6 +26,7 @@ import ManageVendors from './pages/dashboard/ManageVendors';
 import Analytics from './pages/dashboard/Analytics';
 import VendorProfile from './pages/dashboard/VendorProfile';
 import VendorPerks from './pages/dashboard/VendorPerks';
+import CompanyUserDatabase from './pages/dashboard/CompanyUserDatabase';
 
 // Components
 import DashboardLayout from './components/DashboardLayout';
@@ -85,6 +85,11 @@ function App() {
                   <Route path="analytics" element={
                     <ProtectedRoute allowedRoles={['master_admin', 'company_admin'] as UserRole[]}>
                       <Analytics />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="company-user-database" element={
+                    <ProtectedRoute allowedRoles={['master_admin'] as UserRole[]}>
+                      <CompanyUserDatabase />
                     </ProtectedRoute>
                   } />
                   
