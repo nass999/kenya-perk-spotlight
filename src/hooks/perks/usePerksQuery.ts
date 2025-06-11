@@ -133,8 +133,7 @@ export const usePerksQuery = () => {
           .from('perks')
           .select(`
             *,
-            vendors!perks_vendor_id_fkey(id, name),
-            company_perks!left(is_enabled, company_id)
+            vendors!perks_vendor_id_fkey(id, name)
           `)
           .eq('is_enabled', true)
           .eq('is_deleted', false)
@@ -151,6 +150,26 @@ export const usePerksQuery = () => {
           console.log('No globally enabled perks found for company admin');
           return [];
         }
+
+        // Now fetch company_perks data separately for this company
+        const perkIds = perks.map(perk => perk.id);
+        const { data: companyPerks, error: companyPerksError } = await supabase
+          .from('company_perks')
+          .select('perk_id, is_enabled, company_id')
+          .eq('company_id', user.company_id)
+          .in('perk_id', perkIds);
+
+        if (companyPerksError) {
+          console.error('Error fetching company perks:', companyPerksError);
+        }
+
+        console.log('Company perks data:', companyPerks);
+
+        // Create a map for quick lookup of company perk status
+        const companyPerkMap = new Map();
+        companyPerks?.forEach(cp => {
+          companyPerkMap.set(cp.perk_id, cp);
+        });
 
         // Group perks by vendor
         const vendorMap = new Map<string, VendorWithPerks>();
@@ -171,9 +190,7 @@ export const usePerksQuery = () => {
           }
           
           // Check if this perk is activated for the company
-          const companyPerk = Array.isArray(perk.company_perks) 
-            ? perk.company_perks.find(cp => cp.company_id === user.company_id)
-            : (perk.company_perks?.company_id === user.company_id ? perk.company_perks : null);
+          const companyPerk = companyPerkMap.get(perk.id);
           
           console.log(`Perk ${perk.name} company activation:`, { 
             companyPerk, 
