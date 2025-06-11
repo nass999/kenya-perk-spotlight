@@ -129,6 +129,19 @@ export const usePerksQuery = () => {
         // Company admin sees all globally activated perks (is_enabled = true) with company activation status
         console.log('Fetching perks for company admin with company_id:', user.company_id);
         
+        // First, let's check if there are any globally enabled perks at all
+        const { data: globalPerksCheck, error: globalError } = await supabase
+          .from('perks')
+          .select('id, name, is_enabled, is_deleted')
+          .eq('is_enabled', true)
+          .eq('is_deleted', false);
+
+        if (globalError) {
+          console.error('Error checking global perks:', globalError);
+        }
+
+        console.log('Global perks check (is_enabled=true, is_deleted=false):', globalPerksCheck);
+
         const { data: perks, error } = await supabase
           .from('perks')
           .select(`
@@ -153,6 +166,8 @@ export const usePerksQuery = () => {
 
         // Now fetch company_perks data separately for this company
         const perkIds = perks.map(perk => perk.id);
+        console.log('Looking for company perks with perk_ids:', perkIds, 'and company_id:', user.company_id);
+        
         const { data: companyPerks, error: companyPerksError } = await supabase
           .from('company_perks')
           .select('perk_id, is_enabled, company_id')
@@ -208,6 +223,8 @@ export const usePerksQuery = () => {
 
         const result = Array.from(vendorMap.values());
         console.log('Final grouped perks for company admin:', result);
+        console.log('Total vendors returned:', result.length);
+        console.log('Total perks returned:', result.reduce((sum, vendor) => sum + vendor.perks.length, 0));
         return result;
       }
 
