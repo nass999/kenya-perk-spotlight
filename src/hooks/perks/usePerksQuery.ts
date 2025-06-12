@@ -137,9 +137,11 @@ export const usePerksQuery = () => {
 
       if (isCompanyAdmin) {
         // Company admin sees all globally activated perks (is_enabled = true) with company activation status
+        console.log('=== COMPANY ADMIN QUERY DEBUG ===');
         console.log('Fetching perks for company admin with company_id:', user.company_id);
         
-        // First, get all globally enabled perks
+        // Let's run the query step by step to debug
+        console.log('Step 1: Running the perks query...');
         const { data: perks, error } = await supabase
           .from('perks')
           .select(`
@@ -151,20 +153,40 @@ export const usePerksQuery = () => {
           .order('created_at', { ascending: false });
 
         if (error) {
-          console.error('Error fetching perks for company admin:', error);
+          console.error('❌ Error fetching perks for company admin:', error);
+          console.error('Error details:', {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          });
           throw error;
         }
 
+        console.log('✅ Perks query successful!');
         console.log('Raw perks data for company admin:', perks);
+        console.log('Number of perks returned:', perks?.length || 0);
+        
+        // Let's examine each perk individually
+        perks?.forEach((perk, index) => {
+          console.log(`Perk ${index + 1}:`, {
+            id: perk.id,
+            name: perk.name,
+            is_enabled: perk.is_enabled,
+            is_deleted: perk.is_deleted,
+            vendor_id: perk.vendor_id,
+            vendors: perk.vendors
+          });
+        });
 
         if (!perks || perks.length === 0) {
-          console.log('No globally enabled perks found for company admin');
+          console.log('❌ No globally enabled perks found for company admin');
           return [];
         }
 
         // Now fetch company_perks data separately for this company
         const perkIds = perks.map(perk => perk.id);
-        console.log('Looking for company perks with perk_ids:', perkIds, 'and company_id:', user.company_id);
+        console.log('Step 2: Looking for company perks with perk_ids:', perkIds, 'and company_id:', user.company_id);
         
         const { data: companyPerks, error: companyPerksError } = await supabase
           .from('company_perks')
@@ -173,9 +195,11 @@ export const usePerksQuery = () => {
           .in('perk_id', perkIds);
 
         if (companyPerksError) {
-          console.error('Error fetching company perks:', companyPerksError);
+          console.error('❌ Error fetching company perks:', companyPerksError);
         } else {
+          console.log('✅ Company perks query successful!');
           console.log('Company perks data:', companyPerks);
+          console.log('Number of company perks returned:', companyPerks?.length || 0);
         }
 
         // Create a map for quick lookup of company perk status
@@ -184,13 +208,16 @@ export const usePerksQuery = () => {
           companyPerkMap.set(cp.perk_id, cp);
         });
 
+        console.log('Step 3: Building vendor map...');
         // Group perks by vendor
         const vendorMap = new Map<string, VendorWithPerks>();
         
-        perks.forEach(perk => {
+        perks.forEach((perk, index) => {
+          console.log(`Processing perk ${index + 1}: ${perk.name}`);
           const vendor = perk.vendors;
+          
           if (!vendor) {
-            console.log('Perk missing vendor data:', perk);
+            console.log(`⚠️  Perk "${perk.name}" missing vendor data, using fallback`);
             // Create a fallback vendor for perks without vendor data
             const fallbackVendor = {
               id: 'unknown',
@@ -216,6 +243,8 @@ export const usePerksQuery = () => {
             });
             return;
           }
+          
+          console.log(`✅ Perk "${perk.name}" has vendor: ${vendor.name}`);
           
           if (!vendorMap.has(vendor.id)) {
             vendorMap.set(vendor.id, {
@@ -243,9 +272,12 @@ export const usePerksQuery = () => {
         });
 
         const result = Array.from(vendorMap.values());
+        console.log('Step 4: Final result for company admin:');
         console.log('Final grouped perks for company admin:', result);
         console.log('Total vendors returned:', result.length);
         console.log('Total perks returned:', result.reduce((sum, vendor) => sum + vendor.perks.length, 0));
+        console.log('=== END COMPANY ADMIN QUERY DEBUG ===');
+        
         return result;
       }
 
