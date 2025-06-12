@@ -54,7 +54,7 @@ export const usePerksQuery = () => {
           .from('perks')
           .select(`
             *,
-            vendors!perks_vendor_id_fkey(id, name)
+            vendors(id, name)
           `)
           .eq('is_deleted', false)
           .order('created_at', { ascending: false });
@@ -96,7 +96,7 @@ export const usePerksQuery = () => {
           .from('perks')
           .select(`
             *,
-            vendors!perks_vendor_id_fkey(id, name)
+            vendors(id, name)
           `)
           .eq('vendor_id', user.id)
           .eq('is_deleted', false)
@@ -139,25 +139,12 @@ export const usePerksQuery = () => {
         // Company admin sees all globally activated perks (is_enabled = true) with company activation status
         console.log('Fetching perks for company admin with company_id:', user.company_id);
         
-        // First, let's check if there are any globally enabled perks at all
-        const { data: globalPerksCheck, error: globalError } = await supabase
-          .from('perks')
-          .select('id, name, is_enabled, is_deleted')
-          .eq('is_enabled', true)
-          .eq('is_deleted', false);
-
-        if (globalError) {
-          console.error('Error checking global perks:', globalError);
-        } else {
-          console.log('Global perks check (is_enabled=true, is_deleted=false):', globalPerksCheck);
-        }
-
-        // Now fetch all globally enabled perks with vendor info
+        // First, get all globally enabled perks
         const { data: perks, error } = await supabase
           .from('perks')
           .select(`
             *,
-            vendors!perks_vendor_id_fkey(id, name)
+            vendors(id, name)
           `)
           .eq('is_enabled', true)
           .eq('is_deleted', false)
@@ -204,6 +191,29 @@ export const usePerksQuery = () => {
           const vendor = perk.vendors;
           if (!vendor) {
             console.log('Perk missing vendor data:', perk);
+            // Create a fallback vendor for perks without vendor data
+            const fallbackVendor = {
+              id: 'unknown',
+              name: 'Unknown Vendor'
+            };
+            
+            if (!vendorMap.has(fallbackVendor.id)) {
+              vendorMap.set(fallbackVendor.id, {
+                id: fallbackVendor.id,
+                name: fallbackVendor.name,
+                perks: []
+              });
+            }
+            
+            // Check if this perk is activated for the company
+            const companyPerk = companyPerkMap.get(perk.id);
+            
+            vendorMap.get(fallbackVendor.id)?.perks.push({
+              ...perk,
+              vendor_name: fallbackVendor.name,
+              is_activated: !!companyPerk,
+              activation_status: companyPerk?.is_enabled || false
+            });
             return;
           }
           
@@ -251,7 +261,7 @@ export const usePerksQuery = () => {
           .from('perks')
           .select(`
             *,
-            vendors!perks_vendor_id_fkey(id, name)
+            vendors(id, name)
           `)
           .eq('is_enabled', true)
           .eq('is_deleted', false)
