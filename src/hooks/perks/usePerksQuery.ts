@@ -54,7 +54,7 @@ export const usePerksQuery = () => {
           .from('perks')
           .select(`
             *,
-            vendors(id, name)
+            vendors!perks_vendor_id_fkey(id, name)
           `)
           .eq('is_deleted', false)
           .order('created_at', { ascending: false });
@@ -96,7 +96,7 @@ export const usePerksQuery = () => {
           .from('perks')
           .select(`
             *,
-            vendors(id, name)
+            vendors!perks_vendor_id_fkey(id, name)
           `)
           .eq('vendor_id', user.id)
           .eq('is_deleted', false)
@@ -146,7 +146,7 @@ export const usePerksQuery = () => {
           .from('perks')
           .select(`
             *,
-            vendors(id, name)
+            vendors!perks_vendor_id_fkey(id, name)
           `)
           .eq('is_enabled', true)
           .eq('is_deleted', false)
@@ -293,7 +293,7 @@ export const usePerksQuery = () => {
           .from('perks')
           .select(`
             *,
-            vendors(id, name)
+            vendors!perks_vendor_id_fkey(id, name)
           `)
           .eq('is_enabled', true)
           .eq('is_deleted', false)
