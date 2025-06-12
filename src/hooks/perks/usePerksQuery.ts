@@ -140,7 +140,7 @@ export const usePerksQuery = () => {
         console.log('=== COMPANY ADMIN QUERY DEBUG ===');
         console.log('Fetching perks for company admin with company_id:', user.company_id);
         
-        // Let's try a different approach - fetch perks and vendors separately first
+        // First fetch all enabled perks
         console.log('Step 1: Fetching all enabled perks...');
         const { data: perks, error } = await supabase
           .from('perks')
@@ -217,18 +217,42 @@ export const usePerksQuery = () => {
           console.log(`Processing perk ${index + 1}: ${perk.name}`);
           const vendor = vendorLookup.get(perk.vendor_id);
           
-          if (!vendor && perk.vendor_id) {
+          if (vendor) {
+            console.log(`✅ Perk "${perk.name}" has vendor: ${vendor.name}`);
+            
+            if (!vendorMap.has(vendor.id)) {
+              vendorMap.set(vendor.id, {
+                id: vendor.id,
+                name: vendor.name, // Use the actual vendor name here
+                perks: []
+              });
+            }
+            
+            // Check if this perk is activated for the company
+            const companyPerk = companyPerkMap.get(perk.id);
+            
+            console.log(`Perk ${perk.name} company activation:`, { 
+              companyPerk, 
+              isActivated: !!companyPerk,
+              activationStatus: companyPerk?.is_enabled || false 
+            });
+            
+            vendorMap.get(vendor.id)?.perks.push({
+              ...perk,
+              vendor_name: vendor.name, // Use the actual vendor name here too
+              is_activated: !!companyPerk,
+              activation_status: companyPerk?.is_enabled || false
+            });
+          } else {
             console.log(`⚠️  Perk "${perk.name}" has vendor_id ${perk.vendor_id} but vendor not found in lookup`);
-            // Create a fallback vendor entry
-            const fallbackVendor = {
-              id: perk.vendor_id,
-              name: `Vendor ${perk.vendor_id.substring(0, 8)}...`
-            };
+            // Create a fallback vendor entry with a better name
+            const fallbackVendorName = `Unknown Vendor (${perk.vendor_id?.substring(0, 8) || 'N/A'}...)`;
+            const fallbackVendorId = perk.vendor_id || 'unknown';
             
-            if (!vendorMap.has(fallbackVendor.id)) {
-              vendorMap.set(fallbackVendor.id, {
-                id: fallbackVendor.id,
-                name: fallbackVendor.name,
+            if (!vendorMap.has(fallbackVendorId)) {
+              vendorMap.set(fallbackVendorId, {
+                id: fallbackVendorId,
+                name: fallbackVendorName,
                 perks: []
               });
             }
@@ -236,68 +260,13 @@ export const usePerksQuery = () => {
             // Check if this perk is activated for the company
             const companyPerk = companyPerkMap.get(perk.id);
             
-            vendorMap.get(fallbackVendor.id)?.perks.push({
+            vendorMap.get(fallbackVendorId)?.perks.push({
               ...perk,
-              vendor_name: fallbackVendor.name,
+              vendor_name: fallbackVendorName,
               is_activated: !!companyPerk,
               activation_status: companyPerk?.is_enabled || false
             });
-            return;
           }
-
-          if (!vendor) {
-            console.log(`⚠️  Perk "${perk.name}" missing vendor data completely, using unknown fallback`);
-            // Create a fallback vendor for perks without vendor data
-            const fallbackVendor = {
-              id: 'unknown',
-              name: 'Unknown Vendor'
-            };
-            
-            if (!vendorMap.has(fallbackVendor.id)) {
-              vendorMap.set(fallbackVendor.id, {
-                id: fallbackVendor.id,
-                name: fallbackVendor.name,
-                perks: []
-              });
-            }
-            
-            // Check if this perk is activated for the company
-            const companyPerk = companyPerkMap.get(perk.id);
-            
-            vendorMap.get(fallbackVendor.id)?.perks.push({
-              ...perk,
-              vendor_name: fallbackVendor.name,
-              is_activated: !!companyPerk,
-              activation_status: companyPerk?.is_enabled || false
-            });
-            return;
-          }
-          
-          console.log(`✅ Perk "${perk.name}" has vendor: ${vendor.name}`);
-          
-          if (!vendorMap.has(vendor.id)) {
-            vendorMap.set(vendor.id, {
-              id: vendor.id,
-              name: vendor.name,
-              perks: []
-            });
-          }
-          
-          // Check if this perk is activated for the company
-          const companyPerk = companyPerkMap.get(perk.id);
-          
-          console.log(`Perk ${perk.name} company activation:`, { 
-            companyPerk, 
-            isActivated: !!companyPerk,
-            activationStatus: companyPerk?.is_enabled || false 
-          });
-          
-          vendorMap.get(vendor.id)?.perks.push({
-            ...perk,
-            vendor_name: vendor.name,
-            is_activated: !!companyPerk,
-            activation_status: companyPerk?.is_enabled || false
-          });
         });
 
         const result = Array.from(vendorMap.values());
