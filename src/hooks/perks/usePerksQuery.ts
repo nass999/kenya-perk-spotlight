@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
@@ -223,7 +222,7 @@ export const usePerksQuery = () => {
             if (!vendorMap.has(vendor.id)) {
               vendorMap.set(vendor.id, {
                 id: vendor.id,
-                name: vendor.name, // Use the actual vendor name here
+                name: vendor.name,
                 perks: []
               });
             }
@@ -239,7 +238,7 @@ export const usePerksQuery = () => {
             
             vendorMap.get(vendor.id)?.perks.push({
               ...perk,
-              vendor_name: vendor.name, // Use the actual vendor name here too
+              vendor_name: vendor.name,
               is_activated: !!companyPerk,
               activation_status: companyPerk?.is_enabled || false
             });
@@ -280,77 +279,9 @@ export const usePerksQuery = () => {
       }
 
       if (isEmployee) {
-        // Employees see only perks that are globally enabled AND enabled for their company
-        if (!user.company_id) {
-          console.log('Employee has no company_id, returning empty perks');
-          return [];
-        }
-
-        // First get all globally enabled perks
-        const { data: globalPerks, error: globalError } = await supabase
-          .from('perks')
-          .select(`
-            *,
-            vendors!perks_vendor_id_fkey(id, name)
-          `)
-          .eq('is_enabled', true)
-          .eq('is_deleted', false)
-          .order('created_at', { ascending: false });
-
-        if (globalError) {
-          console.error('Error fetching global perks for employee:', globalError);
-          throw globalError;
-        }
-
-        if (!globalPerks || globalPerks.length === 0) {
-          console.log('No globally enabled perks found for employee');
-          return [];
-        }
-
-        // Then get company perks that are enabled
-        const perkIds = globalPerks.map(perk => perk.id);
-        const { data: companyPerks, error: companyError } = await supabase
-          .from('company_perks')
-          .select('perk_id, is_enabled')
-          .eq('company_id', user.company_id)
-          .eq('is_enabled', true)
-          .in('perk_id', perkIds);
-
-        if (companyError) {
-          console.error('Error fetching company perks for employee:', companyError);
-          throw companyError;
-        }
-
-        // Create a set of enabled perk IDs for this company
-        const enabledPerkIds = new Set(companyPerks?.map(cp => cp.perk_id) || []);
-
-        // Filter perks to only those enabled for this company
-        const enabledPerks = globalPerks.filter(perk => enabledPerkIds.has(perk.id));
-
-        console.log('Employee enabled perks:', enabledPerks);
-
-        // Group perks by vendor
-        const vendorMap = new Map<string, VendorWithPerks>();
-        
-        enabledPerks.forEach(perk => {
-          const vendor = perk.vendors;
-          if (!vendor) return;
-          
-          if (!vendorMap.has(vendor.id)) {
-            vendorMap.set(vendor.id, {
-              id: vendor.id,
-              name: vendor.name,
-              perks: []
-            });
-          }
-          
-          vendorMap.get(vendor.id)?.perks.push({
-            ...perk,
-            vendor_name: vendor.name
-          });
-        });
-
-        return Array.from(vendorMap.values());
+        // Employees should not see any perks
+        console.log('Employee users cannot see perks, returning empty list');
+        return [];
       }
 
       return [];
