@@ -44,10 +44,9 @@ export const getNavigationByRole = (role: UserRole | undefined): NavigationItem[
       { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart },
     );
   } else {
-    // Employee role
+    // Employee role - simplified navigation without My Redemptions
     navigation.push(
       { name: 'Perks', href: '/dashboard', icon: ShoppingBag },
-      { name: 'My Redemptions', href: '/dashboard/my-redemptions', icon: CreditCard },
       { name: 'Vendor Recommendations', href: '/dashboard/vendor-recommendations', icon: UserPlus }
     );
   }

@@ -3,7 +3,7 @@ import React from 'react';
 import { DashboardStats } from '@/types/dashboard';
 import { useFeaturedPerks } from '@/hooks/perks/useFeaturedPerks';
 import { Button } from '@/components/ui/button';
-import { UserPlus, SparklesIcon } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PerkTiles from './employee/PerkTiles';
 import { useAuth } from '@/contexts/auth';
