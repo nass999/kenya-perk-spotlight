@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
@@ -279,9 +280,141 @@ export const usePerksQuery = () => {
       }
 
       if (isEmployee) {
-        // Employees should not see any perks
-        console.log('Employee users cannot see perks, returning empty list');
-        return [];
+        // Employees see only perks that are globally enabled AND enabled for their company
+        if (!user.company_id) {
+          console.log('Employee has no company_id, returning empty perks');
+          return [];
+        }
+
+        console.log('=== EMPLOYEE QUERY DEBUG ===');
+        console.log('Fetching perks for employee with company_id:', user.company_id);
+
+        // First get all globally enabled perks
+        console.log('Step 1: Fetching all globally enabled perks...');
+        const { data: globalPerks, error: globalError } = await supabase
+          .from('perks')
+          .select('*')
+          .eq('is_enabled', true)
+          .eq('is_deleted', false)
+          .order('created_at', { ascending: false });
+
+        if (globalError) {
+          console.error('❌ Error fetching global perks for employee:', globalError);
+          throw globalError;
+        }
+
+        console.log('✅ Global perks data:', globalPerks);
+        console.log('Number of global perks:', globalPerks?.length || 0);
+
+        if (!globalPerks || globalPerks.length === 0) {
+          console.log('❌ No globally enabled perks found for employee');
+          return [];
+        }
+
+        // Then get company perks that are enabled
+        const perkIds = globalPerks.map(perk => perk.id);
+        console.log('Step 2: Fetching company perks for perk_ids:', perkIds);
+        
+        const { data: companyPerks, error: companyError } = await supabase
+          .from('company_perks')
+          .select('perk_id, is_enabled')
+          .eq('company_id', user.company_id)
+          .eq('is_enabled', true)
+          .in('perk_id', perkIds);
+
+        if (companyError) {
+          console.error('❌ Error fetching company perks for employee:', companyError);
+          throw companyError;
+        }
+
+        console.log('✅ Company perks data:', companyPerks);
+
+        // Create a set of enabled perk IDs for this company
+        const enabledPerkIds = new Set(companyPerks?.map(cp => cp.perk_id) || []);
+        console.log('Enabled perk IDs for company:', Array.from(enabledPerkIds));
+
+        // Filter perks to only those enabled for this company
+        const enabledPerks = globalPerks.filter(perk => enabledPerkIds.has(perk.id));
+        console.log('Step 3: Filtered enabled perks for employee:', enabledPerks);
+        console.log('Number of enabled perks for employee:', enabledPerks.length);
+
+        if (enabledPerks.length === 0) {
+          console.log('❌ No perks enabled for this company');
+          return [];
+        }
+
+        // Now fetch vendors for the enabled perks
+        const vendorIds = [...new Set(enabledPerks.map(perk => perk.vendor_id).filter(Boolean))];
+        console.log('Step 4: Fetching vendors for enabled perks:', vendorIds);
+        
+        let vendorsData: any[] = [];
+        if (vendorIds.length > 0) {
+          const { data: vendors, error: vendorsError } = await supabase
+            .from('vendors')
+            .select('id, name')
+            .in('id', vendorIds);
+
+          if (vendorsError) {
+            console.error('❌ Error fetching vendors for employee:', vendorsError);
+          } else {
+            vendorsData = vendors || [];
+            console.log('✅ Vendors data for employee:', vendorsData);
+          }
+        }
+
+        // Create vendor lookup map
+        const vendorLookup = new Map();
+        vendorsData.forEach(vendor => {
+          vendorLookup.set(vendor.id, vendor);
+        });
+
+        // Group perks by vendor
+        const vendorMap = new Map<string, VendorWithPerks>();
+        
+        enabledPerks.forEach(perk => {
+          const vendor = vendorLookup.get(perk.vendor_id);
+          
+          if (vendor) {
+            if (!vendorMap.has(vendor.id)) {
+              vendorMap.set(vendor.id, {
+                id: vendor.id,
+                name: vendor.name,
+                perks: []
+              });
+            }
+            
+            vendorMap.get(vendor.id)?.perks.push({
+              ...perk,
+              vendor_name: vendor.name
+            });
+          } else {
+            // Create fallback vendor entry
+            const fallbackVendorName = `Unknown Vendor (${perk.vendor_id?.substring(0, 8) || 'N/A'}...)`;
+            const fallbackVendorId = perk.vendor_id || 'unknown';
+            
+            if (!vendorMap.has(fallbackVendorId)) {
+              vendorMap.set(fallbackVendorId, {
+                id: fallbackVendorId,
+                name: fallbackVendorName,
+                perks: []
+              });
+            }
+            
+            vendorMap.get(fallbackVendorId)?.perks.push({
+              ...perk,
+              vendor_name: fallbackVendorName
+            });
+          }
+        });
+
+        const result = Array.from(vendorMap.values());
+        console.log('Step 5: Final result for employee:');
+        console.log('Final grouped perks for employee:', result);
+        console.log('Total vendors returned:', result.length);
+        console.log('Total perks returned:', result.reduce((sum, vendor) => sum + vendor.perks.length, 0));
+        console.log('=== END EMPLOYEE QUERY DEBUG ===');
+
+        return result;
       }
 
       return [];
