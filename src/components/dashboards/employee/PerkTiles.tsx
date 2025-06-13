@@ -91,6 +91,9 @@ const PerkTiles: React.FC<PerkTilesProps> = ({ perks, loading }) => {
     }
   };
 
+  console.log('PerkTiles received perks:', perks);
+  console.log('PerkTiles loading state:', loading);
+
   if (loading) {
     return (
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
@@ -120,26 +123,11 @@ const PerkTiles: React.FC<PerkTilesProps> = ({ perks, loading }) => {
         <Tag className="mx-auto h-12 w-12 text-gray-400 mb-4" />
         <h3 className="text-xl font-semibold mb-2">No perks available</h3>
         <p className="text-gray-500">
-          There are no perks available at the moment
+          Your company admin hasn't activated any perks yet
         </p>
       </div>
     );
   }
-
-  // CSS animation class for vibration effect
-  const vibrateAnimation = "animate-[vibrate_0.8s_ease-in-out_3]";
-  
-  // Keyframes for vibration animation defined in the component
-  const vibrationKeyframes = `
-    @keyframes vibrate {
-      0% { transform: translateX(0); }
-      20% { transform: translateX(-2px) rotate(-1deg); }
-      40% { transform: translateX(2px) rotate(1deg); }
-      60% { transform: translateX(-2px) rotate(-1deg); }
-      80% { transform: translateX(2px) rotate(1deg); }
-      100% { transform: translateX(0); }
-    }
-  `;
 
   return (
     <>
@@ -157,6 +145,8 @@ const PerkTiles: React.FC<PerkTilesProps> = ({ perks, loading }) => {
         {perks.map((perk, index) => {
           const isRedeemed = !!redeemedPerks[perk.id];
           const redemptionCode = redeemedPerks[perk.id];
+          
+          console.log(`Rendering perk ${index}:`, perk.name, 'from vendor:', perk.vendor_name);
           
           return (
             <Card 
@@ -188,6 +178,11 @@ const PerkTiles: React.FC<PerkTilesProps> = ({ perks, loading }) => {
                     {perk.discount_amount}%
                   </Badge>
                 </div>
+                {perk.vendor_name && (
+                  <Badge variant="outline" className="mt-1 text-[0.65rem] py-0">
+                    {perk.vendor_name}
+                  </Badge>
+                )}
                 {perk.category && (
                   <Badge variant="outline" className="mt-1 text-[0.65rem] py-0">
                     {perk.category}

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
@@ -11,80 +10,129 @@ export interface FeaturedPerk {
   discount_type: string;
   image_url: string | null;
   expiry_date: string | null;
-  valid_through_date: string | null;
   category: string | null;
-  vendor_id: string | null;
+  vendor_id: string;
   vendor_name?: string;
-  redemption_code: string | null;
+  redemption_code?: string;
 }
 
-export const useFeaturedPerks = (limit = 12) => {
+export const useFeaturedPerks = () => {
   const [featuredPerks, setFeaturedPerks] = useState<FeaturedPerk[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { authState } = useAuth();
 
-  useEffect(() => {
-    const fetchFeaturedPerks = async () => {
-      try {
-        setLoading(true);
-        
-        // Only fetch perks if user has a company_id (employees and company admins)
-        if (!authState.user?.company_id) {
-          console.log("No company_id found, not fetching perks");
+  const fetchFeaturedPerks = async () => {
+    try {
+      const user = authState.user;
+      if (!user) {
+        console.log('No user found');
+        return;
+      }
+
+      console.log('Fetching featured perks for company:', user.company_id);
+
+      if (user.role === 'employee') {
+        if (!user.company_id) {
+          console.log('Employee has no company_id');
           setFeaturedPerks([]);
-          setLoading(false);
           return;
         }
-        
-        console.log("Fetching featured perks for company:", authState.user.company_id);
-        
-        // Fetch perks that are activated and enabled for this company through junction table
-        const { data, error } = await supabase
+
+        // First get all globally enabled perks
+        const { data: globalPerks, error: globalError } = await supabase
           .from('perks')
-          .select(`
-            *,
-            vendors:vendor_id (
-              name
-            ),
-            company_perks!inner (
-              is_enabled
-            )
-          `)
+          .select('*')
           .eq('is_enabled', true)
           .eq('is_deleted', false)
-          .eq('company_perks.company_id', authState.user.company_id)
-          .eq('company_perks.is_enabled', true)
-          .order('created_at', { ascending: false })
-          .limit(limit);
-        
-        if (error) {
-          console.error('Error fetching featured perks:', error);
-          throw error;
+          .order('created_at', { ascending: false });
+
+        if (globalError) {
+          console.error('Error fetching global perks:', globalError);
+          throw globalError;
         }
 
-        // Process perks to include vendor name
-        const processedPerks = data.map(perk => {
-          const { vendors, company_perks, ...rest } = perk;
-          return {
-            ...rest,
-            vendor_name: vendors?.name || 'Unknown Vendor'
-          };
+        if (!globalPerks || globalPerks.length === 0) {
+          console.log('No globally enabled perks found');
+          setFeaturedPerks([]);
+          return;
+        }
+
+        // Then get company perks that are enabled
+        const perkIds = globalPerks.map(perk => perk.id);
+        const { data: companyPerks, error: companyError } = await supabase
+          .from('company_perks')
+          .select('perk_id, is_enabled')
+          .eq('company_id', user.company_id)
+          .eq('is_enabled', true)
+          .in('perk_id', perkIds);
+
+        if (companyError) {
+          console.error('Error fetching company perks:', companyError);
+          throw companyError;
+        }
+
+        // Create a set of enabled perk IDs for this company
+        const enabledPerkIds = new Set(companyPerks?.map(cp => cp.perk_id) || []);
+        
+        // Filter perks to only those enabled for this company
+        const enabledPerks = globalPerks.filter(perk => enabledPerkIds.has(perk.id));
+
+        console.log('Enabled perks for employee:', enabledPerks);
+        console.log('Number of enabled perks:', enabledPerks.length);
+
+        if (enabledPerks.length === 0) {
+          console.log('No perks enabled for this company');
+          setFeaturedPerks([]);
+          return;
+        }
+
+        // Now fetch vendors separately to avoid relationship ambiguity
+        const vendorIds = [...new Set(enabledPerks.map(perk => perk.vendor_id).filter(Boolean))];
+        let vendorsData: any[] = [];
+        
+        if (vendorIds.length > 0) {
+          const { data: vendors, error: vendorsError } = await supabase
+            .from('vendors')
+            .select('id, name')
+            .in('id', vendorIds);
+
+          if (vendorsError) {
+            console.error('Error fetching vendors:', vendorsError);
+          } else {
+            vendorsData = vendors || [];
+          }
+        }
+
+        // Create vendor lookup map
+        const vendorLookup = new Map();
+        vendorsData.forEach(vendor => {
+          vendorLookup.set(vendor.id, vendor);
         });
 
-        console.log("Fetched featured perks:", processedPerks.length, processedPerks);
-        setFeaturedPerks(processedPerks);
-      } catch (err) {
-        console.error('Error in useFeaturedPerks:', err);
+        // Transform perks with vendor names
+        const perksWithVendors = enabledPerks.map(perk => ({
+          ...perk,
+          vendor_name: vendorLookup.get(perk.vendor_id)?.name || `Unknown Vendor (${perk.vendor_id?.substring(0, 8)}...)`
+        }));
+
+        console.log('Final perks with vendors for employee:', perksWithVendors);
+        setFeaturedPerks(perksWithVendors);
+      } else {
+        // For other roles, keep existing logic simple
         setFeaturedPerks([]);
-      } finally {
-        setLoading(false);
       }
-    };
-
-    if (authState.user) {
-      fetchFeaturedPerks();
+    } catch (err: any) {
+      console.error('Error in useFeaturedPerks:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-  }, [limit, authState.user]);
+  };
 
-  return { featuredPerks, loading };
+  useEffect(() => {
+    fetchFeaturedPerks();
+  }, [authState.user]);
+
+  return { featuredPerks, loading, error };
 };
