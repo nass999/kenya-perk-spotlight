@@ -164,7 +164,7 @@ const UserTable: React.FC<UserTableProps> = ({
                               onClick={() => onToggleUserStatus(user.id, !user.is_active)}
                               disabled={
                                 user.id === currentUserId ||
-                                // Prevent company admins from toggling master admin status
+                                // Company admins cannot toggle master admin status, but master admins can toggle anyone
                                 (!isMasterAdmin && user.role === 'master_admin')
                               }
                               className="h-8 w-8 p-0"
@@ -178,7 +178,7 @@ const UserTable: React.FC<UserTableProps> = ({
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>
-                              {user.is_active === false ? "Enable" : "Disable"} user
+                              {user.is_active === false ? "Activate" : "Deactivate"} user
                             </p>
                           </TooltipContent>
                         </Tooltip>

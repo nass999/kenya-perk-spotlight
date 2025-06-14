@@ -25,7 +25,7 @@ export const useUserManagement = () => {
       
       let query = supabase.from('users').select('*, companies:company_id(name)');
       
-      // For company admins, only fetch users from their company
+      // Master admins see ALL users, company admins see only their company's users
       if (authState.user?.role === 'company_admin' && companyId) {
         console.log('Company admin filtering by company_id:', companyId);
         query = query.eq('company_id', companyId);
@@ -40,6 +40,7 @@ export const useUserManagement = () => {
           description: "You don't have a company assigned. Please contact an administrator."
         });
       }
+      // For master_admin, no filtering is applied - they see all users
       
       // Execute the query
       const { data: allUsers, error } = await query.order('created_at', { ascending: false });
@@ -55,7 +56,7 @@ export const useUserManagement = () => {
         company_name: user.companies?.name || null
       }));
       
-      console.log(`Fetched ${finalUsers?.length || 0} users:`, finalUsers);
+      console.log(`Fetched ${finalUsers?.length || 0} users for ${authState.user?.role}:`, finalUsers);
       setUsers(finalUsers);
     } catch (error: any) {
       console.error('Error fetching users:', error);
@@ -68,7 +69,7 @@ export const useUserManagement = () => {
     } finally {
       setLoading(false);
     }
-  }, [authState.user?.role, companyId, currentUserId, isMasterAdmin]);
+  }, [authState.user?.role, companyId, currentUserId]);
 
   useEffect(() => {
     // Fetch users when component mounts or when user role/company changes
@@ -148,6 +149,8 @@ export const useUserManagement = () => {
           return;
         }
       }
+      
+      // Master admins can update any user's status
       
       setUpdating(userId);
       
