@@ -5,11 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, Heart, Tag } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { useRedeemPerk } from '@/hooks/perks/useRedeemPerk';
-import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/lib/supabase';
+import { useRedemptionDialog } from '@/hooks/perks/useRedemptionDialog';
+import RedemptionDialog from '@/components/dialogs/RedemptionDialog';
 
 interface PerkTilesProps {
   perks: FeaturedPerk[];
@@ -20,6 +20,7 @@ const PerkTiles: React.FC<PerkTilesProps> = ({ perks, loading }) => {
   const { redeemPerk, isRedeeming } = useRedeemPerk();
   const { authState } = useAuth();
   const [redeemedPerks, setRedeemedPerks] = useState<Record<string, string>>({});
+  const { isOpen, selectedPerk, redemptionCode, openDialog, closeDialog } = useRedemptionDialog();
 
   useEffect(() => {
     // Only fetch redeemed perks for authenticated users
@@ -75,19 +76,19 @@ const PerkTiles: React.FC<PerkTilesProps> = ({ perks, loading }) => {
     });
   };
 
-  const handleRedeem = async (perkId: string) => {
-    const result = await redeemPerk(perkId);
+  const handleRedeem = async (perk: FeaturedPerk) => {
+    const result = await redeemPerk(perk.id);
     if (result.success) {
+      const newRedemptionCode = result.data?.redemption_code || 'CODE';
+      
       // Update the local state with the new redemption
       setRedeemedPerks(prev => ({
         ...prev,
-        [perkId]: result.data?.redemption_code || 'CODE'
+        [perk.id]: newRedemptionCode
       }));
       
-      toast({
-        title: "Success!",
-        description: "You've successfully redeemed this perk.",
-      });
+      // Open the success dialog
+      openDialog(perk, newRedemptionCode);
     }
   };
 
@@ -144,7 +145,7 @@ const PerkTiles: React.FC<PerkTilesProps> = ({ perks, loading }) => {
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
         {perks.map((perk, index) => {
           const isRedeemed = !!redeemedPerks[perk.id];
-          const redemptionCode = redeemedPerks[perk.id];
+          const redemptionCodeValue = redeemedPerks[perk.id];
           
           console.log(`Rendering perk ${index}:`, perk.name, 'from vendor:', perk.vendor_name);
           
@@ -199,12 +200,12 @@ const PerkTiles: React.FC<PerkTilesProps> = ({ perks, loading }) => {
               <CardFooter className="flex justify-between px-2 py-1">
                 {isRedeemed ? (
                   <div className="flex-1 bg-gray-100 text-xs border border-gray-200 text-gray-800 rounded px-2 py-1 text-center">
-                    <span className="font-mono text-[0.65rem]">{redemptionCode}</span>
+                    <span className="font-mono text-[0.65rem]">{redemptionCodeValue}</span>
                   </div>
                 ) : (
                   <Button 
                     className="flex-1 bg-[#da7756] hover:bg-[#c96a4c] text-xs h-6" 
-                    onClick={() => handleRedeem(perk.id)}
+                    onClick={() => handleRedeem(perk)}
                     disabled={isRedeeming}
                   >
                     {isRedeeming ? "..." : "Redeem"}
@@ -218,6 +219,14 @@ const PerkTiles: React.FC<PerkTilesProps> = ({ perks, loading }) => {
           );
         })}
       </div>
+
+      {/* Redemption Success Dialog */}
+      <RedemptionDialog
+        perk={selectedPerk}
+        isOpen={isOpen}
+        onClose={closeDialog}
+        redemptionCode={redemptionCode}
+      />
     </>
   );
 };

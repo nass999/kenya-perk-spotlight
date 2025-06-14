@@ -150,6 +150,44 @@ export type Database = {
           },
         ]
       }
+      redemptions: {
+        Row: {
+          created_at: string
+          id: string
+          perk_id: string
+          redeemed_at: string | null
+          redemption_code: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          perk_id: string
+          redeemed_at?: string | null
+          redemption_code: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          perk_id?: string
+          redeemed_at?: string | null
+          redemption_code?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "redemptions_perk_id_fkey"
+            columns: ["perk_id"]
+            isOneToOne: false
+            referencedRelation: "perks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           company_id: string | null

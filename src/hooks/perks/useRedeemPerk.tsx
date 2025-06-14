@@ -39,13 +39,29 @@ export function useRedeemPerk() {
         .single();
       
       if (error) {
+        console.error('Error creating redemption:', error);
         throw error;
       }
       
-      toast({
-        title: "Perk redeemed!",
-        description: "You've successfully redeemed this perk. Check 'My Redemptions' for details.",
-      });
+      // Send email notification
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-redemption-email', {
+          body: {
+            perkId: perkId,
+            userEmail: authState.user.email,
+            userName: authState.user.full_name || 'User',
+            redemptionCode: redemptionCode
+          }
+        });
+
+        if (emailError) {
+          console.error('Error sending email:', emailError);
+          // Don't fail the redemption if email fails
+        }
+      } catch (emailError) {
+        console.error('Email service error:', emailError);
+        // Don't fail the redemption if email service is unavailable
+      }
       
       return { success: true, data };
     } catch (error: any) {
