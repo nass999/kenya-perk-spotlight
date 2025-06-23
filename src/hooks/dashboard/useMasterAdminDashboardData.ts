@@ -49,20 +49,6 @@ export const useMasterAdminDashboardData = () => {
           throw companiesError;
         }
         
-        // Fetch company user counts for the new section
-        const { data: companyUserCountsData, error: companyUserCountsError } = await supabase
-          .from('users')
-          .select('company_name, count')
-          .not('company_name', 'is', null)
-          .order('count', { ascending: false });
-          
-        if (companyUserCountsError) {
-          console.error('Error fetching company user counts:', companyUserCountsError);
-        } else {
-          console.log('Company user counts:', companyUserCountsData);
-          setCompanyUserCounts(companyUserCountsData || []);
-        }
-        
         // Fetch users with company information directly from users table
         const { data: users, error: usersError } = await supabase
           .from('users')
@@ -94,7 +80,37 @@ export const useMasterAdminDashboardData = () => {
             }))
           : [];
         
-        // Count users by company_name
+        // Create company user counts data - group by company_name and count employees
+        const companyUserCountsData: CompanyUserCount[] = [];
+        
+        if (users && users.length > 0) {
+          // Group users by company_name and count employees only
+          const companyEmployeeCounts: Record<string, number> = {};
+          
+          users.forEach(user => {
+            // Only count employees for the company user distribution
+            if (user.role === 'employee') {
+              const companyName = user.company_name || 'No Company';
+              companyEmployeeCounts[companyName] = (companyEmployeeCounts[companyName] || 0) + 1;
+            }
+          });
+          
+          // Convert to array format expected by the component
+          Object.entries(companyEmployeeCounts).forEach(([company_name, count]) => {
+            companyUserCountsData.push({
+              company_name,
+              count
+            });
+          });
+          
+          // Sort by count descending
+          companyUserCountsData.sort((a, b) => b.count - a.count);
+        }
+        
+        console.log('Company user counts (employees only):', companyUserCountsData);
+        setCompanyUserCounts(companyUserCountsData);
+        
+        // Count users by company_name (all roles for company users section)
         const companyNameCounts: Record<string, number> = {};
         
         if (users && users.length > 0) {
@@ -104,9 +120,9 @@ export const useMasterAdminDashboardData = () => {
           });
         }
         
-        console.log('User count by company name:', companyNameCounts);
+        console.log('User count by company name (all roles):', companyNameCounts);
         
-        // Create company users array with user counts
+        // Create company users array with user counts (all roles)
         const companyUsers: CompanyUsers[] = [];
         
         // First add companies from the companies table
