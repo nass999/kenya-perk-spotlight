@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -62,6 +61,11 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({
     }));
   };
 
+  // Debug logging
+  console.log('MasterAdminDashboard - companyUserCounts:', companyUserCounts);
+  console.log('MasterAdminDashboard - stats.userDetails:', stats.userDetails);
+  console.log('MasterAdminDashboard - stats.companyUsers:', stats.companyUsers);
+
   return (
     <div className="space-y-8">
       <div>
@@ -70,6 +74,23 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({
           Master Admin Dashboard - Platform Overview
         </p>
       </div>
+      
+      {/* Debug Section - Remove this after testing */}
+      <Card className="border-yellow-200 bg-yellow-50">
+        <CardHeader>
+          <CardTitle className="text-sm text-yellow-800">Debug Info (Remove after testing)</CardTitle>
+        </CardHeader>
+        <CardContent className="text-xs text-yellow-700">
+          <p>Company User Counts Length: {companyUserCounts?.length || 0}</p>
+          <p>User Details Length: {stats.userDetails?.length || 0}</p>
+          <p>Company Users Length: {stats.companyUsers?.length || 0}</p>
+          {companyUserCounts?.length > 0 && (
+            <div className="mt-2">
+              <p>First Company: {JSON.stringify(companyUserCounts[0])}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
       
       {/* Customers and Users Section */}
       <Collapsible 
@@ -80,7 +101,7 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold flex items-center">
             <UserCircle className="mr-2 h-5 w-5 text-blue-500" />
-            Customers and Users
+            Company User Distribution ({companyUserCounts?.length || 0} companies)
           </h2>
           <CollapsibleTrigger asChild>
             <Button variant="ghost" size="sm" className="w-9 p-0">
@@ -94,9 +115,9 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({
         <CollapsibleContent className="pt-2">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">Company User Distribution</CardTitle>
+              <CardTitle className="text-lg font-medium">All Users by Company</CardTitle>
               <CardDescription>
-                User distribution across different companies
+                Complete user distribution across different companies (all roles included)
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -105,7 +126,7 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({
                   <TableHeader>
                     <TableRow>
                       <TableHead>Company</TableHead>
-                      <TableHead className="text-right">Users</TableHead>
+                      <TableHead className="text-right">Total Users</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -128,6 +149,7 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({
                 <div className="text-center py-8 text-gray-500">
                   <Users className="mx-auto h-8 w-8 opacity-30 mb-2" />
                   <p>No company user data available</p>
+                  <p className="text-sm mt-1">Users may not have company_name populated</p>
                 </div>
               )}
             </CardContent>

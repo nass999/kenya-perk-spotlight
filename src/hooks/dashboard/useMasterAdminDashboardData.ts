@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { DashboardStats, VendorWithPerks, Activity, CompanyUsers, UserDetail, CompanyUserCount, VendorRequest } from '@/types/dashboard';
@@ -66,7 +65,8 @@ export const useMasterAdminDashboardData = () => {
           throw usersError;
         }
         
-        console.log('Users data:', users);
+        console.log('Raw users data from database:', users);
+        console.log('Number of users fetched:', users?.length || 0);
         
         // Format users with their company names
         const userDetails: UserDetail[] = users 
@@ -80,23 +80,24 @@ export const useMasterAdminDashboardData = () => {
             }))
           : [];
         
-        // Create company user counts data - group by company_name and count employees
+        console.log('Formatted user details:', userDetails);
+        
+        // Create company user counts data - show ALL users, not just employees
         const companyUserCountsData: CompanyUserCount[] = [];
         
         if (users && users.length > 0) {
-          // Group users by company_name and count employees only
-          const companyEmployeeCounts: Record<string, number> = {};
+          // Group ALL users by company_name 
+          const companyAllUserCounts: Record<string, number> = {};
           
           users.forEach(user => {
-            // Only count employees for the company user distribution
-            if (user.role === 'employee') {
-              const companyName = user.company_name || 'No Company';
-              companyEmployeeCounts[companyName] = (companyEmployeeCounts[companyName] || 0) + 1;
-            }
+            const companyName = user.company_name || 'No Company';
+            companyAllUserCounts[companyName] = (companyAllUserCounts[companyName] || 0) + 1;
           });
           
+          console.log('Company counts breakdown:', companyAllUserCounts);
+          
           // Convert to array format expected by the component
-          Object.entries(companyEmployeeCounts).forEach(([company_name, count]) => {
+          Object.entries(companyAllUserCounts).forEach(([company_name, count]) => {
             companyUserCountsData.push({
               company_name,
               count
@@ -107,7 +108,7 @@ export const useMasterAdminDashboardData = () => {
           companyUserCountsData.sort((a, b) => b.count - a.count);
         }
         
-        console.log('Company user counts (employees only):', companyUserCountsData);
+        console.log('Final company user counts (all users):', companyUserCountsData);
         setCompanyUserCounts(companyUserCountsData);
         
         // Count users by company_name (all roles for company users section)
@@ -150,6 +151,8 @@ export const useMasterAdminDashboardData = () => {
             });
           }
         });
+
+        console.log('Final company users array:', companyUsers);
 
         // Fetch vendor recommendations
         const { data: vendorRecommendations, error: vendorRecommendationsError } = await supabase
