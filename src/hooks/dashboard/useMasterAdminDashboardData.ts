@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { DashboardStats, VendorWithPerks, Activity, CompanyUsers, UserDetail, CompanyUserCount, VendorRequest } from '@/types/dashboard';
@@ -31,12 +32,16 @@ export const useMasterAdminDashboardData = () => {
       
       try {
         setLoading(true);
+        console.log('=== STARTING MASTER ADMIN DASHBOARD DATA FETCH ===');
         
         // Platform admin sees global stats
         const [totalPerksResult, companiesResult] = await Promise.all([
           supabase.from('perks').select('*', { count: 'exact' }),
           supabase.from('companies').select('*', { count: 'exact' }),
         ]);
+
+        console.log('Perks count:', totalPerksResult.count);
+        console.log('Companies count:', companiesResult.count);
 
         // Fetch all companies
         const { data: companies, error: companiesError } = await supabase
@@ -47,6 +52,8 @@ export const useMasterAdminDashboardData = () => {
           console.error('Error fetching companies:', companiesError);
           throw companiesError;
         }
+        
+        console.log('COMPANIES FROM DB:', companies);
         
         // Fetch users with company information directly from users table
         const { data: users, error: usersError } = await supabase
@@ -65,22 +72,29 @@ export const useMasterAdminDashboardData = () => {
           throw usersError;
         }
         
-        console.log('Raw users data from database:', users);
-        console.log('Number of users fetched:', users?.length || 0);
+        console.log('=== RAW USERS DATA FROM SUPABASE ===');
+        console.log('Users array:', users);
+        console.log('Users length:', users?.length || 0);
+        console.log('First user sample:', users?.[0]);
         
         // Format users with their company names
         const userDetails: UserDetail[] = users 
-          ? users.map(user => ({
-              id: user.id,
-              name: user.full_name || user.email,
-              email: user.email,
-              role: user.role,
-              companyId: user.company_id,
-              companyName: user.company_name || 'No Company'
-            }))
+          ? users.map(user => {
+              console.log(`Processing user ${user.email}: role=${user.role}, company_name=${user.company_name}, company_id=${user.company_id}`);
+              return {
+                id: user.id,
+                name: user.full_name || user.email,
+                email: user.email,
+                role: user.role,
+                companyId: user.company_id,
+                companyName: user.company_name || 'No Company'
+              };
+            })
           : [];
         
-        console.log('Formatted user details:', userDetails);
+        console.log('=== FORMATTED USER DETAILS ===');
+        console.log('UserDetails array:', userDetails);
+        console.log('UserDetails length:', userDetails.length);
         
         // Create company user counts data - show ALL users, not just employees
         const companyUserCountsData: CompanyUserCount[] = [];
@@ -92,24 +106,29 @@ export const useMasterAdminDashboardData = () => {
           users.forEach(user => {
             const companyName = user.company_name || 'No Company';
             companyAllUserCounts[companyName] = (companyAllUserCounts[companyName] || 0) + 1;
+            console.log(`Adding user ${user.email} to company "${companyName}"`);
           });
           
-          console.log('Company counts breakdown:', companyAllUserCounts);
+          console.log('=== COMPANY COUNTS BREAKDOWN ===');
+          console.log('Company user counts object:', companyAllUserCounts);
           
           // Convert to array format expected by the component
           Object.entries(companyAllUserCounts).forEach(([company_name, count]) => {
-            companyUserCountsData.push({
+            const countEntry = {
               company_name,
               count
-            });
+            };
+            console.log('Adding company count entry:', countEntry);
+            companyUserCountsData.push(countEntry);
           });
           
           // Sort by count descending
           companyUserCountsData.sort((a, b) => b.count - a.count);
         }
         
-        console.log('Final company user counts (all users):', companyUserCountsData);
-        setCompanyUserCounts(companyUserCountsData);
+        console.log('=== FINAL COMPANY USER COUNTS ARRAY ===');
+        console.log('CompanyUserCounts:', companyUserCountsData);
+        console.log('CompanyUserCounts length:', companyUserCountsData.length);
         
         // Count users by company_name (all roles for company users section)
         const companyNameCounts: Record<string, number> = {};
@@ -121,7 +140,8 @@ export const useMasterAdminDashboardData = () => {
           });
         }
         
-        console.log('User count by company name (all roles):', companyNameCounts);
+        console.log('=== COMPANY NAME COUNTS (ALL ROLES) ===');
+        console.log('Company name counts:', companyNameCounts);
         
         // Create company users array with user counts (all roles)
         const companyUsers: CompanyUsers[] = [];
@@ -129,11 +149,13 @@ export const useMasterAdminDashboardData = () => {
         // First add companies from the companies table
         if (companies) {
           companies.forEach(company => {
-            companyUsers.push({
+            const companyUserEntry = {
               companyId: company.id,
               companyName: company.name,
               userCount: companyNameCounts[company.name] || 0 // Get count from our tally
-            });
+            };
+            console.log('Adding company from companies table:', companyUserEntry);
+            companyUsers.push(companyUserEntry);
           });
         }
         
@@ -144,15 +166,24 @@ export const useMasterAdminDashboardData = () => {
           
           if (!existingCompany && companyName !== 'No Company') {
             // Add company from users table that's not in companies table
-            companyUsers.push({
+            const orphanCompanyEntry = {
               companyId: 'unknown', // We don't have the ID for companies that only exist in users table
               companyName: companyName,
               userCount: count
-            });
+            };
+            console.log('Adding orphan company from users table:', orphanCompanyEntry);
+            companyUsers.push(orphanCompanyEntry);
           }
         });
 
-        console.log('Final company users array:', companyUsers);
+        console.log('=== FINAL COMPANY USERS ARRAY ===');
+        console.log('CompanyUsers:', companyUsers);
+        console.log('CompanyUsers length:', companyUsers.length);
+
+        // Set the state data BEFORE other async operations
+        console.log('=== SETTING COMPANY USER COUNTS STATE ===');
+        console.log('About to set companyUserCounts to:', companyUserCountsData);
+        setCompanyUserCounts(companyUserCountsData);
 
         // Fetch vendor recommendations
         const { data: vendorRecommendations, error: vendorRecommendationsError } = await supabase
@@ -216,8 +247,8 @@ export const useMasterAdminDashboardData = () => {
         const { count: totalUserCount } = await supabase
           .from('users')
           .select('*', { count: 'exact', head: true });
-          
-        setStats({
+
+        const finalStats = {
           totalPerks: totalPerksResult.count || 0,
           availablePerks: totalPerksResult.count || 0,
           activePerks: totalPerksResult.count || 0,
@@ -231,7 +262,16 @@ export const useMasterAdminDashboardData = () => {
           companyUsers: companyUsers,
           userDetails: userDetails,
           vendorRequests: vendorRequests
-        });
+        };
+
+        console.log('=== FINAL STATS OBJECT ===');
+        console.log('Final stats:', finalStats);
+        console.log('Stats.companyUsers length:', finalStats.companyUsers.length);
+        console.log('Stats.userDetails length:', finalStats.userDetails.length);
+        
+        setStats(finalStats);
+        
+        console.log('=== DATA FETCH COMPLETE ===');
       } catch (err) {
         console.error("Error fetching master admin dashboard data:", err);
         setError("Failed to load dashboard data");
@@ -349,6 +389,12 @@ export const useMasterAdminDashboardData = () => {
 
     fetchMasterAdminDashboardData();
   }, [authState.user]);
+
+  console.log('=== HOOK RETURN VALUES ===');
+  console.log('Returning companyUserCounts:', companyUserCounts);
+  console.log('Returning companyUserCounts length:', companyUserCounts.length);
+  console.log('Returning stats.userDetails length:', stats.userDetails.length);
+  console.log('Returning stats.companyUsers length:', stats.companyUsers.length);
 
   return { stats, activeVendors, companyUserCounts, loading, error };
 };
