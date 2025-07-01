@@ -27,6 +27,7 @@ import Analytics from './pages/dashboard/Analytics';
 import VendorProfile from './pages/dashboard/VendorProfile';
 import VendorPerks from './pages/dashboard/VendorPerks';
 import CompanyUserDatabase from './pages/dashboard/CompanyUserDatabase';
+import TestDataGeneratorPage from './pages/dashboard/TestDataGenerator';
 
 // Components
 import DashboardLayout from './components/DashboardLayout';
@@ -90,6 +91,11 @@ function App() {
                   <Route path="company-user-database" element={
                     <ProtectedRoute allowedRoles={['master_admin'] as UserRole[]}>
                       <CompanyUserDatabase />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="test-data-generator" element={
+                    <ProtectedRoute allowedRoles={['master_admin'] as UserRole[]}>
+                      <TestDataGeneratorPage />
                     </ProtectedRoute>
                   } />
                   
