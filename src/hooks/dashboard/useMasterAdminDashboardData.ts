@@ -33,10 +33,12 @@ export const useMasterAdminDashboardData = () => {
       try {
         setLoading(true);
         
-        // Platform admin sees global stats
-        const [totalPerksResult, companiesResult] = await Promise.all([
+        // Fetch all perks data
+        const [allPerksResult, activePerksResult, companiesResult, redemptionsResult] = await Promise.all([
           supabase.from('perks').select('*', { count: 'exact' }),
+          supabase.from('perks').select('*', { count: 'exact' }).eq('is_enabled', true).eq('is_deleted', false),
           supabase.from('companies').select('*', { count: 'exact' }),
+          supabase.from('redemptions').select('*', { count: 'exact' })
         ]);
 
         // Fetch all companies
@@ -205,11 +207,11 @@ export const useMasterAdminDashboardData = () => {
           .select('*', { count: 'exact', head: true });
 
         const finalStats = {
-          totalPerks: totalPerksResult.count || 0,
-          availablePerks: totalPerksResult.count || 0,
-          activePerks: totalPerksResult.count || 0,
+          totalPerks: allPerksResult.count || 0,
+          availablePerks: activePerksResult.count || 0,
+          activePerks: activePerksResult.count || 0,
           redeemedPerks: 0,
-          totalRedemptions: 0,
+          totalRedemptions: redemptionsResult.count || 0,
           pendingRedemptions: 0,
           companies: companiesResult.count || 0,
           users: totalUserCount || 0,
