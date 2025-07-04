@@ -3,10 +3,8 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   BarChart, 
-  ShoppingBag, 
-  Users, 
-  CreditCard,
-  UserPlus
+  UserPlus,
+  ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -22,6 +20,7 @@ interface CompanyAdminDashboardProps {
 
 const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, welcomeMessage }) => {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [showFullAnalytics, setShowFullAnalytics] = useState(false);
   const { authState } = useAuth();
   
   return (
@@ -39,53 +38,6 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
         </Button>
       </div>
       
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
-              <Users className="h-4 w-4 text-blue-500" />
-              Total Teams
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats.users}</div>
-            <p className="mt-2 text-xs text-gray-500">
-              Teams in your organization
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
-              <ShoppingBag className="h-4 w-4 text-green-500" />
-              Active Perks
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats.availablePerks}</div>
-            <p className="mt-2 text-xs text-gray-500">
-              Perks available to your teams
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
-              <CreditCard className="h-4 w-4 text-purple-500" />
-              Total Redemptions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats.redeemedPerks}</div>
-            <p className="mt-2 text-xs text-gray-500">
-              Perks redeemed by teams
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-      
       <div>
         <h2 className="text-xl font-semibold mb-4">Recent Redemptions</h2>
         <div className="rounded-lg border bg-white p-6">
@@ -97,9 +49,27 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
       </div>
 
       <div>
-        <h2 className="text-xl font-semibold mb-4">Analytics</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Analytics</h2>
+          <Button
+            variant="outline"
+            onClick={() => setShowFullAnalytics(!showFullAnalytics)}
+            className="flex items-center gap-2"
+          >
+            {showFullAnalytics ? 'Show Less' : 'Show More Details'}
+            <ChevronRight className={`h-4 w-4 transition-transform ${showFullAnalytics ? 'rotate-90' : ''}`} />
+          </Button>
+        </div>
         <div className="rounded-lg border bg-white p-6">
-          <Analytics />
+          {showFullAnalytics ? (
+            <Analytics />
+          ) : (
+            <div className="text-center text-gray-500 py-10">
+              <BarChart className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+              <p className="text-lg font-medium">Analytics Dashboard</p>
+              <p className="mt-2">Click "Show More Details" to view comprehensive analytics and reports</p>
+            </div>
+          )}
         </div>
       </div>
 
