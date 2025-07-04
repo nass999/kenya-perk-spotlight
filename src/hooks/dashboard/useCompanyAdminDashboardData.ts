@@ -39,12 +39,11 @@ export const useCompanyAdminDashboardData = () => {
               is_deleted
             )
           `)
-          .eq('company_id', authState.user.company_id)
-          .eq('is_enabled', true);
+          .eq('company_id', authState.user.company_id);
 
         if (companyPerksError) throw companyPerksError;
 
-        // Filter for active perks (enabled and not deleted)
+        // Filter for active perks (enabled and not deleted at the perk level)
         const activePerks = companyPerks?.filter(cp => 
           cp.perks && 
           cp.perks.is_enabled === true && 
