@@ -74,7 +74,9 @@ export const useCompanyAdminAnalytics = () => {
         const { data: companyPerksData, error: companyPerksError } = await supabase
           .from('company_perks')
           .select(`
-            perks!inner(
+            id,
+            is_enabled,
+            perks (
               id,
               name,
               description,
@@ -86,20 +88,22 @@ export const useCompanyAdminAnalytics = () => {
             )
           `)
           .eq('company_id', authState.user.company_id)
-          .eq('is_enabled', true)
-          .eq('perks.is_enabled', true)
-          .eq('perks.is_deleted', false);
+          .eq('is_enabled', true);
 
         if (companyPerksError) throw companyPerksError;
 
-        // Process available perks - fix the array mapping issue
-        const availablePerks = companyPerksData?.map(cp => ({
-          id: cp.perks.id,
-          name: cp.perks.name,
-          description: cp.perks.description,
-          category: cp.perks.category,
-          discount_amount: cp.perks.discount_amount,
-          discount_type: cp.perks.discount_type
+        // Process available perks - fix the data structure access
+        const availablePerks = companyPerksData?.filter(cp => 
+          cp.perks && 
+          cp.perks.is_enabled === true && 
+          cp.perks.is_deleted === false
+        ).map(cp => ({
+          id: cp.perks!.id,
+          name: cp.perks!.name,
+          description: cp.perks!.description,
+          category: cp.perks!.category,
+          discount_amount: cp.perks!.discount_amount,
+          discount_type: cp.perks!.discount_type
         })) || [];
 
         // Fetch redemptions by employees of this company
@@ -111,8 +115,8 @@ export const useCompanyAdminAnalytics = () => {
             created_at,
             redemption_code,
             user_id,
-            perks!inner(name),
-            users!inner(full_name, company_id, role)
+            perks (name),
+            users!inner (full_name, company_id, role)
           `)
           .eq('users.company_id', authState.user.company_id)
           .eq('users.role', 'employee')
@@ -123,8 +127,8 @@ export const useCompanyAdminAnalytics = () => {
         // Process redemptions data
         const processedRedemptions = redemptionsData?.map(redemption => ({
           id: redemption.id,
-          perk_name: (redemption.perks as any)?.name || 'Unknown Perk',
-          user_name: (redemption.users as any)?.full_name || 'Unknown User',
+          perk_name: redemption.perks?.name || 'Unknown Perk',
+          user_name: redemption.users?.full_name || 'Unknown User',
           status: redemption.status,
           created_at: redemption.created_at,
           redemption_code: redemption.redemption_code
