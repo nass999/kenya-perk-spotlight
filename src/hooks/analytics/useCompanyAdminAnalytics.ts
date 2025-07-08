@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
@@ -76,7 +75,9 @@ export const useCompanyAdminAnalytics = () => {
 
         if (companyError) throw companyError;
 
-        // Count ALL active users in the company (not just employees)
+        console.log('Company data:', companyData);
+
+        // Fetch ALL users in the company (including all roles)
         const { data: usersData, error: usersError } = await supabase
           .from('users')
           .select('id, full_name, email, role, company_id, is_active')
@@ -84,6 +85,9 @@ export const useCompanyAdminAnalytics = () => {
           .eq('is_active', true);
 
         if (usersError) throw usersError;
+
+        console.log('Fetched users data:', usersData);
+        console.log('Users count:', usersData ? usersData.length : 0);
 
         const userCount = usersData ? usersData.length : 0;
 

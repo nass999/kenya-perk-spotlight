@@ -109,7 +109,7 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
                   </div>
                   <p className="text-gray-600">Active Users</p>
                 </div>
-                {companyUsers.length > 0 && (
+                {companyUsers.length > 0 ? (
                   <div className="border-t pt-4">
                     <h4 className="text-sm font-medium text-gray-700 mb-2">User List:</h4>
                     <ul className="space-y-2">
@@ -126,6 +126,8 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
                       ))}
                     </ul>
                   </div>
+                ) : (
+                  <div className="text-center text-gray-500 py-4">No users found</div>
                 )}
               </div>
             )}
