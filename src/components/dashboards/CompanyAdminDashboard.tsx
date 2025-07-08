@@ -164,19 +164,18 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
           </CardContent>
         </Card>
 
-        {/* Available Perks - matching Manage Perks view */}
+        {/* Available Perks - Simple list like Manage Users */}
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle>Available Perks</CardTitle>
-            <CardDescription>Perks available for your organization (same view as Manage Perks)</CardDescription>
           </CardHeader>
           <CardContent>
             {analyticsLoading ? (
               <div className="text-center text-gray-500 py-4">Loading...</div>
             ) : availablePerks.length > 0 ? (
-              <div className="space-y-4">
+              <ul className="space-y-3">
                 {availablePerks.map((perk) => (
-                  <div key={perk.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <li key={perk.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center space-x-4">
                       {perk.image_url && (
                         <img 
@@ -212,7 +211,7 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
                             </Badge>
                             <Switch 
                               checked={perk.activation_status || false}
-                              readOnly
+                              disabled={true}
                               aria-label={perk.activation_status ? "Enabled for your users" : "Disabled for your users"}
                             />
                           </>
@@ -230,16 +229,11 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
                         )}
                       </div>
                     </div>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
             ) : (
-              <div className="text-center text-gray-500 py-4">
-                No perks available. 
-                <Link to="/dashboard/manage-perks" className="text-blue-600 hover:underline ml-1">
-                  Go to Manage Perks to activate perks →
-                </Link>
-              </div>
+              <div className="text-center text-gray-500 py-4">No perks available</div>
             )}
           </CardContent>
         </Card>

@@ -126,7 +126,7 @@ export const useCompanyAdminAnalytics = () => {
           discount_type: perk.discount_type,
           image_url: perk.image_url,
           valid_through_date: perk.valid_through_date,
-          vendor_name: perk.vendors?.name || 'Unknown Vendor',
+          vendor_name: Array.isArray(perk.vendors) ? perk.vendors[0]?.name || 'Unknown Vendor' : perk.vendors?.name || 'Unknown Vendor',
           is_enabled: perk.is_enabled,
           is_activated: companyPerkMap.has(perk.id),
           activation_status: companyPerkMap.get(perk.id)?.is_enabled || false
