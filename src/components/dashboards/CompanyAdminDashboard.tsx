@@ -92,7 +92,7 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
       </div>
       
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Company Users - Show exact query result count */}
+        {/* Company Users - Show count without debug query */}
         <Card>
           <CardHeader>
             <CardTitle>Company Employees</CardTitle>
@@ -108,9 +108,6 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
                     {analyticsStats.userCount}
                   </div>
                   <p className="text-gray-600">Active Employees</p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Query: SELECT COUNT(*) FROM users WHERE company_id = '{authState.user?.company_id}' AND role = 'employee' AND is_active = true
-                  </p>
                 </div>
                 {companyUsers.length > 0 && (
                   <div className="border-t pt-4">
