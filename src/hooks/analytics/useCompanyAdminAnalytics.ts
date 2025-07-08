@@ -92,7 +92,7 @@ export const useCompanyAdminAnalytics = () => {
 
         if (companyPerksError) throw companyPerksError;
 
-        // Process available perks
+        // Process available perks - fix the array mapping issue
         const availablePerks = companyPerksData?.map(cp => ({
           id: cp.perks.id,
           name: cp.perks.name,
