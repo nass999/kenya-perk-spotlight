@@ -66,15 +66,28 @@ export const useCompanyAdminAnalytics = () => {
       try {
         setData(prev => ({ ...prev, loading: true, error: null }));
 
+        console.log('Fetching users for company_id:', authState.user.company_id);
+        
         // Fetch company employees only (not company admins) to show in Company Users section
         const { data: usersData, error: usersError } = await supabase
           .from('users')
-          .select('id, full_name, email, role')
+          .select('id, full_name, email, role, company_id, is_active')
           .eq('company_id', authState.user.company_id)
           .eq('role', 'employee')
           .eq('is_active', true);
 
+        console.log('Users query result:', usersData);
+        console.log('Users query error:', usersError);
+
         if (usersError) throw usersError;
+
+        // Also fetch all users for this company to see what's there
+        const { data: allUsersData, error: allUsersError } = await supabase
+          .from('users')
+          .select('id, full_name, email, role, company_id, is_active')
+          .eq('company_id', authState.user.company_id);
+
+        console.log('All users for company:', allUsersData);
 
         // Fetch all globally enabled perks first
         const { data: globalPerks, error: globalPerksError } = await supabase
