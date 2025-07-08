@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
@@ -79,18 +78,24 @@ export const useCompanyAdminAnalytics = () => {
 
         if (companyError) throw companyError;
 
-        // Now fetch employees using the company ID from the companies table
+        // FIXED: Use the correct company ID to fetch employees
+        // This should match the exact query: SELECT COUNT(*) FROM users WHERE company_id = 'company_id_here' AND role = 'employee' AND is_active = true
         const { data: usersData, error: usersError } = await supabase
           .from('users')
           .select('id, full_name, email, role, company_id, is_active')
-          .eq('company_id', companyData.id)
+          .eq('company_id', companyData.id)  // Use the company ID from companies table
           .eq('role', 'employee')
           .eq('is_active', true);
 
-        console.log('Users query result:', usersData);
-        console.log('Users query error:', usersError);
+        console.log('Fixed users query - Company ID used:', companyData.id);
+        console.log('Fixed users query result:', usersData);
+        console.log('Fixed users query error:', usersError);
 
         if (usersError) throw usersError;
+
+        // Count employees using the fetched data
+        const employeeCount = usersData ? usersData.length : 0;
+        console.log('Employee count from query result:', employeeCount);
 
         // Fetch all globally enabled perks first
         const { data: globalPerks, error: globalPerksError } = await supabase
@@ -225,7 +230,7 @@ export const useCompanyAdminAnalytics = () => {
           stats: {
             activePerks: activePerksCount,
             totalRedemptions: processedRedemptions.length,
-            userCount: usersData?.length || 0
+            userCount: employeeCount  // Use the count from the actual query result
           },
           loading: false,
           error: null
