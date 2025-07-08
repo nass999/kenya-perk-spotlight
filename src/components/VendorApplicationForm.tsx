@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Building, Mail, Phone, Globe, Percent, FileText } from "lucide-react";
+import { Loader2, Building, Mail, Phone, Globe, Percent, FileText, User, MapPin } from "lucide-react";
 
 const vendorApplicationSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters"),
@@ -75,80 +75,141 @@ const VendorApplicationForm = () => {
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Building className="h-6 w-6 text-[#da7756]" />
-          Vendor Partnership Application
+    <Card className="w-full max-w-4xl mx-auto shadow-lg border-0 bg-gradient-to-br from-white to-gray-50/50">
+      <CardHeader className="text-center space-y-4 pb-8">
+        <div className="mx-auto w-16 h-16 bg-gradient-to-br from-[#da7756] to-[#bd5d3a] rounded-full flex items-center justify-center shadow-lg">
+          <Building className="h-8 w-8 text-white" />
+        </div>
+        <CardTitle className="text-3xl font-bold text-[#3d3929]">
+          Partner Vendor Application
         </CardTitle>
-        <CardDescription>
-          Please provide detailed information about your business to help us evaluate your partnership application.
+        <CardDescription className="text-lg text-[#3d3929]/70 max-w-2xl mx-auto">
+          Join Africa's leading employee benefits network and reach thousands of potential customers across the continent.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      
+      <CardContent className="px-8 pb-8">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Company Information */}
-            <div className="grid gap-4 md:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="companyName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Company Name *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Your company name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {/* Company Information Section */}
+            <div className="space-y-6">
+              <div className="border-l-4 border-[#da7756] pl-4">
+                <h3 className="text-xl font-semibold text-[#3d3929] mb-2">Company Information</h3>
+                <p className="text-sm text-[#3d3929]/60">Tell us about your business</p>
+              </div>
               
-              <FormField
-                control={form.control}
-                name="contactName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Contact Person *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Full name of contact person" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid gap-6 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="companyName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[#3d3929] font-medium">Company Name *</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#da7756]" />
+                          <Input 
+                            placeholder="Your company name" 
+                            className="pl-10 h-12 border-gray-200 focus:border-[#da7756] focus:ring-[#da7756]/20" 
+                            {...field} 
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="contactName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[#3d3929] font-medium">Contact Person *</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#da7756]" />
+                          <Input 
+                            placeholder="Full name of contact person" 
+                            className="pl-10 h-12 border-gray-200 focus:border-[#da7756] focus:ring-[#da7756]/20" 
+                            {...field} 
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
 
-            {/* Contact Information */}
-            <div className="grid gap-4 md:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <Mail className="h-4 w-4" />
-                      Email Address *
-                    </FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="contact@yourcompany.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Contact Information Section */}
+            <div className="space-y-6">
+              <div className="border-l-4 border-[#da7756] pl-4">
+                <h3 className="text-xl font-semibold text-[#3d3929] mb-2">Contact Details</h3>
+                <p className="text-sm text-[#3d3929]/60">How can we reach you?</p>
+              </div>
               
+              <div className="grid gap-6 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[#3d3929] font-medium">Email Address *</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#da7756]" />
+                          <Input 
+                            type="email" 
+                            placeholder="contact@yourcompany.com" 
+                            className="pl-10 h-12 border-gray-200 focus:border-[#da7756] focus:ring-[#da7756]/20" 
+                            {...field} 
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[#3d3929] font-medium">Phone Number *</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#da7756]" />
+                          <Input 
+                            placeholder="+254 700 000 000" 
+                            className="pl-10 h-12 border-gray-200 focus:border-[#da7756] focus:ring-[#da7756]/20" 
+                            {...field} 
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField
                 control={form.control}
-                name="phone"
+                name="website"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <Phone className="h-4 w-4" />
-                      Phone Number *
-                    </FormLabel>
+                    <FormLabel className="text-[#3d3929] font-medium">Website URL</FormLabel>
                     <FormControl>
-                      <Input placeholder="+254 700 000 000" {...field} />
+                      <div className="relative">
+                        <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#da7756]" />
+                        <Input 
+                          placeholder="https://www.yourcompany.com" 
+                          className="pl-10 h-12 border-gray-200 focus:border-[#da7756] focus:ring-[#da7756]/20" 
+                          {...field} 
+                        />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -156,124 +217,137 @@ const VendorApplicationForm = () => {
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="website"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <Globe className="h-4 w-4" />
-                    Website URL
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://www.yourcompany.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Business Details Section */}
+            <div className="space-y-6">
+              <div className="border-l-4 border-[#da7756] pl-4">
+                <h3 className="text-xl font-semibold text-[#3d3929] mb-2">Business Details</h3>
+                <p className="text-sm text-[#3d3929]/60">Provide information about your business offering</p>
+              </div>
+              
+              <div className="grid gap-6 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="businessType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[#3d3929] font-medium">Business Type/Industry *</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#da7756]" />
+                          <Input 
+                            placeholder="e.g., Retail, Hospitality, Technology" 
+                            className="pl-10 h-12 border-gray-200 focus:border-[#da7756] focus:ring-[#da7756]/20" 
+                            {...field} 
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            {/* Business Information */}
-            <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="discountOffered"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[#3d3929] font-medium">Proposed Employee Discount *</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Percent className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#da7756]" />
+                          <Input 
+                            placeholder="e.g., 15% discount, Buy 1 Get 1 Free" 
+                            className="pl-10 h-12 border-gray-200 focus:border-[#da7756] focus:ring-[#da7756]/20" 
+                            {...field} 
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField
                 control={form.control}
-                name="businessType"
+                name="productDescription"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Business Type/Industry *</FormLabel>
+                    <FormLabel className="text-[#3d3929] font-medium">Products/Services Description *</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Retail, Hospitality, Technology" {...field} />
+                      <Textarea 
+                        placeholder="Describe your products or services in detail. What makes your offering unique? What value do you provide to customers?"
+                        className="min-h-[120px] border-gray-200 focus:border-[#da7756] focus:ring-[#da7756]/20 resize-none"
+                        {...field} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="discountOffered"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <Percent className="h-4 w-4" />
-                      Proposed Employee Discount *
-                    </FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., 15% discount, Buy 1 Get 1 Free" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid gap-6 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="targetAudience"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[#3d3929] font-medium">Target Audience *</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Describe your ideal customers and target demographics..."
+                          className="min-h-[80px] border-gray-200 focus:border-[#da7756] focus:ring-[#da7756]/20 resize-none"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="businessRegistration"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[#3d3929] font-medium">Business Registration Details *</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Registration number, certificates, licenses, etc."
+                          className="min-h-[80px] border-gray-200 focus:border-[#da7756] focus:ring-[#da7756]/20 resize-none"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
 
-            <FormField
-              control={form.control}
-              name="productDescription"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    Products/Services Description *
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Describe your products or services in detail..."
-                      className="min-h-[80px]"
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="targetAudience"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Target Audience *</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Describe your ideal customers and target demographics..."
-                      className="min-h-[60px]"
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="businessRegistration"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Business Registration Details *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Registration number, certificates, licenses" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button 
-              type="submit" 
-              className="w-full bg-[#da7756] hover:bg-[#bd5d3a] text-white py-6 text-lg mt-6"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Submitting Application...
-                </>
-              ) : (
-                "Submit Partnership Application"
-              )}
-            </Button>
+            {/* Submit Button */}
+            <div className="pt-6 border-t border-gray-100">
+              <Button 
+                type="submit" 
+                className="w-full bg-gradient-to-r from-[#da7756] to-[#bd5d3a] hover:from-[#bd5d3a] hover:to-[#a04d32] text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02]"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Submitting Application...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="mr-2 h-5 w-5" />
+                    Submit Partnership Application
+                  </>
+                )}
+              </Button>
+              <p className="text-center text-sm text-[#3d3929]/60 mt-3">
+                We'll review your application and respond within 3-5 business days
+              </p>
+            </div>
           </form>
         </Form>
       </CardContent>
