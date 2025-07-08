@@ -117,20 +117,32 @@ export const useCompanyAdminAnalytics = () => {
         });
 
         // Process available perks to match Manage Perks view
-        const availablePerks = globalPerks?.map(perk => ({
-          id: perk.id,
-          name: perk.name,
-          description: perk.description,
-          category: perk.category,
-          discount_amount: perk.discount_amount,
-          discount_type: perk.discount_type,
-          image_url: perk.image_url,
-          valid_through_date: perk.valid_through_date,
-          vendor_name: Array.isArray(perk.vendors) ? perk.vendors[0]?.name || 'Unknown Vendor' : perk.vendors?.name || 'Unknown Vendor',
-          is_enabled: perk.is_enabled,
-          is_activated: companyPerkMap.has(perk.id),
-          activation_status: companyPerkMap.get(perk.id)?.is_enabled || false
-        })) || [];
+        const availablePerks = globalPerks?.map(perk => {
+          // Handle vendor data access safely
+          let vendorName = 'Unknown Vendor';
+          if (perk.vendors) {
+            if (Array.isArray(perk.vendors) && perk.vendors.length > 0) {
+              vendorName = perk.vendors[0].name || 'Unknown Vendor';
+            } else if (typeof perk.vendors === 'object' && 'name' in perk.vendors) {
+              vendorName = (perk.vendors as any).name || 'Unknown Vendor';
+            }
+          }
+
+          return {
+            id: perk.id,
+            name: perk.name,
+            description: perk.description,
+            category: perk.category,
+            discount_amount: perk.discount_amount,
+            discount_type: perk.discount_type,
+            image_url: perk.image_url,
+            valid_through_date: perk.valid_through_date,
+            vendor_name: vendorName,
+            is_enabled: perk.is_enabled,
+            is_activated: companyPerkMap.has(perk.id),
+            activation_status: companyPerkMap.get(perk.id)?.is_enabled || false
+          };
+        }) || [];
 
         // Count active perks (globally enabled AND enabled for this company)
         const activePerksCount = availablePerks.filter(perk => 
@@ -156,14 +168,36 @@ export const useCompanyAdminAnalytics = () => {
         if (redemptionsError) throw redemptionsError;
 
         // Process redemptions data
-        const processedRedemptions = redemptionsData?.map(redemption => ({
-          id: redemption.id,
-          perk_name: Array.isArray(redemption.perks) ? redemption.perks[0]?.name || 'Unknown Perk' : redemption.perks?.name || 'Unknown Perk',
-          user_name: Array.isArray(redemption.users) ? redemption.users[0]?.full_name || 'Unknown User' : redemption.users?.full_name || 'Unknown User',
-          status: redemption.status,
-          created_at: redemption.created_at,
-          redemption_code: redemption.redemption_code
-        })) || [];
+        const processedRedemptions = redemptionsData?.map(redemption => {
+          // Handle perk name access safely
+          let perkName = 'Unknown Perk';
+          if (redemption.perks) {
+            if (Array.isArray(redemption.perks) && redemption.perks.length > 0) {
+              perkName = (redemption.perks[0] as any).name || 'Unknown Perk';
+            } else if (typeof redemption.perks === 'object' && 'name' in redemption.perks) {
+              perkName = (redemption.perks as any).name || 'Unknown Perk';
+            }
+          }
+
+          // Handle user name access safely
+          let userName = 'Unknown User';
+          if (redemption.users) {
+            if (Array.isArray(redemption.users) && redemption.users.length > 0) {
+              userName = (redemption.users[0] as any).full_name || 'Unknown User';
+            } else if (typeof redemption.users === 'object' && 'full_name' in redemption.users) {
+              userName = (redemption.users as any).full_name || 'Unknown User';
+            }
+          }
+
+          return {
+            id: redemption.id,
+            perk_name: perkName,
+            user_name: userName,
+            status: redemption.status,
+            created_at: redemption.created_at,
+            redemption_code: redemption.redemption_code
+          };
+        }) || [];
 
         setData({
           companyUsers: usersData || [],
