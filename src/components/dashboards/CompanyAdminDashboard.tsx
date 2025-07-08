@@ -7,6 +7,8 @@ import {
   UserPlus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { Link } from 'react-router-dom';
 import { DashboardStats } from '@/types/dashboard';
 import { UserInviteDialog } from '@/components/users/UserInviteDialog';
@@ -28,6 +30,15 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
     stats: analyticsStats,
     loading: analyticsLoading 
   } = useCompanyAdminAnalytics();
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'No expiration';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
   
   return (
     <div className="space-y-8">
@@ -153,39 +164,80 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
           </CardContent>
         </Card>
 
-        {/* Available Perks */}
+        {/* Available Perks - matching Manage Perks view */}
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle>Available Perks</CardTitle>
-            <CardDescription>Active perks enabled for your organization</CardDescription>
+            <CardDescription>Perks available for your organization (same view as Manage Perks)</CardDescription>
           </CardHeader>
           <CardContent>
             {analyticsLoading ? (
               <div className="text-center text-gray-500 py-4">Loading...</div>
             ) : availablePerks.length > 0 ? (
-              <ul className="space-y-3">
+              <div className="space-y-4">
                 {availablePerks.map((perk) => (
-                  <li key={perk.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <div className="font-medium">{perk.name}</div>
-                      <div className="text-sm text-gray-500">{perk.description}</div>
-                      {perk.category && (
-                        <div className="text-xs text-blue-600 mt-1">Category: {perk.category}</div>
+                  <div key={perk.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center space-x-4">
+                      {perk.image_url && (
+                        <img 
+                          src={perk.image_url} 
+                          alt={perk.name} 
+                          className="h-12 w-12 rounded object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.onerror = null;
+                            target.src = '/placeholder.svg';
+                          }}
+                        />
                       )}
-                    </div>
-                    <div className="text-right">
-                      <div className="font-semibold text-green-600">
-                        {perk.discount_type === 'percentage' ? `${perk.discount_amount}% OFF` : `$${perk.discount_amount} OFF`}
+                      <div className="flex-1">
+                        <div className="font-semibold">{perk.name}</div>
+                        <div className="text-sm text-gray-600">{perk.description}</div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {perk.vendor_name} • {perk.category || 'General'} • Valid through: {formatDate(perk.valid_through_date)}
+                        </div>
                       </div>
                     </div>
-                  </li>
+                    <div className="flex items-center space-x-4">
+                      <div className="text-right">
+                        <div className="font-semibold text-green-600">
+                          {perk.discount_type === 'percentage' ? `${perk.discount_amount}% OFF` : `$${perk.discount_amount} OFF`}
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {perk.is_activated ? (
+                          <>
+                            <Badge variant={perk.activation_status ? "default" : "secondary"}>
+                              {perk.activation_status ? "Enabled" : "Disabled"}
+                            </Badge>
+                            <Switch 
+                              checked={perk.activation_status || false}
+                              readOnly
+                              aria-label={perk.activation_status ? "Enabled for your users" : "Disabled for your users"}
+                            />
+                          </>
+                        ) : (
+                          <>
+                            <Badge variant="outline">Not Activated</Badge>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled
+                            >
+                              Enable
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </ul>
+              </div>
             ) : (
               <div className="text-center text-gray-500 py-4">
-                No active perks found. 
-                <Link to="/dashboard/browse-perks" className="text-blue-600 hover:underline ml-1">
-                  Browse available perks →
+                No perks available. 
+                <Link to="/dashboard/manage-perks" className="text-blue-600 hover:underline ml-1">
+                  Go to Manage Perks to activate perks →
                 </Link>
               </div>
             )}

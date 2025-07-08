@@ -26,6 +26,12 @@ interface AvailablePerk {
   category: string | null;
   discount_amount: number;
   discount_type: string;
+  image_url: string | null;
+  valid_through_date: string | null;
+  vendor_name?: string;
+  is_enabled: boolean;
+  is_activated?: boolean;
+  activation_status?: boolean;
 }
 
 export const useCompanyAdminAnalytics = () => {
@@ -70,41 +76,66 @@ export const useCompanyAdminAnalytics = () => {
 
         if (usersError) throw usersError;
 
-        // Fetch active perks for this company (enabled company_perks)
-        const { data: companyPerksData, error: companyPerksError } = await supabase
-          .from('company_perks')
+        // Fetch all globally enabled perks first
+        const { data: globalPerks, error: globalPerksError } = await supabase
+          .from('perks')
           .select(`
             id,
+            name,
+            description,
+            category,
+            discount_amount,
+            discount_type,
+            image_url,
+            valid_through_date,
             is_enabled,
-            perks (
+            is_deleted,
+            vendor_id,
+            vendors (
               id,
-              name,
-              description,
-              category,
-              discount_amount,
-              discount_type,
-              is_enabled,
-              is_deleted
+              name
             )
           `)
-          .eq('company_id', authState.user.company_id)
-          .eq('is_enabled', true);
+          .eq('is_enabled', true)
+          .eq('is_deleted', false)
+          .order('created_at', { ascending: false });
+
+        if (globalPerksError) throw globalPerksError;
+
+        // Fetch company perks to see which ones are activated for this company
+        const { data: companyPerksData, error: companyPerksError } = await supabase
+          .from('company_perks')
+          .select('perk_id, is_enabled')
+          .eq('company_id', authState.user.company_id);
 
         if (companyPerksError) throw companyPerksError;
 
-        // Process available perks - fix the data structure access
-        const availablePerks = companyPerksData?.filter(cp => 
-          cp.perks && 
-          cp.perks.is_enabled === true && 
-          cp.perks.is_deleted === false
-        ).map(cp => ({
-          id: cp.perks!.id,
-          name: cp.perks!.name,
-          description: cp.perks!.description,
-          category: cp.perks!.category,
-          discount_amount: cp.perks!.discount_amount,
-          discount_type: cp.perks!.discount_type
+        // Create a map for quick lookup of company perk status
+        const companyPerkMap = new Map();
+        companyPerksData?.forEach(cp => {
+          companyPerkMap.set(cp.perk_id, cp);
+        });
+
+        // Process available perks to match Manage Perks view
+        const availablePerks = globalPerks?.map(perk => ({
+          id: perk.id,
+          name: perk.name,
+          description: perk.description,
+          category: perk.category,
+          discount_amount: perk.discount_amount,
+          discount_type: perk.discount_type,
+          image_url: perk.image_url,
+          valid_through_date: perk.valid_through_date,
+          vendor_name: perk.vendors?.name || 'Unknown Vendor',
+          is_enabled: perk.is_enabled,
+          is_activated: companyPerkMap.has(perk.id),
+          activation_status: companyPerkMap.get(perk.id)?.is_enabled || false
         })) || [];
+
+        // Count active perks (globally enabled AND enabled for this company)
+        const activePerksCount = availablePerks.filter(perk => 
+          perk.is_activated && perk.activation_status
+        ).length;
 
         // Fetch redemptions by employees of this company
         const { data: redemptionsData, error: redemptionsError } = await supabase
@@ -127,8 +158,8 @@ export const useCompanyAdminAnalytics = () => {
         // Process redemptions data
         const processedRedemptions = redemptionsData?.map(redemption => ({
           id: redemption.id,
-          perk_name: redemption.perks?.name || 'Unknown Perk',
-          user_name: redemption.users?.full_name || 'Unknown User',
+          perk_name: Array.isArray(redemption.perks) ? redemption.perks[0]?.name || 'Unknown Perk' : redemption.perks?.name || 'Unknown Perk',
+          user_name: Array.isArray(redemption.users) ? redemption.users[0]?.full_name || 'Unknown User' : redemption.users?.full_name || 'Unknown User',
           status: redemption.status,
           created_at: redemption.created_at,
           redemption_code: redemption.redemption_code
@@ -139,7 +170,7 @@ export const useCompanyAdminAnalytics = () => {
           companyRedemptions: processedRedemptions,
           availablePerks: availablePerks,
           stats: {
-            activePerks: availablePerks.length,
+            activePerks: activePerksCount,
             totalRedemptions: processedRedemptions.length,
             userCount: usersData?.length || 0
           },
