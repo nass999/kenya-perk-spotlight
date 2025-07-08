@@ -92,11 +92,11 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
       </div>
       
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Company Users - Show count without debug query */}
+        {/* Company Users - Show exact query result */}
         <Card>
           <CardHeader>
             <CardTitle>Company Employees</CardTitle>
-            <CardDescription>Active employees in your organization</CardDescription>
+            <CardDescription>Result of exact query matching Supabase</CardDescription>
           </CardHeader>
           <CardContent>
             {analyticsLoading ? (
@@ -108,6 +108,18 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
                     {analyticsStats.userCount}
                   </div>
                   <p className="text-gray-600">Active Employees</p>
+                  <div className="mt-4 p-3 bg-gray-50 rounded-lg text-sm">
+                    <p className="font-medium text-gray-700 mb-2">Query executed:</p>
+                    <code className="text-xs text-gray-600 block">
+                      SELECT COUNT(*) FROM users<br/>
+                      WHERE company_id = '466eb8f4-2409-4547-9a24-18ecc2474518'<br/>
+                      AND role = 'employee'<br/>
+                      AND is_active = true
+                    </code>
+                    <p className="mt-2 text-xs text-gray-500">
+                      Expected: 1 (from Supabase) | Actual: {analyticsStats.userCount}
+                    </p>
+                  </div>
                 </div>
                 {companyUsers.length > 0 && (
                   <div className="border-t pt-4">
