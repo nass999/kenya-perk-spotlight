@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
@@ -91,7 +92,7 @@ export const useCompanyAdminAnalytics = () => {
             is_enabled,
             is_deleted,
             vendor_id,
-            vendors (
+            vendors!fk_perks_vendor_id (
               id,
               name
             )
@@ -149,7 +150,7 @@ export const useCompanyAdminAnalytics = () => {
           perk.is_activated && perk.activation_status
         ).length;
 
-        // Fetch redemptions by employees of this company
+        // Fetch redemptions by employees of this company - Fix the relationship issue
         const { data: redemptionsData, error: redemptionsError } = await supabase
           .from('redemptions')
           .select(`
@@ -158,46 +159,46 @@ export const useCompanyAdminAnalytics = () => {
             created_at,
             redemption_code,
             user_id,
-            perks (name),
-            users!inner (full_name, company_id, role)
+            perk_id
           `)
-          .eq('users.company_id', authState.user.company_id)
-          .eq('users.role', 'employee')
-          .order('created_at', { ascending: false });
+          .in('user_id', usersData?.map(user => user.id) || []);
 
-        if (redemptionsError) throw redemptionsError;
+        if (redemptionsError) {
+          console.error('Redemptions error:', redemptionsError);
+          // Continue without redemptions data instead of failing completely
+        }
 
-        // Process redemptions data
-        const processedRedemptions = redemptionsData?.map(redemption => {
-          // Handle perk name access safely
-          let perkName = 'Unknown Perk';
-          if (redemption.perks) {
-            if (Array.isArray(redemption.perks) && redemption.perks.length > 0) {
-              perkName = (redemption.perks[0] as any).name || 'Unknown Perk';
-            } else if (typeof redemption.perks === 'object' && 'name' in redemption.perks) {
-              perkName = (redemption.perks as any).name || 'Unknown Perk';
-            }
-          }
+        // Fetch perk names and user names separately to avoid relationship issues
+        let processedRedemptions: CompanyRedemption[] = [];
+        
+        if (redemptionsData && redemptionsData.length > 0) {
+          // Get perk names
+          const perkIds = [...new Set(redemptionsData.map(r => r.perk_id))];
+          const { data: perksData } = await supabase
+            .from('perks')
+            .select('id, name')
+            .in('id', perkIds);
 
-          // Handle user name access safely
-          let userName = 'Unknown User';
-          if (redemption.users) {
-            if (Array.isArray(redemption.users) && redemption.users.length > 0) {
-              userName = (redemption.users[0] as any).full_name || 'Unknown User';
-            } else if (typeof redemption.users === 'object' && 'full_name' in redemption.users) {
-              userName = (redemption.users as any).full_name || 'Unknown User';
-            }
-          }
+          // Get user names
+          const userIds = [...new Set(redemptionsData.map(r => r.user_id))];
+          const { data: usersForRedemptions } = await supabase
+            .from('users')
+            .select('id, full_name')
+            .in('id', userIds);
 
-          return {
+          // Create lookup maps
+          const perkNameMap = new Map(perksData?.map(p => [p.id, p.name]) || []);
+          const userNameMap = new Map(usersForRedemptions?.map(u => [u.id, u.full_name]) || []);
+
+          processedRedemptions = redemptionsData.map(redemption => ({
             id: redemption.id,
-            perk_name: perkName,
-            user_name: userName,
+            perk_name: perkNameMap.get(redemption.perk_id) || 'Unknown Perk',
+            user_name: userNameMap.get(redemption.user_id) || 'Unknown User',
             status: redemption.status,
             created_at: redemption.created_at,
             redemption_code: redemption.redemption_code
-          };
-        }) || [];
+          }));
+        }
 
         setData({
           companyUsers: usersData || [],
