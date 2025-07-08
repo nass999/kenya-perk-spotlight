@@ -21,9 +21,11 @@ const VendorInquiry = () => {
             <p className="text-xl text-[#3d3929] mb-8 max-w-3xl mx-auto">
               Join Africa's leading employee benefits network and reach thousands of employees from top companies across the continent.
             </p>
-            <Button className="bg-[#da7756] hover:bg-[#bd5d3a] text-white px-8 py-6 text-lg">
-              Apply to Become a Partner
-            </Button>
+            <Link to="/vendor-application">
+              <Button className="bg-[#da7756] hover:bg-[#bd5d3a] text-white px-8 py-6 text-lg">
+                Apply to Become a Partner
+              </Button>
+            </Link>
           </div>
         </section>
 
@@ -174,11 +176,13 @@ const VendorInquiry = () => {
               >
                 Download Partnership Guide
               </Button>
-              <Button 
-                className="bg-transparent border-2 border-white hover:bg-white hover:text-[#da7756] px-8 py-6 text-lg"
-              >
-                Apply Now <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+              <Link to="/vendor-application">
+                <Button 
+                  className="bg-transparent border-2 border-white hover:bg-white hover:text-[#da7756] px-8 py-6 text-lg"
+                >
+                  Apply Now <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
             </div>
           </div>
         </section>

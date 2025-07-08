@@ -18,6 +18,7 @@ import Unauthorized from './pages/Unauthorized';
 import PricingPage from './pages/PricingPage';
 import AuthCallback from './pages/AuthCallback';
 import VendorInquiry from './pages/VendorInquiry';
+import VendorApplication from './pages/VendorApplication';
 import CompanyInquiry from './pages/CompanyInquiry';
 
 // Dashboard Pages
@@ -40,7 +41,7 @@ import { UserRole } from './lib/supabase';
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: {
+    queries:{
       staleTime: 5 * 60 * 1000, // 5 minutes
       retry: 1,
     },
@@ -57,6 +58,7 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/pricing" element={<PricingPage />} />
               <Route path="/vendor-inquiry" element={<VendorInquiry />} />
+              <Route path="/vendor-application" element={<VendorApplication />} />
               <Route path="/company-inquiry" element={<CompanyInquiry />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
