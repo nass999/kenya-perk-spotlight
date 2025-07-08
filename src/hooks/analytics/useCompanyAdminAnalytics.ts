@@ -16,11 +16,16 @@ interface CompanyRedemption {
   user_name: string;
   status: string;
   created_at: string;
+  redemption_code: string;
 }
 
-interface RedemptionByCategory {
+interface AvailablePerk {
+  id: string;
   name: string;
-  value: number;
+  description: string;
+  category: string | null;
+  discount_amount: number;
+  discount_type: string;
 }
 
 export const useCompanyAdminAnalytics = () => {
@@ -28,13 +33,23 @@ export const useCompanyAdminAnalytics = () => {
   const [data, setData] = useState<{
     companyUsers: CompanyUser[];
     companyRedemptions: CompanyRedemption[];
-    redemptionsByCategory: RedemptionByCategory[];
+    availablePerks: AvailablePerk[];
+    stats: {
+      activePerks: number;
+      totalRedemptions: number;
+      userCount: number;
+    };
     loading: boolean;
     error: string | null;
   }>({
     companyUsers: [],
     companyRedemptions: [],
-    redemptionsByCategory: [],
+    availablePerks: [],
+    stats: {
+      activePerks: 0,
+      totalRedemptions: 0,
+      userCount: 0
+    },
     loading: true,
     error: null
   });
@@ -46,7 +61,7 @@ export const useCompanyAdminAnalytics = () => {
       try {
         setData(prev => ({ ...prev, loading: true, error: null }));
 
-        // Fetch company users
+        // Fetch company users (employees belonging to this company)
         const { data: usersData, error: usersError } = await supabase
           .from('users')
           .select('id, full_name, email, role')
@@ -55,19 +70,53 @@ export const useCompanyAdminAnalytics = () => {
 
         if (usersError) throw usersError;
 
-        // Fetch company redemptions with perk and user info
+        // Fetch active perks for this company (enabled company_perks)
+        const { data: companyPerksData, error: companyPerksError } = await supabase
+          .from('company_perks')
+          .select(`
+            perks!inner(
+              id,
+              name,
+              description,
+              category,
+              discount_amount,
+              discount_type,
+              is_enabled,
+              is_deleted
+            )
+          `)
+          .eq('company_id', authState.user.company_id)
+          .eq('is_enabled', true)
+          .eq('perks.is_enabled', true)
+          .eq('perks.is_deleted', false);
+
+        if (companyPerksError) throw companyPerksError;
+
+        // Process available perks
+        const availablePerks = companyPerksData?.map(cp => ({
+          id: cp.perks.id,
+          name: cp.perks.name,
+          description: cp.perks.description,
+          category: cp.perks.category,
+          discount_amount: cp.perks.discount_amount,
+          discount_type: cp.perks.discount_type
+        })) || [];
+
+        // Fetch redemptions by employees of this company
         const { data: redemptionsData, error: redemptionsError } = await supabase
           .from('redemptions')
           .select(`
             id,
             status,
             created_at,
+            redemption_code,
+            user_id,
             perks!inner(name),
-            users!inner(full_name, company_id)
+            users!inner(full_name, company_id, role)
           `)
           .eq('users.company_id', authState.user.company_id)
-          .order('created_at', { ascending: false })
-          .limit(20);
+          .eq('users.role', 'employee')
+          .order('created_at', { ascending: false });
 
         if (redemptionsError) throw redemptionsError;
 
@@ -77,35 +126,19 @@ export const useCompanyAdminAnalytics = () => {
           perk_name: (redemption.perks as any)?.name || 'Unknown Perk',
           user_name: (redemption.users as any)?.full_name || 'Unknown User',
           status: redemption.status,
-          created_at: redemption.created_at
+          created_at: redemption.created_at,
+          redemption_code: redemption.redemption_code
         })) || [];
-
-        // Get redemptions by category for this company
-        const { data: categoryData, error: categoryError } = await supabase
-          .from('redemptions')
-          .select(`
-            perks!inner(category),
-            users!inner(company_id)
-          `)
-          .eq('users.company_id', authState.user.company_id);
-
-        if (categoryError) throw categoryError;
-
-        // Process category data
-        const categoryMap = new Map<string, number>();
-        categoryData?.forEach(item => {
-          const category = (item.perks as any)?.category || 'Uncategorized';
-          categoryMap.set(category, (categoryMap.get(category) || 0) + 1);
-        });
-
-        const redemptionsByCategory = Array.from(categoryMap.entries())
-          .map(([name, value]) => ({ name, value }))
-          .sort((a, b) => b.value - a.value);
 
         setData({
           companyUsers: usersData || [],
           companyRedemptions: processedRedemptions,
-          redemptionsByCategory,
+          availablePerks: availablePerks,
+          stats: {
+            activePerks: availablePerks.length,
+            totalRedemptions: processedRedemptions.length,
+            userCount: usersData?.length || 0
+          },
           loading: false,
           error: null
         });

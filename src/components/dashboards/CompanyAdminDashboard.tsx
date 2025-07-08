@@ -2,9 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  BarChart, 
   ShoppingBag, 
-  Users, 
   CreditCard,
   UserPlus
 } from 'lucide-react';
@@ -26,7 +24,8 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
   const { 
     companyUsers, 
     companyRedemptions, 
-    redemptionsByCategory, 
+    availablePerks,
+    stats: analyticsStats,
     loading: analyticsLoading 
   } = useCompanyAdminAnalytics();
   
@@ -45,22 +44,7 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
         </Button>
       </div>
       
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
-              <Users className="h-4 w-4 text-blue-500" />
-              Total Teams
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats.users}</div>
-            <p className="mt-2 text-xs text-gray-500">
-              Teams in your organization
-            </p>
-          </CardContent>
-        </Card>
-        
+      <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
@@ -69,9 +53,11 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{stats.availablePerks}</div>
+            <div className="text-3xl font-bold">
+              {analyticsLoading ? '...' : analyticsStats.activePerks}
+            </div>
             <p className="mt-2 text-xs text-gray-500">
-              Perks available to your teams
+              Perks enabled for your company
             </p>
           </CardContent>
         </Card>
@@ -84,9 +70,11 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{stats.redeemedPerks}</div>
+            <div className="text-3xl font-bold">
+              {analyticsLoading ? '...' : analyticsStats.totalRedemptions}
+            </div>
             <p className="mt-2 text-xs text-gray-500">
-              Perks redeemed by teams
+              Perks redeemed by your employees
             </p>
           </CardContent>
         </Card>
@@ -96,16 +84,16 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
         {/* Company Users */}
         <Card>
           <CardHeader>
-            <CardTitle>Company Users</CardTitle>
+            <CardTitle>Company Users ({analyticsLoading ? '...' : analyticsStats.userCount})</CardTitle>
             <CardDescription>Active users in your organization</CardDescription>
           </CardHeader>
           <CardContent>
             {analyticsLoading ? (
               <div className="text-center text-gray-500 py-4">Loading...</div>
             ) : companyUsers.length > 0 ? (
-              <ul className="space-y-2">
-                {companyUsers.map((user, index) => (
-                  <li key={index} className="flex items-center justify-between p-2 border rounded">
+              <ul className="space-y-3">
+                {companyUsers.map((user) => (
+                  <li key={user.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
                       <div className="font-medium">{user.full_name || 'N/A'}</div>
                       <div className="text-sm text-gray-500">{user.email}</div>
@@ -126,19 +114,22 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
         <Card>
           <CardHeader>
             <CardTitle>Recent Redemptions</CardTitle>
-            <CardDescription>Latest perk redemptions by your team</CardDescription>
+            <CardDescription>Latest perk redemptions by your employees</CardDescription>
           </CardHeader>
           <CardContent>
             {analyticsLoading ? (
               <div className="text-center text-gray-500 py-4">Loading...</div>
             ) : companyRedemptions.length > 0 ? (
-              <ul className="space-y-2">
-                {companyRedemptions.slice(0, 5).map((redemption, index) => (
-                  <li key={index} className="flex items-center justify-between p-2 border rounded">
+              <ul className="space-y-3">
+                {companyRedemptions.slice(0, 5).map((redemption) => (
+                  <li key={redemption.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
-                      <div className="font-medium">{redemption.perk_name || 'Unknown Perk'}</div>
+                      <div className="font-medium">{redemption.perk_name}</div>
                       <div className="text-sm text-gray-500">
-                        by {redemption.user_name || 'Unknown User'}
+                        by {redemption.user_name}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        Code: {redemption.redemption_code}
                       </div>
                     </div>
                     <div className="text-right">
@@ -157,49 +148,47 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
                 ))}
               </ul>
             ) : (
-              <div className="text-center text-gray-500 py-4">No recent redemptions</div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Redemptions by Category */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Redemptions by Category</CardTitle>
-            <CardDescription>Breakdown of redeemed perks by category</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {analyticsLoading ? (
-              <div className="text-center text-gray-500 py-4">Loading...</div>
-            ) : redemptionsByCategory.length > 0 ? (
-              <ul className="space-y-2">
-                {redemptionsByCategory.map((category, index) => (
-                  <li key={index} className="flex items-center justify-between p-2 border rounded">
-                    <div className="font-medium">{category.name}</div>
-                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                      {category.value} redemptions
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="text-center text-gray-500 py-4">No redemptions by category</div>
+              <div className="text-center text-gray-500 py-4">No redemptions found</div>
             )}
           </CardContent>
         </Card>
 
         {/* Available Perks */}
-        <Card>
+        <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle>Available Perks</CardTitle>
-            <CardDescription>Active perks for your organization</CardDescription>
+            <CardDescription>Active perks enabled for your organization</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-center text-gray-500 py-4">
-              <Link to="/dashboard/browse-perks" className="text-blue-600 hover:underline">
-                View all available perks →
-              </Link>
-            </div>
+            {analyticsLoading ? (
+              <div className="text-center text-gray-500 py-4">Loading...</div>
+            ) : availablePerks.length > 0 ? (
+              <ul className="space-y-3">
+                {availablePerks.map((perk) => (
+                  <li key={perk.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <div className="font-medium">{perk.name}</div>
+                      <div className="text-sm text-gray-500">{perk.description}</div>
+                      {perk.category && (
+                        <div className="text-xs text-blue-600 mt-1">Category: {perk.category}</div>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <div className="font-semibold text-green-600">
+                        {perk.discount_type === 'percentage' ? `${perk.discount_amount}% OFF` : `$${perk.discount_amount} OFF`}
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="text-center text-gray-500 py-4">
+                No active perks found. 
+                <Link to="/dashboard/browse-perks" className="text-blue-600 hover:underline ml-1">
+                  Browse available perks →
+                </Link>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
