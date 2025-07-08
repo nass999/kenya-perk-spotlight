@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
@@ -67,12 +66,11 @@ export const useCompanyAdminAnalytics = () => {
       try {
         setData(prev => ({ ...prev, loading: true, error: null }));
 
-        // Fetch company users (only employees belonging to this company)
+        // Fetch all company users (not just employees) to show in Company Users section
         const { data: usersData, error: usersError } = await supabase
           .from('users')
           .select('id, full_name, email, role')
           .eq('company_id', authState.user.company_id)
-          .eq('role', 'employee')
           .eq('is_active', true);
 
         if (usersError) throw usersError;
@@ -150,6 +148,9 @@ export const useCompanyAdminAnalytics = () => {
           perk.is_activated && perk.activation_status
         ).length;
 
+        // For redemptions, we still want only employee redemptions
+        const employeeUsers = usersData?.filter(user => user.role === 'employee') || [];
+        
         // Fetch redemptions by employees of this company - Fix the relationship issue
         const { data: redemptionsData, error: redemptionsError } = await supabase
           .from('redemptions')
@@ -161,7 +162,7 @@ export const useCompanyAdminAnalytics = () => {
             user_id,
             perk_id
           `)
-          .in('user_id', usersData?.map(user => user.id) || []);
+          .in('user_id', employeeUsers.map(user => user.id));
 
         if (redemptionsError) {
           console.error('Redemptions error:', redemptionsError);
