@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -16,6 +17,8 @@ import NotFound from './pages/NotFound';
 import Unauthorized from './pages/Unauthorized';
 import PricingPage from './pages/PricingPage';
 import AuthCallback from './pages/AuthCallback';
+import VendorInquiry from './pages/VendorInquiry';
+import CompanyInquiry from './pages/CompanyInquiry';
 
 // Dashboard Pages
 import MyRedemptions from './pages/dashboard/MyRedemptions';
@@ -53,6 +56,8 @@ function App() {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/pricing" element={<PricingPage />} />
+              <Route path="/vendor-inquiry" element={<VendorInquiry />} />
+              <Route path="/company-inquiry" element={<CompanyInquiry />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
