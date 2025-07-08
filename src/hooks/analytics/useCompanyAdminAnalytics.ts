@@ -66,11 +66,12 @@ export const useCompanyAdminAnalytics = () => {
       try {
         setData(prev => ({ ...prev, loading: true, error: null }));
 
-        // Fetch all company users (not just employees) to show in Company Users section
+        // Fetch company employees only (not company admins) to show in Company Users section
         const { data: usersData, error: usersError } = await supabase
           .from('users')
           .select('id, full_name, email, role')
           .eq('company_id', authState.user.company_id)
+          .eq('role', 'employee')
           .eq('is_active', true);
 
         if (usersError) throw usersError;
@@ -148,8 +149,8 @@ export const useCompanyAdminAnalytics = () => {
           perk.is_activated && perk.activation_status
         ).length;
 
-        // For redemptions, we still want only employee redemptions
-        const employeeUsers = usersData?.filter(user => user.role === 'employee') || [];
+        // For redemptions, we use the same employee users we already fetched
+        const employeeUsers = usersData || [];
         
         // Fetch redemptions by employees of this company - Fix the relationship issue
         const { data: redemptionsData, error: redemptionsError } = await supabase
