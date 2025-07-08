@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
@@ -66,36 +67,25 @@ export const useCompanyAdminAnalytics = () => {
       try {
         setData(prev => ({ ...prev, loading: true, error: null }));
 
-        // First, get the actual company ID from the companies table using the user's company_id
+        // Get the actual company ID from the companies table using the user's company_id
         const { data: companyData, error: companyError } = await supabase
           .from('companies')
           .select('id, name')
           .eq('id', authState.user.company_id)
           .single();
 
-        console.log('Company data:', companyData);
-        console.log('Company error:', companyError);
-
         if (companyError) throw companyError;
 
-        // FIXED: Use the correct company ID to fetch employees
-        // This should match the exact query: SELECT COUNT(*) FROM users WHERE company_id = 'company_id_here' AND role = 'employee' AND is_active = true
+        // Count ALL active users in the company (not just employees)
         const { data: usersData, error: usersError } = await supabase
           .from('users')
           .select('id, full_name, email, role, company_id, is_active')
-          .eq('company_id', companyData.id)  // Use the company ID from companies table
-          .eq('role', 'employee')
+          .eq('company_id', companyData.id)
           .eq('is_active', true);
-
-        console.log('Fixed users query - Company ID used:', companyData.id);
-        console.log('Fixed users query result:', usersData);
-        console.log('Fixed users query error:', usersError);
 
         if (usersError) throw usersError;
 
-        // Count employees using the fetched data
-        const employeeCount = usersData ? usersData.length : 0;
-        console.log('Employee count from query result:', employeeCount);
+        const userCount = usersData ? usersData.length : 0;
 
         // Fetch all globally enabled perks first
         const { data: globalPerks, error: globalPerksError } = await supabase
@@ -170,10 +160,10 @@ export const useCompanyAdminAnalytics = () => {
           perk.is_activated && perk.activation_status
         ).length;
 
-        // For redemptions, we use the same employee users we already fetched
-        const employeeUsers = usersData || [];
+        // For redemptions, we use the same users we already fetched
+        const companyUsersAll = usersData || [];
         
-        // Fetch redemptions by employees of this company - Fix the relationship issue
+        // Fetch redemptions by all users of this company
         const { data: redemptionsData, error: redemptionsError } = await supabase
           .from('redemptions')
           .select(`
@@ -184,7 +174,7 @@ export const useCompanyAdminAnalytics = () => {
             user_id,
             perk_id
           `)
-          .in('user_id', employeeUsers.map(user => user.id));
+          .in('user_id', companyUsersAll.map(user => user.id));
 
         if (redemptionsError) {
           console.error('Redemptions error:', redemptionsError);
@@ -230,7 +220,7 @@ export const useCompanyAdminAnalytics = () => {
           stats: {
             activePerks: activePerksCount,
             totalRedemptions: processedRedemptions.length,
-            userCount: employeeCount  // Use the count from the actual query result
+            userCount: userCount
           },
           loading: false,
           error: null

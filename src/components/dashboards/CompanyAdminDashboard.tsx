@@ -92,11 +92,11 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
       </div>
       
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Company Users - Show exact query result */}
+        {/* Company Users */}
         <Card>
           <CardHeader>
-            <CardTitle>Company Employees</CardTitle>
-            <CardDescription>Result of exact query matching Supabase</CardDescription>
+            <CardTitle>Company Users</CardTitle>
+            <CardDescription>Active users in your organization</CardDescription>
           </CardHeader>
           <CardContent>
             {analyticsLoading ? (
@@ -107,23 +107,11 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
                   <div className="text-4xl font-bold text-blue-600 mb-2">
                     {analyticsStats.userCount}
                   </div>
-                  <p className="text-gray-600">Active Employees</p>
-                  <div className="mt-4 p-3 bg-gray-50 rounded-lg text-sm">
-                    <p className="font-medium text-gray-700 mb-2">Query executed:</p>
-                    <code className="text-xs text-gray-600 block">
-                      SELECT COUNT(*) FROM users<br/>
-                      WHERE company_id = '466eb8f4-2409-4547-9a24-18ecc2474518'<br/>
-                      AND role = 'employee'<br/>
-                      AND is_active = true
-                    </code>
-                    <p className="mt-2 text-xs text-gray-500">
-                      Expected: 1 (from Supabase) | Actual: {analyticsStats.userCount}
-                    </p>
-                  </div>
+                  <p className="text-gray-600">Active Users</p>
                 </div>
                 {companyUsers.length > 0 && (
                   <div className="border-t pt-4">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Employee List:</h4>
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">User List:</h4>
                     <ul className="space-y-2">
                       {companyUsers.map((user) => (
                         <li key={user.id} className="flex items-center justify-between p-2 border rounded">
