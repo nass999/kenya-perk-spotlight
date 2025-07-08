@@ -22,8 +22,6 @@ const vendorApplicationSchema = z.object({
   productDescription: z.string().min(20, "Please provide a detailed description (minimum 20 characters)"),
   targetAudience: z.string().min(10, "Please describe your target audience"),
   businessRegistration: z.string().min(5, "Please provide business registration details"),
-  experience: z.string().min(10, "Please describe your experience"),
-  additionalInfo: z.string().optional(),
 });
 
 type VendorApplicationFormData = z.infer<typeof vendorApplicationSchema>;
@@ -45,8 +43,6 @@ const VendorApplicationForm = () => {
       productDescription: "",
       targetAudience: "",
       businessRegistration: "",
-      experience: "",
-      additionalInfo: "",
     },
   });
 
@@ -91,7 +87,7 @@ const VendorApplicationForm = () => {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {/* Company Information */}
             <div className="grid gap-4 md:grid-cols-2">
               <FormField
@@ -178,36 +174,38 @@ const VendorApplicationForm = () => {
             />
 
             {/* Business Information */}
-            <FormField
-              control={form.control}
-              name="businessType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Business Type/Industry *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Retail, Hospitality, Technology, Healthcare" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid gap-4 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="businessType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Business Type/Industry *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Retail, Hospitality, Technology" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="discountOffered"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <Percent className="h-4 w-4" />
-                    Proposed Employee Discount *
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., 15% discount on all products, Buy 1 Get 1 Free" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="discountOffered"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Percent className="h-4 w-4" />
+                      Proposed Employee Discount *
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., 15% discount, Buy 1 Get 1 Free" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
@@ -221,7 +219,7 @@ const VendorApplicationForm = () => {
                   <FormControl>
                     <Textarea 
                       placeholder="Describe your products or services in detail..."
-                      className="min-h-[100px]"
+                      className="min-h-[80px]"
                       {...field} 
                     />
                   </FormControl>
@@ -239,7 +237,7 @@ const VendorApplicationForm = () => {
                   <FormControl>
                     <Textarea 
                       placeholder="Describe your ideal customers and target demographics..."
-                      className="min-h-[80px]"
+                      className="min-h-[60px]"
                       {...field} 
                     />
                   </FormControl>
@@ -262,45 +260,9 @@ const VendorApplicationForm = () => {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="experience"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Experience & Track Record *</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Describe your company's experience, years in business, notable achievements..."
-                      className="min-h-[80px]"
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="additionalInfo"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Additional Information</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Any additional information you'd like to provide..."
-                      className="min-h-[80px]"
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <Button 
               type="submit" 
-              className="w-full bg-[#da7756] hover:bg-[#bd5d3a] text-white py-6 text-lg"
+              className="w-full bg-[#da7756] hover:bg-[#bd5d3a] text-white py-6 text-lg mt-6"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
