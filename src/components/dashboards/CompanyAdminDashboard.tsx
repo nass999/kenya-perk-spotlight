@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -27,6 +26,7 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
     companyUsers, 
     companyRedemptions, 
     availablePerks,
+    queryResults,
     stats: analyticsStats,
     loading: analyticsLoading 
   } = useCompanyAdminAnalytics();
@@ -109,6 +109,19 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
                   </div>
                   <p className="text-gray-600">Active Users</p>
                 </div>
+                
+                {/* Show query results */}
+                {queryResults.length > 0 && (
+                  <div className="bg-gray-50 p-3 rounded mb-4">
+                    <h5 className="text-sm font-medium mb-2">Query Results:</h5>
+                    {queryResults.map((result, index) => (
+                      <div key={index} className="text-sm">
+                        Role: {result.role}, Employee Count: {result.employee_count}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
                 {companyUsers.length > 0 ? (
                   <div className="border-t pt-4">
                     <h4 className="text-sm font-medium text-gray-700 mb-2">User List:</h4>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
@@ -39,6 +40,7 @@ export const useCompanyAdminAnalytics = () => {
     companyUsers: CompanyUser[];
     companyRedemptions: CompanyRedemption[];
     availablePerks: AvailablePerk[];
+    queryResults: any[];
     stats: {
       activePerks: number;
       totalRedemptions: number;
@@ -50,6 +52,7 @@ export const useCompanyAdminAnalytics = () => {
     companyUsers: [],
     companyRedemptions: [],
     availablePerks: [],
+    queryResults: [],
     stats: {
       activePerks: 0,
       totalRedemptions: 0,
@@ -76,6 +79,25 @@ export const useCompanyAdminAnalytics = () => {
         if (companyError) throw companyError;
 
         console.log('Company data:', companyData);
+
+        // Run the exact query the user requested
+        const { data: queryData, error: queryError } = await supabase
+          .from('users')
+          .select(`
+            role,
+            (
+              SELECT COUNT(*) 
+              FROM users 
+              WHERE company_id = '466eb8f4-2409-4547-9a24-18ecc2474518' 
+                AND role = 'employee' 
+                AND is_active = true
+            ) AS employee_count
+          `)
+          .eq('company_id', '466eb8f4-2409-4547-9a24-18ecc2474518')
+          .eq('role', 'employee')
+          .eq('is_active', true);
+
+        console.log('Query results:', queryData);
 
         // Fetch ALL users in the company (including all roles)
         const { data: usersData, error: usersError } = await supabase
@@ -221,6 +243,7 @@ export const useCompanyAdminAnalytics = () => {
           companyUsers: usersData || [],
           companyRedemptions: processedRedemptions,
           availablePerks: availablePerks,
+          queryResults: queryData || [],
           stats: {
             activePerks: activePerksCount,
             totalRedemptions: processedRedemptions.length,
