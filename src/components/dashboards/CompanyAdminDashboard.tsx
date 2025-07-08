@@ -92,31 +92,45 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
       </div>
       
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Company Users */}
+        {/* Company Users - Show exact query result count */}
         <Card>
           <CardHeader>
-            <CardTitle>Company Users ({analyticsLoading ? '...' : analyticsStats.userCount})</CardTitle>
-            <CardDescription>Active users in your organization</CardDescription>
+            <CardTitle>Company Employees</CardTitle>
+            <CardDescription>Active employees in your organization</CardDescription>
           </CardHeader>
           <CardContent>
             {analyticsLoading ? (
               <div className="text-center text-gray-500 py-4">Loading...</div>
-            ) : companyUsers.length > 0 ? (
-              <ul className="space-y-3">
-                {companyUsers.map((user) => (
-                  <li key={user.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <div className="font-medium">{user.full_name || 'N/A'}</div>
-                      <div className="text-sm text-gray-500">{user.email}</div>
-                    </div>
-                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                      {user.role}
-                    </span>
-                  </li>
-                ))}
-              </ul>
             ) : (
-              <div className="text-center text-gray-500 py-4">No users found</div>
+              <div className="space-y-4">
+                <div className="text-center py-8">
+                  <div className="text-4xl font-bold text-blue-600 mb-2">
+                    {analyticsStats.userCount}
+                  </div>
+                  <p className="text-gray-600">Active Employees</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Query: SELECT COUNT(*) FROM users WHERE company_id = '{authState.user?.company_id}' AND role = 'employee' AND is_active = true
+                  </p>
+                </div>
+                {companyUsers.length > 0 && (
+                  <div className="border-t pt-4">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">Employee List:</h4>
+                    <ul className="space-y-2">
+                      {companyUsers.map((user) => (
+                        <li key={user.id} className="flex items-center justify-between p-2 border rounded">
+                          <div>
+                            <div className="font-medium">{user.full_name || 'N/A'}</div>
+                            <div className="text-sm text-gray-500">{user.email}</div>
+                          </div>
+                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                            {user.role}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             )}
           </CardContent>
         </Card>
