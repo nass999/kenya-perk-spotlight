@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
@@ -66,13 +67,23 @@ export const useCompanyAdminAnalytics = () => {
       try {
         setData(prev => ({ ...prev, loading: true, error: null }));
 
-        console.log('Fetching users for company_id:', authState.user.company_id);
-        
-        // Fetch company employees only (not company admins) to show in Company Users section
+        // First, get the actual company ID from the companies table using the user's company_id
+        const { data: companyData, error: companyError } = await supabase
+          .from('companies')
+          .select('id, name')
+          .eq('id', authState.user.company_id)
+          .single();
+
+        console.log('Company data:', companyData);
+        console.log('Company error:', companyError);
+
+        if (companyError) throw companyError;
+
+        // Now fetch employees using the company ID from the companies table
         const { data: usersData, error: usersError } = await supabase
           .from('users')
           .select('id, full_name, email, role, company_id, is_active')
-          .eq('company_id', authState.user.company_id)
+          .eq('company_id', companyData.id)
           .eq('role', 'employee')
           .eq('is_active', true);
 
@@ -80,14 +91,6 @@ export const useCompanyAdminAnalytics = () => {
         console.log('Users query error:', usersError);
 
         if (usersError) throw usersError;
-
-        // Also fetch all users for this company to see what's there
-        const { data: allUsersData, error: allUsersError } = await supabase
-          .from('users')
-          .select('id, full_name, email, role, company_id, is_active')
-          .eq('company_id', authState.user.company_id);
-
-        console.log('All users for company:', allUsersData);
 
         // Fetch all globally enabled perks first
         const { data: globalPerks, error: globalPerksError } = await supabase
@@ -119,7 +122,7 @@ export const useCompanyAdminAnalytics = () => {
         const { data: companyPerksData, error: companyPerksError } = await supabase
           .from('company_perks')
           .select('perk_id, is_enabled')
-          .eq('company_id', authState.user.company_id);
+          .eq('company_id', companyData.id);
 
         if (companyPerksError) throw companyPerksError;
 
