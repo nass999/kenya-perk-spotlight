@@ -20,6 +20,7 @@ import AuthCallback from './pages/AuthCallback';
 import VendorInquiry from './pages/VendorInquiry';
 import VendorApplication from './pages/VendorApplication';
 import CompanyInquiry from './pages/CompanyInquiry';
+import TestCredentials from './pages/TestCredentials';
 
 // Dashboard Pages
 import MyRedemptions from './pages/dashboard/MyRedemptions';
@@ -60,6 +61,7 @@ function App() {
               <Route path="/vendor-inquiry" element={<VendorInquiry />} />
               <Route path="/vendor-application" element={<VendorApplication />} />
               <Route path="/company-inquiry" element={<CompanyInquiry />} />
+              <Route path="/test-credentials" element={<TestCredentials />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/auth/callback" element={<AuthCallback />} />

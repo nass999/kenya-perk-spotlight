@@ -81,6 +81,7 @@ const Footer = () => {
               &copy; 2025 Africarewardsnetwork. All rights reserved.
             </div>
             <div className="flex gap-6">
+              <Link to="/test-credentials" className="hover:text-kneutral-400 transition-colors">Test Credentials</Link>
               <a href="#" className="hover:text-kneutral-400 transition-colors">Privacy Policy</a>
               <a href="#" className="hover:text-kneutral-400 transition-colors">Terms of Service</a>
               <a href="#" className="hover:text-kneutral-400 transition-colors">Cookie Policy</a>
