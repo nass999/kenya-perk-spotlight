@@ -67,9 +67,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           // Fully reset auth state to ensure complete cleanup
           setAuthState({ user: null, session: null, loading: false });
           
-          // Only redirect to login if not already there
-          if (location.pathname !== '/login' && location.pathname !== '/register') {
-            console.log('Redirecting to login from:', location.pathname);
+          // Only redirect to login if trying to access protected routes
+          const protectedRoutes = ['/dashboard'];
+          const isProtectedRoute = protectedRoutes.some(route => location.pathname.startsWith(route));
+          
+          if (isProtectedRoute && location.pathname !== '/login' && location.pathname !== '/register') {
+            console.log('Redirecting to login from protected route:', location.pathname);
             navigate('/login', { replace: true });
           }
           return;
@@ -154,9 +157,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               description: "Your account has been deactivated or deleted. Please contact support."
             });
             
-            // Redirect to login
-            navigate('/login', { replace: true });
-            return;
+              // Only redirect to login if on protected route
+              const protectedRoutes = ['/dashboard'];
+              const isProtectedRoute = protectedRoutes.some(route => location.pathname.startsWith(route));
+              
+              if (isProtectedRoute) {
+                navigate('/login', { replace: true });
+              }
+              return;
           }
           
           console.log("User data fetched for existing session, updating state");
