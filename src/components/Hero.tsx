@@ -30,7 +30,7 @@ const Hero = () => {
         <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
           <div className="flex-1 text-center lg:text-left animate-fade-in">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-[#3d3929]">
-              Exclusive Benefits for <span className="text-gradient">African</span>{" "}
+              Exclusive Rewards and Benefits for <span className="text-gradient">African</span>{" "}
               <span className={`inline-block min-w-[180px] md:min-w-[240px] text-gradient ${isAnimating ? 'opacity-0 transform -translate-y-2' : 'opacity-100 transform translate-y-0'}`} style={{ transition: "all 0.5s ease-in-out" }}>
                 {currentText}
               </span>
