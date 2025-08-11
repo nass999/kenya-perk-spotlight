@@ -43,10 +43,23 @@ export const useFetchUserData = () => {
         const metadata = authUser.user_metadata as any;
         console.log("User metadata:", metadata);
         
+        // Normalize potentially invalid company_id values from metadata
+        const normalizeCompanyId = (val: any) => {
+          if (val === undefined || val === null) return null;
+          if (typeof val === 'string') {
+            const v = val.trim().toLowerCase();
+            if (!v || v === 'null' || v === 'undefined') return null;
+            // Very light UUID check (36 chars with dashes)
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+            if (!uuidRegex.test(val)) return null;
+          }
+          return val;
+        };
+        
         // Use metadata values or defaults
         const role = (metadata?.role || 'employee') as UserRole;
         const fullName = metadata?.full_name || authUser.email?.split('@')[0] || 'User';
-        const companyId = metadata?.company_id || null;
+        const companyId = normalizeCompanyId(metadata?.company_id);
         const companyName = metadata?.company_name || null;
         
         console.log("Creating user with role:", role, "company_id:", companyId, "company_name:", companyName);
@@ -111,6 +124,12 @@ export const useFetchUserData = () => {
         
         if (insertError) {
           console.error('Error creating user record:', insertError);
+          // If insert failed due to UUID cast, log and stop auto sign-out to avoid user being kicked
+          toast({
+            variant: "destructive",
+            title: "Profile setup issue",
+            description: "We couldn't set up your profile automatically. Please try again in a few seconds.",
+          });
           return null;
         }
         

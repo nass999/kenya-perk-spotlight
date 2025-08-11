@@ -52,13 +52,28 @@ export const useAuthMethods = () => {
       setLoading(true);
       console.log("Attempting sign up for:", email, "with metadata:", metadata);
       
+      // Sanitize metadata to avoid sending string "null" values to auth
+      const cleanMetadata = (() => {
+        const m: any = { ...metadata };
+        const val = m?.company_id;
+        if (
+          val === undefined ||
+          val === null ||
+          (typeof val === 'string' && (val.trim() === '' || val.trim().toLowerCase() === 'null' || val.trim().toLowerCase() === 'undefined'))
+        ) {
+          delete m.company_id;
+        }
+        return m;
+      })();
+      console.log("Sanitized signup metadata:", cleanMetadata);
+      
       // 1. Create auth user with metadata
       const { data: authData, error: authError } = await supabase.auth.signUp({ 
         email, 
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
-          data: metadata
+          data: cleanMetadata
         }
       });
       
