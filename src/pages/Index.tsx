@@ -10,6 +10,7 @@ import VendorInquirySection from "@/components/VendorInquirySection";
 import CompanyInquirySection from "@/components/CompanyInquirySection";
 import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
+import PersonaValueProps from "@/components/PersonaValueProps";
 
 const Index = () => {
   return (
@@ -32,6 +33,7 @@ const Index = () => {
       <main>
         <Hero />
         <Features />
+        <PersonaValueProps />
         <TrendingRewards />
         <Partners />
         <VendorInquirySection />
