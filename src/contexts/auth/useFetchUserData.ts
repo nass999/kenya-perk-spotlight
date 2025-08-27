@@ -1,6 +1,6 @@
 
 import { supabase } from '@/lib/supabase';
-import { UserData, UserRole } from './types';
+import { UserData, UserRole } from '@/lib/supabase';
 import { createCompany } from '@/lib/supabase-admin';
 import { toast } from '@/components/ui/use-toast';
 
@@ -143,9 +143,7 @@ export const useFetchUserData = () => {
           full_name: insertedUser.full_name || '',
           company_id: insertedUser.company_id,
           company_name: insertedUser.company_name,
-          is_active: insertedUser.is_active,
-          trial_started_at: insertedUser.trial_started_at,
-          trial_expires_at: insertedUser.trial_expires_at
+          is_active: insertedUser.is_active
         };
         
         return userData;
@@ -159,9 +157,7 @@ export const useFetchUserData = () => {
           full_name: userData.full_name || '',
           company_id: userData.company_id,
           company_name: userData.company_name,
-          is_active: userData.is_active,
-          trial_started_at: userData.trial_started_at,
-          trial_expires_at: userData.trial_expires_at
+          is_active: userData.is_active
         };
         
         return returnUserData;

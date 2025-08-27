@@ -11,8 +11,6 @@ export interface UserData {
   company_id: string | null;
   company_name?: string | null;
   is_active?: boolean;
-  trial_started_at?: string | null;
-  trial_expires_at?: string | null;
 }
 
 export interface AuthState {
