@@ -106,6 +106,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               navigate('/login', { replace: true });
               return;
             }
+
+            // Check if user's trial has expired
+            if (userData.trial_expires_at) {
+              const now = new Date();
+              const trialExpires = new Date(userData.trial_expires_at);
+              
+              if (now > trialExpires) {
+                console.log("User trial has expired");
+                
+                toast({
+                  variant: "destructive",
+                  title: "Trial Expired",
+                  description: "Your 7-day free trial has ended. Please contact support to continue using the service."
+                });
+                
+                // Sign out the user
+                await supabase.auth.signOut();
+                setAuthState({ user: null, session: null, loading: false });
+                
+                // Redirect to login
+                navigate('/login', { replace: true });
+                return;
+              }
+            }
             
             console.log("User data fetched, updating state and checking for redirect");
             setAuthState({ user: userData, session, loading: false });
@@ -165,6 +189,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 navigate('/login', { replace: true });
               }
               return;
+          }
+
+          // Check if user's trial has expired for existing sessions
+          if (userData.trial_expires_at) {
+            const now = new Date();
+            const trialExpires = new Date(userData.trial_expires_at);
+            
+            if (now > trialExpires) {
+              console.log("User trial has expired for existing session");
+              
+              toast({
+                variant: "destructive",
+                title: "Trial Expired",
+                description: "Your 7-day free trial has ended. Please contact support to continue using the service."
+              });
+              
+              await supabase.auth.signOut();
+              setAuthState({ user: null, session: null, loading: false });
+              
+              const protectedRoutes = ['/dashboard'];
+              const isProtectedRoute = protectedRoutes.some(route => location.pathname.startsWith(route));
+              
+              if (isProtectedRoute) {
+                navigate('/login', { replace: true });
+              }
+              return;
+            }
           }
           
           console.log("User data fetched for existing session, updating state");

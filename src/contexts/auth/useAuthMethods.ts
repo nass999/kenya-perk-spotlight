@@ -24,6 +24,14 @@ export const useAuthMethods = () => {
       }
       
       console.log("Sign in successful:", data.user.id);
+      
+      // Set trial dates for first-time login
+      try {
+        await supabase.rpc('set_trial_dates');
+      } catch (error) {
+        console.log("Trial dates already set or error:", error);
+      }
+      
       toast({
         title: "Welcome back!",
         description: "You've successfully signed in.",
