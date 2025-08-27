@@ -3,7 +3,7 @@ import { useState, useEffect, createContext } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthMethods } from './useAuthMethods';
 import { useFetchUserData } from './useFetchUserData';
-import type { AuthState, AuthContextProps } from './types';
+import type { AuthState, AuthContextProps, UserData } from './types';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 
