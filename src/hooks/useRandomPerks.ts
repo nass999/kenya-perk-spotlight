@@ -20,9 +20,63 @@ export const useRandomPerks = () => {
       console.log('Fetching random perks for company:', user.company_id);
 
       if (user.role === 'employee') {
+        // If employee has no company_id (new signup), show all active perks
         if (!user.company_id) {
-          console.log('Employee has no company_id');
-          setRandomPerks([]);
+          console.log('New employee signup - showing all active perks');
+          
+          // Get all globally enabled perks for new signups
+          const { data: allPerks, error: perksError } = await supabase
+            .from('perks')
+            .select('*')
+            .eq('is_enabled', true)
+            .eq('is_deleted', false);
+
+          if (perksError) {
+            console.error('Error fetching perks for new signup:', perksError);
+            throw perksError;
+          }
+
+          if (!allPerks || allPerks.length === 0) {
+            console.log('No active perks found for new signup');
+            setRandomPerks([]);
+            return;
+          }
+
+          // Shuffle the perks and take first 5
+          const shuffledPerks = [...allPerks].sort(() => Math.random() - 0.5);
+          const selectedPerks = shuffledPerks.slice(0, 5);
+
+          // Fetch vendors for these perks
+          const vendorIds = [...new Set(selectedPerks.map(perk => perk.vendor_id).filter(Boolean))];
+          let vendorsData: any[] = [];
+          
+          if (vendorIds.length > 0) {
+            const { data: vendors, error: vendorsError } = await supabase
+              .from('vendors')
+              .select('id, name')
+              .in('id', vendorIds);
+
+            if (vendorsError) {
+              console.error('Error fetching vendors for new signup:', vendorsError);
+            } else {
+              vendorsData = vendors || [];
+            }
+          }
+
+          // Create vendor lookup map
+          const vendorLookup = new Map();
+          vendorsData.forEach(vendor => {
+            vendorLookup.set(vendor.id, vendor);
+          });
+
+          // Transform perks with vendor names
+          const perksWithVendors = selectedPerks.map(perk => ({
+            ...perk,
+            vendor_name: vendorLookup.get(perk.vendor_id)?.name || `Unknown Vendor (${perk.vendor_id?.substring(0, 8)}...)`
+          }));
+
+          console.log('Random perks for new signup:', perksWithVendors);
+          setRandomPerks(perksWithVendors);
           return;
         }
 
