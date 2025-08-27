@@ -203,6 +203,8 @@ export type Database = {
           id: string
           is_active: boolean | null
           role: string | null
+          trial_expires_at: string | null
+          trial_started_at: string | null
         }
         Insert: {
           company_id?: string | null
@@ -213,6 +215,8 @@ export type Database = {
           id: string
           is_active?: boolean | null
           role?: string | null
+          trial_expires_at?: string | null
+          trial_started_at?: string | null
         }
         Update: {
           company_id?: string | null
@@ -223,6 +227,8 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           role?: string | null
+          trial_expires_at?: string | null
+          trial_started_at?: string | null
         }
         Relationships: [
           {
@@ -317,7 +323,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      set_trial_dates: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
