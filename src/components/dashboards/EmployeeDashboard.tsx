@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { DashboardStats } from '@/types/dashboard';
-import { useRandomPerks } from '@/hooks/useRandomPerks';
+import { useFeaturedPerks } from '@/hooks/perks/useFeaturedPerks';
 import { Button } from '@/components/ui/button';
 import { UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -14,7 +14,7 @@ interface EmployeeDashboardProps {
 }
 
 const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ stats, welcomeMessage }) => {
-  const { randomPerks, loading } = useRandomPerks();
+  const { featuredPerks, loading } = useFeaturedPerks();
   const { authState } = useAuth();
   
   console.log("Stats in EmployeeDashboard:", stats);
@@ -38,15 +38,15 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ stats, welcomeMes
       
       <div>
         <div className="flex items-center mb-3">
-          <h2 className="text-lg font-semibold">Discover Your Perks ({randomPerks.length})</h2>
-          {randomPerks.length > 0 && (
+          <h2 className="text-lg font-semibold">Available Perks ({stats.availablePerks})</h2>
+          {featuredPerks.length > 0 && (
             <span className="ml-2 text-xs bg-[#fdf1ea] text-[#da7756] px-2 py-1 rounded-full font-medium flex items-center">
-              <span className="mr-1">🎲</span>
-              5 Random perks just for you!
+              <span className="mr-1">✨</span>
+              Latest perks at the top!
             </span>
           )}
         </div>
-        <PerkTiles perks={randomPerks} loading={loading} />
+        <PerkTiles perks={featuredPerks} loading={loading} />
       </div>
     </div>
   );
