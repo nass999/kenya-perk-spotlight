@@ -13,6 +13,7 @@ import { DashboardStats } from '@/types/dashboard';
 import { UserInviteDialog } from '@/components/users/UserInviteDialog';
 import { useAuth } from '@/contexts/auth';
 import { useCompanyAdminAnalytics } from '@/hooks/analytics/useCompanyAdminAnalytics';
+import BroadcastMessageDisplay from '@/components/broadcast/BroadcastMessageDisplay';
 
 interface CompanyAdminDashboardProps {
   stats: DashboardStats;
@@ -42,6 +43,8 @@ const CompanyAdminDashboard: React.FC<CompanyAdminDashboardProps> = ({ stats, we
   
   return (
     <div className="space-y-8">
+      <BroadcastMessageDisplay />
+      
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">{welcomeMessage}</h1>

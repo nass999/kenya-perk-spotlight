@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Store, Briefcase, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useVendorProfile } from '@/hooks/useVendorProfile';
+import BroadcastMessageDisplay from '@/components/broadcast/BroadcastMessageDisplay';
 
 interface VendorDashboardProps {
   stats: DashboardStats;
@@ -18,6 +19,8 @@ const VendorDashboard: React.FC<VendorDashboardProps> = ({ stats, welcomeMessage
   
   return (
     <div className="space-y-8">
+      <BroadcastMessageDisplay />
+      
       <div>
         <h1 className="text-3xl font-bold">{welcomeMessage}</h1>
         <p className="mt-2 text-gray-500">

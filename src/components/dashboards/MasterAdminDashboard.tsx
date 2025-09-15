@@ -33,6 +33,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import CreateBroadcastMessage from '@/components/broadcast/CreateBroadcastMessage';
+import BroadcastMessageDisplay from '@/components/broadcast/BroadcastMessageDisplay';
 
 interface MasterAdminDashboardProps {
   stats: DashboardStats;
@@ -70,6 +72,10 @@ const MasterAdminDashboard: React.FC<MasterAdminDashboardProps> = ({
           Master Admin Dashboard - Platform Overview
         </p>
       </div>
+
+      <BroadcastMessageDisplay />
+      
+      <CreateBroadcastMessage />
       
       {/* Customers and Users Section */}
       <Collapsible 

@@ -8,6 +8,7 @@ import { UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PerkTiles from './employee/PerkTiles';
 import { useAuth } from '@/contexts/auth';
+import BroadcastMessageDisplay from '@/components/broadcast/BroadcastMessageDisplay';
 
 interface EmployeeDashboardProps {
   stats: DashboardStats;
@@ -27,6 +28,8 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ stats, welcomeMes
 
   return (
     <div className="space-y-4">
+      <BroadcastMessageDisplay />
+      
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold">{welcomeMessage}</h1>
