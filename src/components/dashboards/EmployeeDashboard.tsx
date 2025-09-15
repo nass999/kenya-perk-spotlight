@@ -2,6 +2,7 @@
 import React from 'react';
 import { DashboardStats } from '@/types/dashboard';
 import { useFeaturedPerks } from '@/hooks/perks/useFeaturedPerks';
+import { useRandomPerks } from '@/hooks/perks/useRandomPerks';
 import { Button } from '@/components/ui/button';
 import { UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -14,8 +15,13 @@ interface EmployeeDashboardProps {
 }
 
 const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ stats, welcomeMessage }) => {
-  const { featuredPerks, loading } = useFeaturedPerks();
+  const { featuredPerks, loading: featuredLoading } = useFeaturedPerks();
+  const { randomPerks, loading: randomLoading } = useRandomPerks();
   const { authState } = useAuth();
+  
+  // Use random perks for users without company, featured perks for company employees
+  const perks = authState.user?.company_id ? featuredPerks : randomPerks;
+  const loading = authState.user?.company_id ? featuredLoading : randomLoading;
   
   console.log("Stats in EmployeeDashboard:", stats);
 
@@ -38,15 +44,17 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ stats, welcomeMes
       
       <div>
         <div className="flex items-center mb-3">
-          <h2 className="text-lg font-semibold">Available Perks ({stats.availablePerks})</h2>
-          {featuredPerks.length > 0 && (
+          <h2 className="text-lg font-semibold">
+            {authState.user?.company_id ? `Available Perks (${stats.availablePerks})` : 'Sample Perks'}
+          </h2>
+          {perks.length > 0 && (
             <span className="ml-2 text-xs bg-[#fdf1ea] text-[#da7756] px-2 py-1 rounded-full font-medium flex items-center">
               <span className="mr-1">✨</span>
-              Latest perks at the top!
+              {authState.user?.company_id ? 'Latest perks at the top!' : 'Welcome! Explore these perks'}
             </span>
           )}
         </div>
-        <PerkTiles perks={featuredPerks} loading={loading} />
+        <PerkTiles perks={perks} loading={loading} />
       </div>
     </div>
   );
