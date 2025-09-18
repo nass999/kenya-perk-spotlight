@@ -65,48 +65,112 @@ const Hero = () => {
           </div>
 
           <div className="flex-1 animate-slide-left delay-300">
-            <div className="relative">
-              <div className="w-full h-full bg-[#e6e4f1] rounded-xl absolute -rotate-3 blur-md opacity-30"></div>
-              <div className="bg-white shadow-xl rounded-xl p-6 border border-[#e6e4d2] relative">
-                <div className="bg-[#da7756] h-32 rounded-lg mb-6 flex items-center justify-center text-white">
-                  <div className="text-center">
-                    <div className="text-center mb-2">
-                      <p className="text-lg font-medium mb-1">Hi Murungi, here is your summary</p>
-                      <div className="flex justify-center items-center">
-                        <span className="text-4xl font-bold">20%</span>
-                      </div>
-                    </div>
-                    <p className="text-xl">SAVED ON PURCHASES</p>
+            <div className="relative w-full h-[500px] flex items-center justify-center">
+              {/* Background decorative elements */}
+              <div className="absolute inset-0">
+                <div className="w-24 h-24 bg-[#f8ece7] rounded-full absolute top-8 right-12 opacity-60 animate-pulse"></div>
+                <div className="w-16 h-16 bg-[#da7756] rounded-full absolute bottom-16 left-8 opacity-40 animate-bounce"></div>
+                <div className="w-20 h-20 bg-[#bd5d3a] rounded-full absolute top-1/2 left-4 opacity-30 animate-pulse delay-1000"></div>
+              </div>
+              
+              {/* Central rewards hub */}
+              <div className="relative z-10">
+                <div className="bg-gradient-to-br from-[#da7756] to-[#bd5d3a] w-64 h-40 rounded-2xl shadow-2xl flex items-center justify-center transform rotate-3 hover:rotate-0 transition-transform duration-500">
+                  <div className="text-center text-white">
+                    <div className="text-3xl font-bold mb-2">African</div>
+                    <div className="text-xl">Rewards Network</div>
+                    <div className="text-sm opacity-90 mt-1">1000+ Partners</div>
                   </div>
                 </div>
-                <div className="space-y-4">
-                  <div className="h-12 bg-[#f8ece7] rounded-lg flex items-center px-4">
-                    <ShoppingBag className="h-5 w-5 text-[#bd5d3a] mr-3" />
-                    <span className="text-[#3d3929]">House of Leather - 30% off</span>
-                  </div>
-                  <div className="h-12 bg-[#f8ece7] rounded-lg flex items-center px-4">
-                    <ShoppingBag className="h-5 w-5 text-[#bd5d3a] mr-3" />
-                    <span className="text-[#3d3929]">Java House - 15% off</span>
-                  </div>
-                  <div className="h-12 bg-[#f8ece7] rounded-lg flex items-center px-4">
-                    <ShoppingBag className="h-5 w-5 text-[#bd5d3a] mr-3" />
-                    <span className="text-[#3d3929]">Naivas Supermarket - 10% off</span>
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="h-24 bg-[#f8ece7] rounded-lg flex-1 p-4 flex flex-col justify-center">
-                      <CreditCard className="h-5 w-5 text-[#bd5d3a] mb-2" />
-                      <span className="text-[#3d3929] font-medium">Your Savings</span>
-                      <span className="text-[#da7756] font-bold">KES 4,850</span>
+                
+                {/* Floating reward cards around the central hub */}
+                {/* Top left - Safaricom */}
+                <div className="absolute -top-12 -left-20 bg-white rounded-xl p-4 shadow-lg animate-float">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">S</span>
                     </div>
-                    <div className="h-24 bg-[#f8ece7] rounded-lg flex-1 p-4 flex flex-col justify-center">
-                      <ShoppingBag className="h-5 w-5 text-[#bd5d3a] mb-2" />
-                      <span className="text-[#3d3929] font-medium">Total Rewards</span>
-                      <span className="text-[#da7756] font-bold">68</span>
+                    <div>
+                      <div className="text-sm font-semibold text-[#3d3929]">Safaricom</div>
+                      <div className="text-xs text-[#da7756]">20% off airtime</div>
                     </div>
                   </div>
-                  <div className="h-12 bg-[#f8ece7] rounded-lg flex items-center justify-center">
-                    <span className="text-[#bd5d3a] font-medium">View All Rewards</span>
+                </div>
+                
+                {/* Top right - Java House */}
+                <div className="absolute -top-8 -right-24 bg-white rounded-xl p-4 shadow-lg animate-float delay-500">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-amber-600 rounded-full flex items-center justify-center">
+                      <CreditCard className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-[#3d3929]">Java House</div>
+                      <div className="text-xs text-[#da7756]">15% off meals</div>
+                    </div>
                   </div>
+                </div>
+                
+                {/* Bottom left - Naivas */}
+                <div className="absolute -bottom-16 -left-16 bg-white rounded-xl p-4 shadow-lg animate-float delay-1000">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                      <ShoppingBag className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-[#3d3929]">Naivas</div>
+                      <div className="text-xs text-[#da7756]">10% off groceries</div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Bottom right - KFC */}
+                <div className="absolute -bottom-8 -right-20 bg-white rounded-xl p-4 shadow-lg animate-float delay-700">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">K</span>
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-[#3d3929]">KFC</div>
+                      <div className="text-xs text-[#da7756]">25% off</div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* User avatars connected to the hub */}
+                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-8">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full shadow-md flex items-center justify-center">
+                    <span className="text-white text-sm font-bold">A</span>
+                  </div>
+                  <div className="w-px h-6 bg-[#da7756] mx-auto"></div>
+                </div>
+                
+                <div className="absolute bottom-0 right-0 transform translate-x-4 translate-y-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full shadow-md flex items-center justify-center">
+                    <span className="text-white text-sm font-bold">M</span>
+                  </div>
+                  <div className="w-6 h-px bg-[#da7756] absolute top-1/2 left-0 transform -translate-x-6 -translate-y-px"></div>
+                </div>
+                
+                <div className="absolute bottom-0 left-0 transform -translate-x-4 translate-y-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full shadow-md flex items-center justify-center">
+                    <span className="text-white text-sm font-bold">J</span>
+                  </div>
+                  <div className="w-6 h-px bg-[#da7756] absolute top-1/2 right-0 transform translate-x-6 -translate-y-px"></div>
+                </div>
+              </div>
+              
+              {/* Stats floating around */}
+              <div className="absolute top-4 right-4 bg-white rounded-lg p-3 shadow-lg">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-[#da7756]">KES 4.8M</div>
+                  <div className="text-xs text-[#3d3929]">Total Savings</div>
+                </div>
+              </div>
+              
+              <div className="absolute bottom-4 left-4 bg-white rounded-lg p-3 shadow-lg">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-[#da7756]">50K+</div>
+                  <div className="text-xs text-[#3d3929]">Happy Employees</div>
                 </div>
               </div>
             </div>
