@@ -36,7 +36,7 @@ const Hero = () => {
               </span>
             </h1>
             <p className="text-lg md:text-xl text-[#3d3929] mb-8 max-w-2xl mx-auto lg:mx-0">
-              Boost satisfaction and retention with Africa's leading discount platform. Offer your team exclusive perks and savings across 1000+ local and national brands.
+              Boost satisfaction and retention with Africa's leading rewards platform. Offer your team exclusive perks and savings across 1000+ local and national brands.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Button 
