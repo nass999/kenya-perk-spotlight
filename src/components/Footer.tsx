@@ -1,5 +1,5 @@
 
-import { Facebook, Twitter, Linkedin, Instagram, Mail, Phone, MapPin } from "lucide-react";
+import { Linkedin, Instagram, Mail, Phone, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -18,12 +18,6 @@ const Footer = () => {
             </p>
             <div className="flex gap-4">
               <a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">
-                <Facebook size={20} />
-              </a>
-              <a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">
-                <Twitter size={20} />
-              </a>
-              <a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">
                 <Linkedin size={20} />
               </a>
               <a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">
@@ -35,24 +29,16 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Solutions</h3>
             <ul className="space-y-3">
-              <li><a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">For Employers</a></li>
-              <li><a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">For Partners</a></li>
-              <li><a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">SME Solutions</a></li>
-              <li><a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">Enterprise Solutions</a></li>
-              <li><a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">Case Studies</a></li>
-              <li><a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">API <span className="bg-kneutral-700 text-kneutral-300 text-xs px-2 py-1 rounded ml-2">Coming Soon</span></a></li>
+              <li><Link to="/company-inquiry" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">For Employers</Link></li>
+              <li><Link to="/vendor-application" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">For Partners</Link></li>
+              <li><Link to="/pricing" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">Pricing</Link></li>
             </ul>
           </div>
 
           <div>
             <h3 className="text-lg font-semibold mb-4">Company</h3>
             <ul className="space-y-3">
-              <li><a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">About Us</a></li>
-              <li><a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">Careers</a></li>
-              <li><Link to="/pricing" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">Pricing</Link></li>
-              <li><a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">Blog</a></li>
-              <li><a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">Press</a></li>
-              <li><a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">Partners</a></li>
+              <li><Link to="/test-credentials" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">Test Credentials</Link></li>
             </ul>
           </div>
 
