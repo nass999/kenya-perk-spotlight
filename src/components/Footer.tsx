@@ -14,7 +14,7 @@ const Footer = () => {
               </a>
             </div>
             <p className="text-kneutral-300 mb-6">
-              Africa's leading employee discount platform, helping businesses attract and retain top talent.
+              Africa's leading rewards and benefits platform, helping businesses strengthen engagement and retention.
             </p>
             <div className="flex gap-4">
               <a href="#" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">
