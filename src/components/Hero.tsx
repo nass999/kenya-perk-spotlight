@@ -77,7 +77,7 @@ const Hero = () => {
               <div className="relative z-10">
                 <div className="bg-gradient-to-br from-[#da7756] to-[#bd5d3a] w-64 h-40 rounded-2xl shadow-2xl flex items-center justify-center transform rotate-3 hover:rotate-0 transition-transform duration-500">
                   <div className="text-center text-white">
-                    <div className="text-3xl font-bold mb-2">African</div>
+                    <div className="text-3xl font-bold mb-2">Africa</div>
                     <div className="text-xl">Rewards Network</div>
                     <div className="text-sm opacity-90 mt-1">1000+ Partners</div>
                   </div>
@@ -162,7 +162,7 @@ const Hero = () => {
               {/* Stats floating around */}
               <div className="absolute top-4 right-4 bg-white rounded-lg p-3 shadow-lg">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-[#da7756]">KES 4.8M</div>
+                  <div className="text-2xl font-bold text-[#da7756]">40k KSH</div>
                   <div className="text-xs text-[#3d3929]">Total Savings</div>
                 </div>
               </div>
