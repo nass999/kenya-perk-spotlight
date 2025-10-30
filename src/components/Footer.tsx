@@ -36,13 +36,6 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-4">Company</h3>
-            <ul className="space-y-3">
-              <li><Link to="/test-credentials" className="text-kneutral-300 hover:text-kneutral-400 transition-colors">Test Credentials</Link></li>
-            </ul>
-          </div>
-
-          <div>
             <h3 className="text-lg font-semibold mb-4">Contact</h3>
             <ul className="space-y-3">
               <li className="flex gap-3">
@@ -61,13 +54,13 @@ const Footer = () => {
           </div>
         </div>
 
+
         <div className="border-t border-kneutral-700 mt-12 pt-8 text-kneutral-400 text-sm">
           <div className="flex flex-col md:flex-row justify-between gap-4">
             <div>
               &copy; 2025 Africarewardsnetwork. All rights reserved.
             </div>
             <div className="flex gap-6">
-              <Link to="/test-credentials" className="hover:text-kneutral-400 transition-colors">Test Credentials</Link>
               <a href="#" className="hover:text-kneutral-400 transition-colors">Privacy Policy</a>
               <a href="#" className="hover:text-kneutral-400 transition-colors">Terms of Service</a>
               <a href="#" className="hover:text-kneutral-400 transition-colors">Cookie Policy</a>
