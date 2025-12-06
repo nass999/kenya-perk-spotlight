@@ -353,10 +353,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      set_trial_dates: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      set_trial_dates: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
