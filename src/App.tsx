@@ -15,7 +15,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
 import Unauthorized from './pages/Unauthorized';
-import PricingPage from './pages/PricingPage';
+
 import AuthCallback from './pages/AuthCallback';
 import VendorInquiry from './pages/VendorInquiry';
 import VendorApplication from './pages/VendorApplication';
@@ -57,7 +57,7 @@ function App() {
           <AuthProvider>
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/pricing" element={<PricingPage />} />
+              
               <Route path="/vendor-inquiry" element={<VendorInquiry />} />
               <Route path="/vendor-application" element={<VendorApplication />} />
               <Route path="/company-inquiry" element={<CompanyInquiry />} />

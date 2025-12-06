@@ -24,10 +24,10 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
-          <a href="#features" className="text-[#3d3929] hover:text-[#da7756] font-medium transition-colors">Features</a>
-          <a href="#partners" className="text-[#3d3929] hover:text-[#da7756] font-medium transition-colors">Partners</a>
-          <Link to="/pricing" className="text-[#3d3929] hover:text-[#da7756] font-medium transition-colors">Pricing</Link>
-          <a href="#testimonials" className="text-[#3d3929] hover:text-[#da7756] font-medium transition-colors">Testimonials</a>
+          <Link to="/#features" className="text-[#3d3929] hover:text-[#da7756] font-medium transition-colors">Features</Link>
+          <Link to="/#partners" className="text-[#3d3929] hover:text-[#da7756] font-medium transition-colors">Partners</Link>
+          <Link to="/#pricing" className="text-[#3d3929] hover:text-[#da7756] font-medium transition-colors">Pricing</Link>
+          <Link to="/#testimonials" className="text-[#3d3929] hover:text-[#da7756] font-medium transition-colors">Testimonials</Link>
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
@@ -64,34 +64,34 @@ const Navbar = () => {
       {isMenuOpen && (
         <div className="md:hidden bg-[#eeece2] border-t border-[#e6e4d2] absolute w-full">
           <nav className="flex flex-col p-4 gap-4">
-            <a 
-              href="#features" 
+            <Link 
+              to="/#features" 
               className="text-[#3d3929] hover:text-[#da7756] font-medium py-2 transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               Features
-            </a>
-            <a 
-              href="#partners" 
+            </Link>
+            <Link 
+              to="/#partners" 
               className="text-[#3d3929] hover:text-[#da7756] font-medium py-2 transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               Partners
-            </a>
+            </Link>
             <Link
-              to="/pricing"
+              to="/#pricing"
               className="text-[#3d3929] hover:text-[#da7756] font-medium py-2 transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               Pricing
             </Link>
-            <a 
-              href="#testimonials" 
+            <Link 
+              to="/#testimonials" 
               className="text-[#3d3929] hover:text-[#da7756] font-medium py-2 transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               Testimonials
-            </a>
+            </Link>
             <div className="flex flex-col gap-2 pt-2">
               {authState.user ? (
                 <Button 
