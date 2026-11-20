@@ -1,0 +1,11 @@
+# .opsera/kenya-perk-spotligh-2a81/config.yaml — written by Opsera Vibe-Shift. Safe to commit (no secrets).
+app:
+  name: kenya-perk-spotligh-2a81
+  port: 8080
+  framework: react
+  dockerfilePath: Dockerfile
+environments:
+  dev:
+    cluster: opsera-usw2-np
+    region: us-west-2
+    ingressDomain: agent.opsera.dev
